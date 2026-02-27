@@ -138,7 +138,7 @@ export function cinematicGrammar(input: GrammarInput): GrammarResult {
 
   // ─── Durée estimée ───
   let duree = 4; // par défaut 4 secondes
-  if (cadrage === 'PE' || cadrage === 'PG') duree = 6;
+  if (cadrage === 'PE' || cadrage === 'PA') duree = 6;
   else if (cadrage === 'GP' || cadrage === 'TGP') duree = 3;
   if (input.hasDialogue) duree = Math.max(duree, 5);
   if (rythme === 'lent') duree += 2;
