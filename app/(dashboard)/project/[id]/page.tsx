@@ -13,8 +13,8 @@ type Mode = 'simple' | 'expert'
 type Tab = 'script' | 'analyse' | 'timeline' | 'copilot' | 'media' | 'subtitles' | 'voiceover'
 
 const MC: Record<string, string> = {
-  kling: '#E07840', runway: '#7B6CC4', sora: '#4A9EE0',
-  veo: '#3BA06A', seedance: '#E0A040', wan: '#22d3ee', hailuo: '#f472b6',
+  kling: '#3B82F6', runway: '#8B5CF6', sora: '#EC4899',
+  veo: '#10B981', seedance: '#14B8A6', wan: '#6366F1', hailuo: '#D946EF',
 }
 
 function fmt(s: number) { return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` }

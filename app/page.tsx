@@ -10,51 +10,74 @@ import {
 export default async function HomePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
   if (user) redirect('/dashboard')
+
+  const engines = [
+    { name: 'Intent Parser', desc: 'Découpe scènes et didascalies', icon: Terminal },
+    { name: 'Grammar', desc: 'Syntaxe et valeurs de plan', icon: BookOpen },
+    { name: 'Character Bible', desc: 'Identité visuelle personnages', icon: Users },
+    { name: 'Contextual Prompt', desc: 'Prompt enrichi par scène', icon: MessageSquare },
+    { name: 'Model Syntax', desc: 'Adaptation par moteur IA', icon: Cpu },
+    { name: 'Negative Prompt', desc: 'Exclusions automatiques', icon: Ban },
+    { name: 'Compliance', desc: 'Filtres contenu & sécurité', icon: Shield },
+    { name: 'Continuity', desc: 'Cohérence entre plans', icon: Eye },
+    { name: 'Tension Curve', desc: 'Arc dramatique & rythme', icon: TrendingUp },
+    { name: 'Cost Router', desc: 'Budget par modèle', icon: DollarSign },
+    { name: 'Consistency', desc: 'Injection tokens visuels', icon: Palette },
+    { name: 'Memory', desc: 'Contexte inter-scènes', icon: Brain },
+    { name: 'Scene Splitter', desc: 'Découpage intelligent', icon: Film },
+  ]
+
+  const models = [
+    { name: 'Kling 2.1', color: '#3B82F6' },
+    { name: 'Runway Gen-4', color: '#8B5CF6' },
+    { name: 'Sora', color: '#EC4899' },
+    { name: 'Veo 3', color: '#10B981' },
+    { name: 'Seedance', color: '#14B8A6' },
+    { name: 'Wan 2.1', color: '#6366F1' },
+    { name: 'Hailuo', color: '#D946EF' },
+  ]
 
   return (
     <div className="min-h-screen bg-dark-950">
-      {/* ─── NAV ─── */}
+      {/* NAV */}
       <nav className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto">
-        <div className="flex items-center gap-2">
-          <Play size={24} className="text-orange-500" fill="currentColor" />
-          <span className="text-lg font-bold text-slate-50">MISEN</span>
-        </div>
+        <span className="font-display text-xl text-orange-500" style={{ letterSpacing: '-0.02em' }}>MISEN</span>
         <div className="flex items-center gap-3">
-          <Link href="/login" className="px-4 py-2 text-sm text-slate-300 hover:text-white transition-colors">
-            Connexion
-          </Link>
-          <Link href="/register" className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium rounded-lg transition-colors">
-            Commencer gratuitement
-          </Link>
+          <Link href="/login" className="btn-ghost btn-sm">Connexion</Link>
+          <Link href="/register" className="btn-primary btn-sm">Commencer</Link>
         </div>
       </nav>
 
-      {/* ─── HERO ─── */}
-      <section className="px-6 pt-20 pb-24 max-w-4xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-500/10 border border-orange-500/20 rounded-full text-xs text-orange-400 mb-6">
-          <Zap size={12} /> 13 moteurs × 7 modèles IA
+      {/* HERO */}
+      <section className="px-6 pt-16 pb-20 max-w-4xl mx-auto text-center" style={{
+        background: 'radial-gradient(800px 260px at 35% 25%, rgba(249,115,22,0.08), transparent 55%), radial-gradient(700px 240px at 65% 35%, rgba(6,182,212,0.06), transparent 60%)'
+      }}>
+        <div className="beam w-64 mx-auto mb-8" />
+        <div className="flex items-center justify-center gap-3 mb-6">
+          <span className="badge-orange">13 moteurs</span>
+          <span className="badge-orange">7 modèles</span>
+          <span className="badge-gold">Studio-grade</span>
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold text-slate-50 leading-tight mb-6">
+        <h1 className="font-display text-5xl md:text-6xl text-slate-50 mb-6" style={{ letterSpacing: '-0.02em', fontWeight: 400 }}>
           De l&apos;écriture<br />
-          <span className="text-orange-500">à l&apos;écran.</span>
+          <span className="text-gradient-orange">à l&apos;écran.</span>
         </h1>
         <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
           MISEN analyse votre scénario avec 13 moteurs spécialisés, assigne les meilleurs modèles IA
-          à chaque plan, et génère vos vidéos. Le premier studio de production entièrement piloté par l&apos;intelligence artificielle.
+          à chaque plan, et génère vos vidéos. Le premier studio de production piloté par l&apos;intelligence artificielle.
         </p>
         <div className="flex items-center justify-center gap-4">
-          <Link href="/register" className="px-8 py-3 bg-orange-600 hover:bg-orange-500 text-white font-medium rounded-xl transition-colors flex items-center gap-2">
-            Essayer gratuitement <ArrowRight size={18} />
+          <Link href="/register" className="btn-primary btn-lg gap-2">
+            Entrer dans le Studio <ArrowRight size={18} />
           </Link>
-          <Link href="/demo" className="px-8 py-3 bg-dark-800 hover:bg-dark-700 text-slate-300 font-medium rounded-xl transition-colors border border-dark-700 flex items-center gap-2">
+          <Link href="/demo" className="btn-secondary btn-lg gap-2">
             <Play size={18} /> Voir la démo
           </Link>
         </div>
       </section>
 
-      {/* ─── PIPELINE ─── */}
+      {/* PIPELINE */}
       <section className="px-6 py-16 max-w-5xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[
@@ -63,9 +86,9 @@ export default async function HomePage() {
             { step: '03', title: 'Optimisez', desc: 'Prompts & modèles assignés', icon: Cpu },
             { step: '04', title: 'Générez', desc: 'Vidéos par plan', icon: Film },
           ].map((s) => (
-            <div key={s.step} className="bg-dark-900 border border-dark-700 rounded-xl p-5 text-center">
+            <div key={s.step} className="card p-5 text-center">
               <s.icon size={28} className="text-orange-500 mx-auto mb-3" />
-              <div className="text-[10px] text-orange-400 font-bold mb-1">{s.step}</div>
+              <div className="text-overline text-orange-400 mb-1">{s.step}</div>
               <h3 className="text-sm font-bold text-slate-100 mb-1">{s.title}</h3>
               <p className="text-xs text-slate-500">{s.desc}</p>
             </div>
@@ -73,118 +96,79 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ─── 13 ENGINES ─── */}
-      <section id="features" className="px-6 py-16 max-w-5xl mx-auto">
-        <h2 className="text-2xl font-bold text-slate-50 text-center mb-3">13 moteurs d&apos;analyse</h2>
-        <p className="text-sm text-slate-400 text-center mb-10 max-w-xl mx-auto">
-          Chaque scène est passée au crible par des moteurs spécialisés qui travaillent en synergie
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { name: 'Director', icon: Camera, desc: 'Cadrage & mise en scène' },
-            { name: 'Prompt', icon: MessageSquare, desc: 'Génération de prompts' },
-            { name: 'Grammar', icon: BookOpen, desc: 'Grammaire visuelle' },
-            { name: 'Tension', icon: TrendingUp, desc: 'Courbe dramatique' },
-            { name: 'Character', icon: Users, desc: 'Bible des personnages' },
-            { name: 'Compliance', icon: Shield, desc: 'Conformité contenu' },
-            { name: 'Continuity', icon: Eye, desc: 'Cohérence visuelle' },
-            { name: 'Style', icon: Palette, desc: 'Direction artistique' },
-            { name: 'Negative', icon: Ban, desc: 'Prompts négatifs' },
-            { name: 'Cost', icon: DollarSign, desc: 'Estimation budgétaire' },
-            { name: 'Rec', icon: Cpu, desc: 'Assignation modèles' },
-            { name: 'Continuity+', icon: Layers, desc: 'Cohérence inter-plans' },
-            { name: 'Export', icon: Film, desc: 'Timeline & export' },
-          ].map((e) => (
-            <div key={e.name} className="bg-dark-900 border border-dark-700 rounded-lg p-3 flex items-center gap-3">
-              <e.icon size={16} className="text-orange-500/70 flex-shrink-0" />
-              <div>
-                <span className="text-xs font-medium text-slate-200 block">{e.name}</span>
-                <span className="text-[10px] text-slate-500">{e.desc}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ─── 7 MODELS ─── */}
+      {/* 13 ENGINES */}
       <section className="px-6 py-16 max-w-5xl mx-auto">
-        <h2 className="text-2xl font-bold text-slate-50 text-center mb-3">7 modèles IA</h2>
-        <p className="text-sm text-slate-400 text-center mb-10">Le bon modèle pour chaque plan, automatiquement</p>
-        <div className="flex flex-wrap justify-center gap-3">
-          {['Kling 3.0', 'Runway Gen-4.5', 'Sora 2', 'Veo 3.1', 'Seedance 2.0', 'Wan 2.5', 'Hailuo 2.3'].map((m) => (
-            <div key={m} className="px-4 py-2 bg-dark-900 border border-dark-700 rounded-lg text-sm text-slate-300 font-medium">
-              {m}
+        <h2 className="font-display text-2xl text-slate-50 text-center mb-3" style={{ fontWeight: 400 }}>13 moteurs d&apos;analyse</h2>
+        <p className="text-sm text-slate-400 text-center mb-10 max-w-xl mx-auto">
+          Chaque scène passe au crible de moteurs spécialisés qui travaillent en synergie
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {engines.map((e) => (
+            <div key={e.name} className="card p-4 hover:border-dark-600 transition-all group">
+              <e.icon size={20} className="text-orange-500/70 mb-2 group-hover:text-orange-400 transition-colors" />
+              <h4 className="text-sm font-semibold text-slate-200">{e.name}</h4>
+              <p className="text-xs text-slate-500 mt-0.5">{e.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ─── PRICING ─── */}
-      <section id="pricing" className="px-6 py-16 max-w-4xl mx-auto">
-        <h2 className="text-2xl font-bold text-slate-50 text-center mb-10">Tarifs</h2>
+      {/* MODELS */}
+      <section className="px-6 py-16 max-w-5xl mx-auto">
+        <h2 className="font-display text-2xl text-slate-50 text-center mb-3" style={{ fontWeight: 400 }}>7 modèles IA orchestrés</h2>
+        <p className="text-sm text-slate-400 text-center mb-10">Chaque plan est assigné au modèle optimal selon son contenu</p>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          {models.map((m) => (
+            <div key={m.name} className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-dark-700 bg-dark-850">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: m.color }} />
+              <span className="text-sm text-slate-200 font-medium">{m.name}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* PRICING */}
+      <section className="px-6 py-16 max-w-4xl mx-auto">
+        <h2 className="font-display text-2xl text-slate-50 text-center mb-10" style={{ fontWeight: 400 }}>Tarifs simples</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            {
-              name: 'Free', price: 0, icon: Zap,
-              features: ['7 moteurs d\'analyse', '5 générations/mois', '3 projets max', 'Export JSON'],
-            },
-            {
-              name: 'Pro', price: 29, icon: Crown, popular: true,
-              features: ['13 moteurs d\'analyse', '100 générations/mois', '20 projets', 'Export JSON + MP4', 'Support prioritaire'],
-            },
-            {
-              name: 'Studio', price: 79, icon: Sparkles,
-              features: ['13 moteurs d\'analyse', 'Générations illimitées', 'Projets illimités', 'Tous formats export', 'API access', 'Support dédié'],
-            },
-          ].map((plan) => (
-            <div key={plan.name} className={`relative rounded-xl p-6 border ${plan.popular ? 'bg-orange-500/5 border-orange-500/30' : 'bg-dark-800 border-dark-700'}`}>
-              {plan.popular && (
-                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-orange-600 text-white text-[10px] font-bold rounded-full uppercase">
-                  Populaire
-                </div>
-              )}
-              <plan.icon size={24} className="text-orange-500 mb-3" />
-              <h3 className="text-lg font-bold text-slate-100 mb-1">{plan.name}</h3>
-              <div className="mb-4">
-                <span className="text-3xl font-bold text-slate-50">{plan.price === 0 ? 'Gratuit' : `${plan.price}€`}</span>
-                {plan.price > 0 && <span className="text-sm text-slate-500">/mois</span>}
+            { name: 'Free', price: '0€', desc: '3 projets · 5 analyses/jour · 7 modèles', badge: 'badge-default', features: ['13 moteurs', 'Mode Simple', 'Export prompts'] },
+            { name: 'Studio', price: '19€', desc: 'Projets illimités · Analyses illimitées', badge: 'badge-orange', features: ['Tout Free +', 'Mode Expert', 'Timeline', 'Copilote IA', 'Média bank'], glow: true },
+            { name: 'Production', price: '49€', desc: 'Équipe · API · Priorité', badge: 'badge-gold', features: ['Tout Studio +', 'Génération vidéo', 'API access', 'Support prioritaire'] },
+          ].map((p) => (
+            <div key={p.name} className={`card p-6 ${p.glow ? 'glow-orange border-orange-500/30' : ''}`}>
+              <span className={p.badge}>{p.name}</span>
+              <div className="mt-4 mb-1">
+                <span className="font-display text-3xl text-slate-50">{p.price}</span>
+                <span className="text-sm text-slate-500">/mois</span>
               </div>
-              <ul className="space-y-2 mb-6">
-                {plan.features.map((f, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-slate-400">
-                    <Check size={14} className="text-green-400 mt-0.5 flex-shrink-0" />
-                    <span>{f}</span>
-                  </li>
+              <p className="text-xs text-slate-400 mb-4">{p.desc}</p>
+              <div className="space-y-2">
+                {p.features.map((f) => (
+                  <div key={f} className="flex items-center gap-2 text-xs text-slate-300">
+                    <Check size={12} className="text-orange-500" /> {f}
+                  </div>
                 ))}
-              </ul>
-              <Link href="/register"
-                className={`block w-full py-2.5 text-center text-sm font-medium rounded-lg transition-colors ${
-                  plan.popular ? 'bg-orange-600 hover:bg-orange-500 text-white' : 'bg-dark-700 hover:bg-dark-600 text-slate-200'
-                }`}>
-                {plan.price === 0 ? 'Commencer' : `Passer à ${plan.name}`}
+              </div>
+              <Link href="/register" className={`mt-6 w-full ${p.glow ? 'btn-primary' : 'btn-secondary'} btn-md flex justify-center`}>
+                {p.glow ? 'Commencer' : 'Essayer'}
               </Link>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ─── CTA ─── */}
-      <section className="px-6 py-20 max-w-3xl mx-auto text-center">
-        <h2 className="text-2xl font-bold text-slate-50 mb-4">Prêt à transformer votre écriture ?</h2>
-        <p className="text-sm text-slate-400 mb-8">Créez votre premier projet en moins de 2 minutes</p>
-        <Link href="/register" className="inline-flex items-center gap-2 px-8 py-3 bg-orange-600 hover:bg-orange-500 text-white font-medium rounded-xl transition-colors">
-          Commencer gratuitement <ArrowRight size={18} />
-        </Link>
-      </section>
-
-      {/* ─── FOOTER ─── */}
-      <footer className="px-6 py-8 border-t border-dark-800">
-        <div className="max-w-5xl mx-auto flex items-center justify-between text-xs text-slate-500">
-          <div className="flex items-center gap-2">
-            <Play size={14} className="text-orange-500" fill="currentColor" />
-            <span>MISEN V7 — Jabrilia Éditions</span>
+      {/* FOOTER */}
+      <footer className="px-6 py-10 border-t border-dark-700">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <div>
+            <span className="font-display text-lg text-orange-500">MISEN</span>
+            <p className="text-xs text-slate-500 mt-1">Mise en Scène Numérique — par Steve Moradel</p>
           </div>
-          <div>© 2026 Steve Moradel. Tous droits réservés.</div>
+          <div className="flex items-center gap-4 text-xs text-slate-500">
+            <Link href="/demo" className="hover:text-slate-300">Démo</Link>
+            <Link href="/login" className="hover:text-slate-300">Connexion</Link>
+          </div>
         </div>
       </footer>
     </div>

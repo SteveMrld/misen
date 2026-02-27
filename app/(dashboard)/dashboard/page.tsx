@@ -6,7 +6,7 @@ import { Plus, Film, Clapperboard, Clock, MoreHorizontal, Trash2, Download, Uplo
 import type { Project } from '@/types/database'
 
 const statusLabels: Record<string, { label: string; class: string }> = {
-  draft: { label: 'Brouillon', class: 'badge-slate' },
+  draft: { label: 'Brouillon', class: 'badge-default' },
   analyzing: { label: 'En analyse', class: 'badge-orange' },
   production: { label: 'Production', class: 'badge-orange' },
   complete: { label: 'Terminé', class: 'badge-success' },

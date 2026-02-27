@@ -7,6 +7,10 @@ export const metadata: Metadata = {
     'Transformez votre scénario en plan de production complet. 13 moteurs d\'analyse, 7 modèles IA, génération vidéo automatisée. De l\'écriture à l\'écran.',
   keywords: ['MISEN', 'IA', 'cinéma', 'production', 'vidéo', 'scénario', 'storyboard', 'Kling', 'Runway', 'Sora', 'mise en scène', 'intelligence artificielle'],
   authors: [{ name: 'Steve Moradel' }],
+  icons: {
+    icon: '/favicon.png',
+    apple: '/apple-touch-icon.png',
+  },
   openGraph: {
     title: 'MISEN — Studio IA de Production Cinématographique',
     description: '13 moteurs d\'analyse × 7 modèles IA. De l\'écriture à l\'écran.',
@@ -14,6 +18,7 @@ export const metadata: Metadata = {
     siteName: 'MISEN',
     locale: 'fr_FR',
     type: 'website',
+    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',

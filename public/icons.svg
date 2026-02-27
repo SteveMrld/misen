@@ -1,0 +1,168 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <rect width="1200" height="800" fill="#06080D"/>
+  <defs>
+    <style>
+      .s{stroke:#E2E8F0;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}
+      .t{font-family:Inter, system-ui, sans-serif;font-size:16px;fill:#CBD5E1}
+      .h{font-family:Inter, system-ui, sans-serif;font-size:12px;fill:#94A3B8}
+      .accent{stroke:#F97316}
+    </style>
+  </defs>
+
+  <!-- 7 framing icons -->
+  <text x="60" y="60" class="t">Framing (7)</text>
+
+  <g transform="translate(60,90)">
+    <!-- Wide -->
+    <rect x="0" y="0" width="120" height="80" rx="10" class="s"/>
+    <rect x="18" y="18" width="84" height="44" rx="8" class="s accent"/>
+    <text x="0" y="110" class="h">Wide</text>
+  </g>
+
+  <g transform="translate(220,90)">
+    <!-- Medium -->
+    <rect x="0" y="0" width="120" height="80" rx="10" class="s"/>
+    <rect x="34" y="16" width="52" height="48" rx="8" class="s accent"/>
+    <text x="0" y="110" class="h">Medium</text>
+  </g>
+
+  <g transform="translate(380,90)">
+    <!-- Close -->
+    <rect x="0" y="0" width="120" height="80" rx="10" class="s"/>
+    <rect x="46" y="18" width="28" height="44" rx="8" class="s accent"/>
+    <text x="0" y="110" class="h">Close</text>
+  </g>
+
+  <g transform="translate(540,90)">
+    <!-- ECU -->
+    <rect x="0" y="0" width="120" height="80" rx="10" class="s"/>
+    <rect x="52" y="26" width="16" height="28" rx="6" class="s accent"/>
+    <text x="0" y="110" class="h">ECU</text>
+  </g>
+
+  <g transform="translate(700,90)">
+    <!-- Over-shoulder -->
+    <rect x="0" y="0" width="120" height="80" rx="10" class="s"/>
+    <path d="M22 58 C36 40, 58 38, 72 52" class="s accent"/>
+    <circle cx="42" cy="42" r="10" class="s accent"/>
+    <text x="0" y="110" class="h">OTS</text>
+  </g>
+
+  <g transform="translate(860,90)">
+    <!-- POV -->
+    <rect x="0" y="0" width="120" height="80" rx="10" class="s"/>
+    <path d="M24 40 C40 18, 80 18, 96 40 C80 62, 40 62, 24 40Z" class="s accent"/>
+    <circle cx="60" cy="40" r="10" class="s accent"/>
+    <text x="0" y="110" class="h">POV</text>
+  </g>
+
+  <g transform="translate(1020,90)">
+    <!-- Insert -->
+    <rect x="0" y="0" width="120" height="80" rx="10" class="s"/>
+    <path d="M38 24 L82 24 L82 56 L38 56 Z" class="s accent"/>
+    <text x="0" y="110" class="h">Insert</text>
+  </g>
+
+  <!-- 9 camera moves -->
+  <text x="60" y="250" class="t">Camera Moves (9)</text>
+
+  <g transform="translate(60,280)">
+    <path d="M10 60 L110 20" class="s accent"/>
+    <path d="M102 16 L112 20 L106 30" class="s accent"/>
+    <rect x="0" y="0" width="120" height="80" rx="10" class="s"/>
+    <text x="0" y="110" class="h">Tilt Up</text>
+  </g>
+
+  <g transform="translate(220,280)">
+    <path d="M10 20 L110 60" class="s accent"/>
+    <path d="M102 54 L112 60 L106 70" class="s accent"/>
+    <rect x="0" y="0" width="120" height="80" rx="10" class="s"/>
+    <text x="0" y="110" class="h">Tilt Down</text>
+  </g>
+
+  <g transform="translate(380,280)">
+    <path d="M20 40 L100 40" class="s accent"/>
+    <path d="M92 34 L102 40 L92 46" class="s accent"/>
+    <rect x="0" y="0" width="120" height="80" rx="10" class="s"/>
+    <text x="0" y="110" class="h">Pan Right</text>
+  </g>
+
+  <g transform="translate(540,280)">
+    <path d="M100 40 L20 40" class="s accent"/>
+    <path d="M28 34 L18 40 L28 46" class="s accent"/>
+    <rect x="0" y="0" width="120" height="80" rx="10" class="s"/>
+    <text x="0" y="110" class="h">Pan Left</text>
+  </g>
+
+  <g transform="translate(700,280)">
+    <path d="M60 60 C60 30, 60 30, 60 18" class="s accent"/>
+    <path d="M54 26 L60 16 L66 26" class="s accent"/>
+    <rect x="0" y="0" width="120" height="80" rx="10" class="s"/>
+    <text x="0" y="110" class="h">Dolly In</text>
+  </g>
+
+  <g transform="translate(860,280)">
+    <path d="M60 18 C60 46, 60 46, 60 60" class="s accent"/>
+    <path d="M54 52 L60 62 L66 52" class="s accent"/>
+    <rect x="0" y="0" width="120" height="80" rx="10" class="s"/>
+    <text x="0" y="110" class="h">Dolly Out</text>
+  </g>
+
+  <g transform="translate(1020,280)">
+    <path d="M18 62 C42 26, 78 26, 102 62" class="s accent"/>
+    <rect x="0" y="0" width="120" height="80" rx="10" class="s"/>
+    <text x="0" y="110" class="h">Crane</text>
+  </g>
+
+  <g transform="translate(60,430)">
+    <path d="M20 20 L100 60" class="s accent"/>
+    <path d="M20 60 L100 20" class="s accent"/>
+    <rect x="0" y="0" width="120" height="80" rx="10" class="s"/>
+    <text x="0" y="110" class="h">Handheld</text>
+  </g>
+
+  <g transform="translate(220,430)">
+    <path d="M20 40 C40 18, 80 18, 100 40 C80 62, 40 62, 20 40" class="s accent"/>
+    <rect x="0" y="0" width="120" height="80" rx="10" class="s"/>
+    <text x="0" y="110" class="h">Orbit</text>
+  </g>
+
+  <!-- 7 model markers -->
+  <text x="60" y="600" class="t">Model markers (7)</text>
+
+  <g transform="translate(60,630)">
+    <rect x="0" y="0" width="150" height="46" rx="10" fill="#111827" stroke="#252B3B" stroke-width="2"/>
+    <circle cx="22" cy="23" r="8" fill="#3B82F6"/>
+    <text x="40" y="29" class="h" style="font-size:14px;fill:#CBD5E1">Kling 3.0</text>
+  </g>
+  <g transform="translate(230,630)">
+    <rect x="0" y="0" width="150" height="46" rx="10" fill="#111827" stroke="#252B3B" stroke-width="2"/>
+    <circle cx="22" cy="23" r="8" fill="#8B5CF6"/>
+    <text x="40" y="29" class="h" style="font-size:14px;fill:#CBD5E1">Runway</text>
+  </g>
+  <g transform="translate(400,630)">
+    <rect x="0" y="0" width="150" height="46" rx="10" fill="#111827" stroke="#252B3B" stroke-width="2"/>
+    <circle cx="22" cy="23" r="8" fill="#EC4899"/>
+    <text x="40" y="29" class="h" style="font-size:14px;fill:#CBD5E1">Sora</text>
+  </g>
+  <g transform="translate(570,630)">
+    <rect x="0" y="0" width="150" height="46" rx="10" fill="#111827" stroke="#252B3B" stroke-width="2"/>
+    <circle cx="22" cy="23" r="8" fill="#10B981"/>
+    <text x="40" y="29" class="h" style="font-size:14px;fill:#CBD5E1">Veo</text>
+  </g>
+  <g transform="translate(740,630)">
+    <rect x="0" y="0" width="150" height="46" rx="10" fill="#111827" stroke="#252B3B" stroke-width="2"/>
+    <circle cx="22" cy="23" r="8" fill="#14B8A6"/>
+    <text x="40" y="29" class="h" style="font-size:14px;fill:#CBD5E1">Seedance</text>
+  </g>
+  <g transform="translate(910,630)">
+    <rect x="0" y="0" width="150" height="46" rx="10" fill="#111827" stroke="#252B3B" stroke-width="2"/>
+    <circle cx="22" cy="23" r="8" fill="#6366F1"/>
+    <text x="40" y="29" class="h" style="font-size:14px;fill:#CBD5E1">Wan</text>
+  </g>
+  <g transform="translate(1080,630)">
+    <rect x="0" y="0" width="150" height="46" rx="10" fill="#111827" stroke="#252B3B" stroke-width="2"/>
+    <circle cx="22" cy="23" r="8" fill="#D946EF"/>
+    <text x="40" y="29" class="h" style="font-size:14px;fill:#CBD5E1">Hailuo</text>
+  </g>
+</svg>
