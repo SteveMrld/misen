@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Film, Clapperboard, Clock, MoreHorizontal, Trash2, Download, Upload, X, Loader2, Play } from 'lucide-react'
+import { Plus, Film, Clapperboard, Clock, MoreHorizontal, Trash2, Download, Upload, X, Loader2, Play, Camera, Zap, TrendingUp } from 'lucide-react'
+import { ModelLegend } from '@/components/ui/model-badge'
+import { StoryboardSVG } from '@/components/ui/storyboard-svg'
 import type { Project } from '@/types/database'
 
 const statusLabels: Record<string, { label: string; class: string }> = {
@@ -108,28 +110,45 @@ export default function DashboardPage() {
 
   return (
     <div className="animate-fade-in">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-h2 text-slate-50">Mes projets</h1>
-          <p className="text-body-sm text-slate-400 mt-1">
+          <h1 className="text-2xl font-display font-bold text-slate-50">Mes projets</h1>
+          <p className="text-sm text-slate-400 mt-1">
             {projects.length} projet{projects.length > 1 ? 's' : ''}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={handleDemo} disabled={importing} className="btn-ghost btn-md text-orange-400 border-orange-500/30 hover:bg-orange-500/10">
-            <Play size={18} className="mr-2" />
-            Démo
+          <button onClick={handleDemo} disabled={importing} className="px-3 py-2 text-sm text-orange-400 border border-orange-500/30 hover:bg-orange-500/10 rounded-lg flex items-center gap-2 transition-colors">
+            <Play size={16} /> Démo
           </button>
-          <button onClick={handleImport} disabled={importing} className="btn-ghost btn-md">
-            {importing ? <Loader2 size={18} className="mr-2 animate-spin" /> : <Upload size={18} className="mr-2" />}
-            Importer
+          <button onClick={handleImport} disabled={importing} className="px-3 py-2 text-sm text-slate-300 border border-dark-600 hover:bg-dark-800 rounded-lg flex items-center gap-2 transition-colors">
+            {importing ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} Importer
           </button>
-          <button onClick={() => setShowNewModal(true)} className="btn-primary btn-md">
-            <Plus size={18} className="mr-2" />
-            Nouveau projet
+          <button onClick={() => setShowNewModal(true)} className="btn-primary px-4 py-2 text-sm flex items-center gap-2">
+            <Plus size={16} /> Nouveau
           </button>
         </div>
       </div>
+
+      {/* Stats row */}
+      {projects.length > 0 && (
+        <div className="grid grid-cols-4 gap-3 mb-6">
+          {[
+            { icon: Film, label: 'Projets', value: projects.length, color: 'text-orange-400' },
+            { icon: Camera, label: 'Scènes', value: projects.reduce((s, p) => s + (p.scenes_count || 0), 0), color: 'text-blue-400' },
+            { icon: Zap, label: 'En production', value: projects.filter(p => p.status === 'production' || p.status === 'analyzing').length, color: 'text-yellow-400' },
+            { icon: TrendingUp, label: 'Terminés', value: projects.filter(p => p.status === 'complete').length, color: 'text-green-400' },
+          ].map(({ icon: Icon, label, value, color }) => (
+            <div key={label} className="bg-dark-900 border border-dark-700 rounded-xl px-4 py-3 flex items-center gap-3">
+              <Icon size={18} className={color} />
+              <div>
+                <p className="text-lg font-semibold text-slate-100">{value}</p>
+                <p className="text-[11px] text-slate-500">{label}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-24">
@@ -165,32 +184,32 @@ export default function DashboardPage() {
 }
 
 function EmptyState({ onNew }: { onNew: () => void }) {
+  const svg = `<svg width="180" height="120" viewBox="0 0 180 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="40" y="30" width="100" height="65" rx="6" fill="#111827" stroke="#252B3B" stroke-width="1.5"/>
+    <rect x="40" y="30" width="100" height="16" rx="6" fill="#1A1F2E"/>
+    <rect x="40" y="41" width="100" height="5" fill="#1A1F2E"/>
+    <rect x="45" y="32" width="7" height="12" rx="1" fill="#F97316" opacity="0.6" transform="rotate(-15 49 38)"/>
+    <rect x="56" y="32" width="7" height="12" rx="1" fill="#252B3B" transform="rotate(-15 60 38)"/>
+    <rect x="67" y="32" width="7" height="12" rx="1" fill="#F97316" opacity="0.6" transform="rotate(-15 71 38)"/>
+    <circle cx="90" cy="72" r="12" fill="none" stroke="#F97316" stroke-width="1.5" opacity="0.7"/>
+    <polygon points="87,66 87,78 97,72" fill="#F97316" opacity="0.7"/>
+    <circle cx="148" cy="28" r="2.5" fill="#F97316" opacity="0.4"/>
+    <circle cx="30" cy="50" r="2" fill="#06B6D4" opacity="0.3"/>
+    <circle cx="155" cy="80" r="1.5" fill="#FBBF24" opacity="0.3"/>
+  </svg>`
+
   return (
-    <div className="flex flex-col items-center justify-center py-24">
-      <div className="w-20 h-20 rounded-2xl bg-dark-800 border border-dark-700 flex items-center justify-center mb-6">
-        <Clapperboard size={36} className="text-orange-500/60" />
-      </div>
-      <h3 className="text-h4 text-slate-200 mb-2">Créez votre premier projet</h3>
-      <p className="text-body-sm text-slate-400 text-center max-w-sm mb-8">
+    <div className="flex flex-col items-center justify-center py-20">
+      <div className="mb-6" dangerouslySetInnerHTML={{ __html: svg }} />
+      <h3 className="text-xl font-display text-slate-200 mb-2">Créez votre premier projet</h3>
+      <p className="text-sm text-slate-400 text-center max-w-md mb-8">
         Importez un scénario et laissez MISEN orchestrer votre production
         avec 13 moteurs d&apos;analyse et 7 modèles IA.
       </p>
-      <button onClick={onNew} className="btn-primary btn-lg">
-        <Plus size={20} className="mr-2" />
-        Nouveau projet
+      <button onClick={onNew} className="btn-primary px-5 py-2.5 rounded-xl flex items-center gap-2 text-sm font-medium">
+        <Plus size={16} /> Nouveau projet
       </button>
-      <div className="flex items-center gap-6 mt-12">
-        {[
-          { icon: Film, label: '13 moteurs' },
-          { icon: Clapperboard, label: '7 modèles IA' },
-          { icon: Clock, label: 'Export JSON' },
-        ].map(({ icon: Icon, label }) => (
-          <div key={label} className="flex items-center gap-2 text-slate-500">
-            <Icon size={16} />
-            <span className="text-caption">{label}</span>
-          </div>
-        ))}
-      </div>
+      <ModelLegend className="mt-10 opacity-60" />
     </div>
   )
 }
@@ -201,41 +220,53 @@ function ProjectCard({ project, onClick, onDelete, onExport }: {
   const status = statusLabels[project.status] || statusLabels.draft
   const [showMenu, setShowMenu] = useState(false)
 
+  // Pseudo-random visual based on project name
+  const hash = project.name.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+  const shots = ['plan large', 'plan moyen', 'gros plan', 'insert', 'très gros plan']
+  const moves = ['pan right', 'dolly in', 'tracking', 'static', 'tilt up', 'crane']
+  const modelColors = ['#3B82F6', '#8B5CF6', '#EC4899', '#10B981', '#14B8A6', '#6366F1', '#D946EF']
+
   return (
-    <div className="card-interactive group cursor-pointer" onClick={onClick}>
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1 min-w-0">
-          <h3 className="text-body font-medium text-slate-100 truncate group-hover:text-orange-400 transition-colors">
-            {project.name}
-          </h3>
-          <p className="text-caption text-slate-500 mt-1">
-            {project.scenes_count} scène{project.scenes_count > 1 ? 's' : ''}
-          </p>
-        </div>
-        <div className="relative">
-          <button
-            onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu) }}
-            className="btn-ghost p-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <MoreHorizontal size={16} className="text-slate-400" />
-          </button>
-          {showMenu && (
-            <div className="absolute right-0 top-8 w-40 bg-dark-800 border border-dark-700 rounded-lg shadow-xl z-10 py-1" onClick={(e) => e.stopPropagation()}>
-              <button onClick={() => { onExport(); setShowMenu(false) }} className="flex items-center gap-2 w-full px-3 py-2 text-body-sm text-slate-300 hover:bg-dark-700 transition-colors">
-                <Download size={14} /> Exporter JSON
-              </button>
-              <button onClick={() => { onDelete(); setShowMenu(false) }} className="flex items-center gap-2 w-full px-3 py-2 text-body-sm text-red-400 hover:bg-dark-700 transition-colors">
-                <Trash2 size={14} /> Supprimer
-              </button>
-            </div>
-          )}
+    <div className="card-interactive group cursor-pointer overflow-hidden" onClick={onClick}>
+      {/* Visual preview header */}
+      <div className="relative -mx-[1px] -mt-[1px]">
+        <StoryboardSVG
+          shotType={shots[hash % shots.length]}
+          cameraMove={moves[(hash * 7) % moves.length]}
+          width={400} height={110}
+          modelColor={modelColors[hash % modelColors.length]}
+          className="w-full"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-dark-900 via-dark-900/30 to-transparent" />
+        <div className="absolute top-3 right-3"><span className={status.class}>{status.label}</span></div>
+        <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="relative">
+            <button onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu) }}
+              className="p-1.5 rounded-md bg-dark-950/60 backdrop-blur-sm hover:bg-dark-950/80">
+              <MoreHorizontal size={14} className="text-slate-400" />
+            </button>
+            {showMenu && (
+              <div className="absolute left-0 top-8 w-40 bg-dark-800 border border-dark-700 rounded-lg shadow-xl z-10 py-1" onClick={(e) => e.stopPropagation()}>
+                <button onClick={() => { onExport(); setShowMenu(false) }} className="flex items-center gap-2 w-full px-3 py-2 text-xs text-slate-300 hover:bg-dark-700">
+                  <Download size={13} /> Exporter JSON
+                </button>
+                <button onClick={() => { onDelete(); setShowMenu(false) }} className="flex items-center gap-2 w-full px-3 py-2 text-xs text-red-400 hover:bg-dark-700">
+                  <Trash2 size={13} /> Supprimer
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-      <div className="flex items-center justify-between pt-4 border-t border-dark-700">
-        <span className={status.class}>{status.label}</span>
-        <span className="text-caption text-slate-500">
-          {new Date(project.updated_at).toLocaleDateString('fr-FR')}
-        </span>
+      {/* Info */}
+      <div className="p-4 pt-2">
+        <h3 className="text-sm font-medium text-slate-100 truncate group-hover:text-orange-400 transition-colors">
+          {project.name}
+        </h3>
+        <div className="flex items-center justify-between mt-3">
+          <span className="text-[11px] text-slate-500 flex items-center gap-1"><Camera size={11} /> {project.scenes_count} scène{project.scenes_count > 1 ? 's' : ''}</span>
+          <span className="text-[11px] text-slate-600">{new Date(project.updated_at).toLocaleDateString('fr-FR')}</span>
+        </div>
       </div>
     </div>
   )

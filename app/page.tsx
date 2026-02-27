@@ -79,18 +79,97 @@ export default async function HomePage() {
 
       {/* PIPELINE */}
       <section className="px-6 py-16 max-w-5xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 relative">
           {[
-            { step: '01', title: 'Collez', desc: 'Votre scénario', icon: Terminal },
-            { step: '02', title: 'Analysez', desc: '13 moteurs en parallèle', icon: Brain },
-            { step: '03', title: 'Optimisez', desc: 'Prompts & modèles assignés', icon: Cpu },
-            { step: '04', title: 'Générez', desc: 'Vidéos par plan', icon: Film },
-          ].map((s) => (
-            <div key={s.step} className="card p-5 text-center">
-              <s.icon size={28} className="text-orange-500 mx-auto mb-3" />
-              <div className="text-overline text-orange-400 mb-1">{s.step}</div>
+            { step: '01', title: 'Collez', desc: 'Votre scénario', icon: Terminal, color: '#F97316' },
+            { step: '02', title: 'Analysez', desc: '13 moteurs en parallèle', icon: Brain, color: '#F97316' },
+            { step: '03', title: 'Optimisez', desc: 'Prompts & modèles assignés', icon: Cpu, color: '#06B6D4' },
+            { step: '04', title: 'Générez', desc: 'Vidéos par plan', icon: Film, color: '#06B6D4' },
+          ].map((s, i) => (
+            <div key={s.step} className="card p-5 text-center relative group hover:border-dark-600 transition-all">
+              <div className="w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: `${s.color}15` }}>
+                <s.icon size={20} style={{ color: s.color }} />
+              </div>
+              <div className="text-[10px] font-bold tracking-widest mb-1" style={{ color: s.color }}>{s.step}</div>
               <h3 className="text-sm font-bold text-slate-100 mb-1">{s.title}</h3>
               <p className="text-xs text-slate-500">{s.desc}</p>
+              {i < 3 && (
+                <div className="hidden md:block absolute -right-2 top-1/2 -translate-y-1/2 z-10">
+                  <ArrowRight size={14} className="text-dark-600" />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* STORYBOARD PREVIEW */}
+      <section className="px-6 py-12 max-w-5xl mx-auto">
+        <h2 className="font-display text-2xl text-slate-50 text-center mb-3" style={{ fontWeight: 400 }}>Storyboard intelligent</h2>
+        <p className="text-sm text-slate-400 text-center mb-8 max-w-xl mx-auto">
+          Chaque plan est analysé : cadrage, mouvement caméra, modèle IA optimal, durée et coût estimés
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { shot: 'plan large', move: 'pan right', model: 'Kling', color: '#3B82F6', label: 'SC1 — P1', dur: '4.2s' },
+            { shot: 'gros plan', move: 'static', model: 'Runway', color: '#8B5CF6', label: 'SC1 — P2', dur: '3.1s' },
+            { shot: 'insert', move: 'dolly in', model: 'Hailuo', color: '#D946EF', label: 'SC1 — P3', dur: '2.8s' },
+            { shot: 'plan moyen', move: 'tracking', model: 'Veo', color: '#10B981', label: 'SC2 — P1', dur: '5.0s' },
+          ].map((p, i) => (
+            <div key={i} className="card overflow-hidden group hover:border-dark-600 transition-all">
+              <div className="relative">
+                <svg width="280" height="120" viewBox="0 0 280 120" className="w-full">
+                  <rect width="280" height="120" fill="#0C0F1A" />
+                  <line x1="93" y1="0" x2="93" y2="120" stroke="#252B3B" strokeWidth="0.5" opacity="0.4"/>
+                  <line x1="187" y1="0" x2="187" y2="120" stroke="#252B3B" strokeWidth="0.5" opacity="0.4"/>
+                  <line x1="0" y1="40" x2="280" y2="40" stroke="#252B3B" strokeWidth="0.5" opacity="0.4"/>
+                  <line x1="0" y1="80" x2="280" y2="80" stroke="#252B3B" strokeWidth="0.5" opacity="0.4"/>
+                  {p.shot === 'plan large' && <>
+                    <ellipse cx="140" cy="72" rx="17" ry="14" fill="none" stroke={p.color} strokeWidth="1.5" opacity="0.7"/>
+                    <circle cx="140" cy="38" r="7" fill="none" stroke={p.color} strokeWidth="1.5" opacity="0.7"/>
+                    <line x1="140" y1="58" x2="140" y2="45" stroke={p.color} strokeWidth="1" opacity="0.5"/>
+                  </>}
+                  {p.shot === 'gros plan' && <>
+                    <circle cx="140" cy="54" r="36" fill="none" stroke={p.color} strokeWidth="2" opacity="0.8"/>
+                    <ellipse cx="128" cy="48" rx="5" ry="3" fill={p.color} opacity="0.4"/>
+                    <ellipse cx="152" cy="48" rx="5" ry="3" fill={p.color} opacity="0.4"/>
+                  </>}
+                  {p.shot === 'insert' && <>
+                    <rect x="90" y="36" width="100" height="48" rx="3" fill="none" stroke={p.color} strokeWidth="1.5" opacity="0.7"/>
+                    <line x1="100" y1="84" x2="180" y2="36" stroke={p.color} strokeWidth="0.8" opacity="0.3"/>
+                  </>}
+                  {p.shot === 'plan moyen' && <>
+                    <ellipse cx="140" cy="66" rx="28" ry="22" fill="none" stroke={p.color} strokeWidth="1.5" opacity="0.7"/>
+                    <circle cx="140" cy="19" r="13" fill="none" stroke={p.color} strokeWidth="1.5" opacity="0.7"/>
+                    <line x1="140" y1="44" x2="140" y2="32" stroke={p.color} strokeWidth="1.2" opacity="0.5"/>
+                  </>}
+                  {p.move === 'pan right' && <>
+                    <line x1="84" y1="60" x2="196" y2="60" stroke="#06B6D4" strokeWidth="1" opacity="0.4"/>
+                    <polygon points="196,60 188,55 188,65" fill="#06B6D4" opacity="0.4"/>
+                  </>}
+                  {p.move === 'dolly in' && <>
+                    <circle cx="140" cy="60" r="42" fill="none" stroke="#06B6D4" strokeWidth="0.8" opacity="0.2"/>
+                    <circle cx="140" cy="60" r="24" fill="none" stroke="#06B6D4" strokeWidth="1" opacity="0.3"/>
+                  </>}
+                  {p.move === 'tracking' && <>
+                    <path d="M56,60 Q112,36 140,60 Q168,84 224,60" fill="none" stroke="#06B6D4" strokeWidth="1" opacity="0.3"/>
+                    <polygon points="224,60 216,55 216,65" fill="#06B6D4" opacity="0.4"/>
+                  </>}
+                  <text x="272" y="14" textAnchor="end" fontFamily="Inter,system-ui" fontSize="8" fontWeight="600" fill={p.color} opacity="0.7">
+                    {p.shot === 'plan large' ? 'WIDE' : p.shot === 'gros plan' ? 'CLOSE' : p.shot === 'insert' ? 'INSERT' : 'MEDIUM'}
+                  </text>
+                </svg>
+                <div className="absolute bottom-0 inset-x-0 h-8 bg-gradient-to-t from-dark-900 to-transparent" />
+              </div>
+              <div className="px-3 py-2.5 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-slate-300">{p.label}</span>
+                  <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: `${p.color}15`, color: p.color }}>
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: p.color }} /> {p.model}
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-500">{p.dur}</span>
+              </div>
             </div>
           ))}
         </div>
