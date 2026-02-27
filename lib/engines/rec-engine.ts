@@ -92,46 +92,75 @@ export function recEngineV2(input: RecInput): RecResult {
 
   // ─── Bonus contextuels par modèle ───
 
-  // Veo excelle en dialogue
+  // Veo excelle en dialogue — Audio natif confirmé (Google I/O, Gemini API docs)
   if (input.hasDialogue && input.dialogueLength > 0) {
     scores['veo3.1'] = Math.min(100, scores['veo3.1'] + 15);
-    tips.push('Veo 3.1 excelle en lip-sync dialogue');
+    tips.push('Veo 3.1 — audio natif (dialogues + SFX synchronisés, source: Gemini API docs)');
   }
 
-  // Sora pour les scènes expressives
+  // Sora pour les scènes expressives — VFX leader (Arena.ai Elo ranking)
   if (input.intensity > 60 && input.emotion !== 'neutre') {
     scores['sora2'] = Math.min(100, scores['sora2'] + 10);
-    tips.push('Sora 2 pour les plans expressifs haute émotion');
+    tips.push('Sora 2 — plans expressifs haute émotion (Arena.ai top Elo)');
   }
 
-  // Seedance pour le mouvement pur
+  // Seedance architecture unifiée audio-vidéo (ByteDance Seed docs)
   if (input.camera !== 'fixe' && !input.hasDialogue) {
     scores['seedance2'] = Math.min(100, scores['seedance2'] + 12);
-    tips.push('Seedance 2 optimisé pour le mouvement pur');
+    tips.push('Seedance 2.0 — mouvement pur, architecture unifiée (source: seed.bytedance.com)');
+  }
+  // Seedance aussi pour dialogue grâce à audio natif
+  if (input.hasDialogue) {
+    scores['seedance2'] = Math.min(100, scores['seedance2'] + 8);
+    tips.push('Seedance 2.0 — génération audio-vidéo conjointe (source: seed.bytedance.com)');
   }
 
-  // Hailuo pour la cohérence longue durée
+  // Hailuo pour la cohérence longue durée — Community + Video-MME
   if (input.needsConsistency) {
     scores['hailuo2.3'] = Math.min(100, scores['hailuo2.3'] + 15);
-    tips.push('Hailuo 2.3 pour la cohérence personnage');
+    tips.push('Hailuo 2.3 — cohérence personnage longue durée (community consensus)');
   }
 
-  // Kling pour le réalisme physique
+  // Kling pour le réalisme physique — Chrono-Magic-Bench, physics benchmarks
   if (input.sceneType === 'EXT' && input.intensity < 50) {
     scores['kling3'] = Math.min(100, scores['kling3'] + 8);
-    tips.push('Kling 3.0 pour le réalisme physique extérieur');
+    tips.push('Kling 3.0 — réalisme physique extérieur (benchmarks physics)');
   }
 
   // Wan pour l'animation/caméra
   if (input.camera === 'drone' || input.camera === 'crane') {
     scores['wan2.5'] = Math.min(100, scores['wan2.5'] + 12);
-    tips.push('Wan 2.5 pour les mouvements caméra complexes');
+    tips.push('Wan 2.5 — mouvements caméra complexes (camera path API)');
   }
 
-  // Runway pour le style
+  // Runway pour le style + contrôle géométrique (Gen-4.5: I2V, keyframes, V2V)
   if (input.isFlashback) {
     scores['runway4.5'] = Math.min(100, scores['runway4.5'] + 10);
-    tips.push('Runway Gen-4.5 pour le rendu stylisé flashback');
+    tips.push('Runway Gen-4.5 — rendu stylisé flashback (modes contrôle I2V/keyframes)');
+  }
+
+  // ─── FAILURE MODE ROUTING (pénalités) ───
+  // Source: Annexe 1-B, stratégie routing par failure modes
+
+  // Dialogue sans audio natif → pénaliser les modèles sans audio
+  if (input.hasDialogue && input.dialogueLength > 0) {
+    // Seuls Sora 2, Veo 3.1 et Seedance 2.0 ont l'audio natif
+    scores['kling3'] = Math.max(0, scores['kling3'] - 8);
+    scores['wan2.5'] = Math.max(0, scores['wan2.5'] - 10);
+    scores['hailuo2.3'] = Math.max(0, scores['hailuo2.3'] - 5);
+    reasoning.push('Dialogue → pénalité modèles sans audio natif (T2VSafetyBench)');
+  }
+
+  // Mouvements caméra complexes → pénaliser modèles faibles en dynamique temporelle
+  if (input.camera === 'steadicam' || input.camera === 'crane' || input.camera === 'drone') {
+    scores['hailuo2.3'] = Math.max(0, scores['hailuo2.3'] - 6);
+    reasoning.push('Caméra complexe → pénalité modèles faibles en dynamique (T2VBench/DEVIL)');
+  }
+
+  // Longue durée → pénaliser modèles à durée limitée
+  if (input.duree > 6) {
+    scores['seedance2'] = Math.max(0, scores['seedance2'] - 5);
+    reasoning.push('Plan long → pénalité modèles durée max limitée');
   }
 
   // ─── Classement ───
