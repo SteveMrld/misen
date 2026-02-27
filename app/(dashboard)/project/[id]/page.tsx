@@ -34,8 +34,11 @@ export default function ProjectPage() {
       const data = await res.json()
       setProject(data)
       setScriptText(data.script_text || '')
-    } catch { router.push('/dashboard') }
-    finally { setLoading(false) }
+    } catch {
+      router.push('/dashboard')
+    } finally {
+      setLoading(false)
+    }
   }, [projectId, router])
 
   // Charge les versions d'analyse
@@ -45,14 +48,15 @@ export default function ProjectPage() {
       if (res.ok) {
         const data = await res.json()
         setVersions(data)
-        if (data.length > 0 && !analysis) {
+        if (data.length > 0) {
           setAnalysis(data[0].result)
         }
       }
     } catch {}
-  }, [projectId, analysis])
+  }, [projectId])
 
-  useEffect(() => { fetchProject(); fetchVersions() }, [fetchProject, fetchVersions])
+  useEffect(() => { fetchProject() }, [fetchProject])
+  useEffect(() => { fetchVersions() }, [fetchVersions])
 
   // Sauvegarde le script
   const handleSave = async () => {
