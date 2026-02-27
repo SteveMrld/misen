@@ -35,7 +35,7 @@ const ENGINES = [
   { name: 'Scene Splitter', icon: Film },
 ]
 
-export function LandingHero() {
+export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
   const router = useRouter()
   const [selectedModel, setSelectedModel] = useState(0)
   const [showModels, setShowModels] = useState(false)
@@ -44,7 +44,7 @@ export function LandingHero() {
   const model = MODELS[selectedModel]
 
   const handleGo = () => {
-    router.push('/register')
+    router.push(isLoggedIn ? '/dashboard' : '/register')
   }
 
   return (

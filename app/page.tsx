@@ -1,12 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { LandingHero } from '@/components/landing-hero'
 
 export default async function HomePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (user) redirect('/dashboard')
 
-  return <LandingHero />
+  return <LandingHero isLoggedIn={!!user} />
 }
