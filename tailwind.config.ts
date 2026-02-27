@@ -186,7 +186,7 @@ const config: Config = {
 
       // Layout
       width: {
-        'sidebar': '260px',
+        'sidebar': '200px',
         'sidebar-collapsed': '64px',
       },
 

@@ -116,7 +116,7 @@ export default function ProjectPage() {
         <h1 className="text-xl font-bold text-slate-50">{project?.name || 'Projet'}</h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {/* LEFT: Script Editor */}
         <div className="lg:col-span-3">
           <div className="bg-dark-900 border border-dark-700 rounded-xl overflow-hidden">
@@ -143,7 +143,7 @@ export default function ProjectPage() {
               onChange={(e) => setScriptText(e.target.value)}
               placeholder={`Collez votre script ici...\n\nExemple :\nINT. APPARTEMENT - JOUR\n\nMARC\nJe ne sais plus quoi faire...\n\nEXT. RUE - NUIT\nMarc marche seul sous la pluie.`}
               rows={20}
-              className="w-full px-4 py-3 bg-transparent text-slate-200 placeholder:text-slate-600 font-mono text-sm leading-relaxed focus:outline-none resize-none"
+              className="w-full px-4 py-3 bg-transparent text-slate-200 placeholder:text-slate-600 font-mono text-sm leading-relaxed focus:outline-none resize-none break-words"
               spellCheck={false}
             />
           </div>

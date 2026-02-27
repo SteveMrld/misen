@@ -25,7 +25,7 @@ export default async function DashboardLayout({
       {/* Main area — offset by sidebar width */}
       <div className="ml-sidebar">
         <Header />
-        <main className="p-6 max-w-dashboard mx-auto">
+        <main className="p-4 max-w-[1600px] mx-auto">
           {children}
         </main>
       </div>
