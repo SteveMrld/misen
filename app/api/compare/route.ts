@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AI_MODELS, MODEL_IDS, MCAP_AXES, MCAP_DEFAULT_WEIGHTS, type MCAPAxis } from '@/lib/models/ai-models'
+import { MODEL_SOURCES, getRecommendationConfidence } from '@/lib/models/model-sources'
 import type { AIModelId } from '@/types/engines'
 
 /**
@@ -105,9 +106,10 @@ export async function POST(req: NextRequest) {
       const model = AI_MODELS[modelId]
       let score = 0
       let totalWeight = 0
-      const axisScores: Array<{ axis: string; label: string; modelValue: number; weight: number; weighted: number }> = []
+      const axisScores: Array<{ axis: string; label: string; modelValue: number; weight: number; weighted: number; source?: string; confidence?: string; basis?: string }> = []
       const strengths: string[] = []
       const weaknesses: string[] = []
+      const modelSources = MODEL_SOURCES[modelId]
 
       for (const axis of MCAP_AXES) {
         const modelValue = model[axis as keyof typeof model] as number
@@ -116,12 +118,16 @@ export async function POST(req: NextRequest) {
         score += weighted
         totalWeight += weight * 10
 
+        const sourceInfo = modelSources?.scores[axis]
         axisScores.push({
           axis,
           label: axisLabels[axis] || axis,
           modelValue,
           weight: Math.round(weight * 10) / 10,
           weighted: Math.round(weighted * 10) / 10,
+          source: sourceInfo?.source || 'Estimation',
+          confidence: sourceInfo?.confidence || 'low',
+          basis: sourceInfo?.basis || 'estimated',
         })
 
         if (modelValue >= 9) strengths.push(axisLabels[axis] || axis)
@@ -183,6 +189,21 @@ export async function POST(req: NextRequest) {
       })),
       reasoning,
       planContext: { shotType, cameraMove, hasDialogue, dialogueLength, personnageCount, isFlashback, duration, needsVFX, needsConsistency, sceneType, intensity, emotion },
+      methodology: {
+        description: 'Les scores MCAP sont basés sur des specs constructeur, benchmarks communautaires et estimations. Ils ne sont pas issus de tests standardisés MISEN.',
+        legend: {
+          spec: 'Spécification officielle constructeur',
+          benchmark: 'Benchmark comparatif publié (vidéo/article)',
+          community: 'Consensus communautaire (Reddit, YouTube, forums)',
+          estimated: 'Estimation MISEN — non vérifié',
+        },
+        confidenceLevels: {
+          high: 'Source officielle ou benchmark vérifié',
+          medium: 'Consensus communautaire convergent',
+          low: 'Estimation, vérification recommandée',
+        },
+        recommendation: 'Le mode Comparaison côte à côte permettra de vérifier ces recommandations avec vos propres résultats.',
+      },
     })
   } catch (error) {
     console.error('Compare error:', error)

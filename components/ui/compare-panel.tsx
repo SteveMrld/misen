@@ -6,7 +6,7 @@ import { getModelColor } from '@/components/ui/model-badge'
 
 interface ModelResult {
   id: string; name: string; version: string; finalScore: number
-  axisScores: Array<{ axis: string; label: string; modelValue: number; weight: number; weighted: number }>
+  axisScores: Array<{ axis: string; label: string; modelValue: number; weight: number; weighted: number; source?: string; confidence?: string; basis?: string }>
   bonus: number; bonusReason: string; costPer10s: number
   speciality: string; strengths: string[]; weaknesses: string[]
 }
@@ -16,6 +16,13 @@ interface CompareResult {
   contextWeights: Array<{ axis: string; label: string; weight: number; isAdjusted: boolean }>
   reasoning: string[]
   planContext: Record<string, any>
+  methodology?: { description: string; legend: Record<string, string>; confidenceLevels: Record<string, string>; recommendation: string }
+}
+
+const CONF_COLORS: Record<string, { dot: string; label: string }> = {
+  high: { dot: 'bg-green-400', label: 'Vérifié' },
+  medium: { dot: 'bg-yellow-400', label: 'Consensus' },
+  low: { dot: 'bg-red-400', label: 'Estimé' },
 }
 
 // ═══ Main Compare Panel ═══
@@ -195,27 +202,37 @@ export function ComparePanel({ plan, onClose }: { plan: any; onClose: () => void
                               .sort((a, b) => b.weighted - a.weighted)
                               .map(ax => {
                                 const maxWeighted = Math.max(...m.axisScores.map(a => a.weighted))
+                                const conf = CONF_COLORS[ax.confidence || 'low'] || CONF_COLORS.low
                                 return (
-                                  <div key={ax.axis} className="flex items-center gap-2 text-[11px]">
-                                    <span className="w-24 text-slate-500 truncate">{ax.label}</span>
-                                    <span className={`w-6 text-right font-mono ${ax.modelValue >= 9 ? 'text-green-400' : ax.modelValue <= 5 ? 'text-red-400' : 'text-slate-400'}`}>
-                                      {ax.modelValue}
-                                    </span>
-                                    <span className="text-slate-700">×</span>
-                                    <span className={`w-6 text-right font-mono ${ax.weight > 1.5 ? 'text-cyan-400' : 'text-slate-600'}`}>
-                                      {ax.weight}
-                                    </span>
-                                    <div className="flex-1 h-2 bg-dark-700 rounded-full overflow-hidden">
-                                      <div
-                                        className="h-full rounded-full"
-                                        style={{
-                                          width: `${(ax.weighted / maxWeighted) * 100}%`,
-                                          backgroundColor: mc,
-                                          opacity: ax.modelValue >= 8 ? 0.8 : 0.4,
-                                        }}
-                                      />
+                                  <div key={ax.axis} className="group">
+                                    <div className="flex items-center gap-2 text-[11px]">
+                                      <span className="w-24 text-slate-500 truncate">{ax.label}</span>
+                                      <span className={`w-6 text-right font-mono ${ax.modelValue >= 9 ? 'text-green-400' : ax.modelValue <= 5 ? 'text-red-400' : 'text-slate-400'}`}>
+                                        {ax.modelValue}
+                                      </span>
+                                      <span className="text-slate-700">×</span>
+                                      <span className={`w-6 text-right font-mono ${ax.weight > 1.5 ? 'text-cyan-400' : 'text-slate-600'}`}>
+                                        {ax.weight}
+                                      </span>
+                                      <div className="flex-1 h-2 bg-dark-700 rounded-full overflow-hidden">
+                                        <div
+                                          className="h-full rounded-full"
+                                          style={{
+                                            width: `${(ax.weighted / maxWeighted) * 100}%`,
+                                            backgroundColor: mc,
+                                            opacity: ax.modelValue >= 8 ? 0.8 : 0.4,
+                                          }}
+                                        />
+                                      </div>
+                                      <span className="w-8 text-right font-mono text-slate-600">{ax.weighted}</span>
+                                      <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${conf.dot}`} title={`${conf.label}: ${ax.source || 'Estimation'}`} />
                                     </div>
-                                    <span className="w-8 text-right font-mono text-slate-600">{ax.weighted}</span>
+                                    {/* Source on hover */}
+                                    {ax.source && (
+                                      <div className="hidden group-hover:block ml-[100px] mt-0.5 mb-1">
+                                        <span className="text-[8px] text-slate-600 italic">{conf.label} — {ax.source}</span>
+                                      </div>
+                                    )}
                                   </div>
                                 )
                               })}
@@ -250,13 +267,24 @@ export function ComparePanel({ plan, onClose }: { plan: any; onClose: () => void
                 </div>
               )}
 
-              {/* Disclaimer */}
-              <div className="bg-dark-850/50 border border-dark-700/50 rounded-lg p-3 flex items-start gap-2">
-                <AlertTriangle size={14} className="text-yellow-500/60 flex-shrink-0 mt-0.5" />
-                <p className="text-[10px] text-slate-500 leading-relaxed">
-                  Le scoring MCAP est basé sur les spécifications constructeur et benchmarks publiés.
-                  Les résultats réels peuvent varier. Quand vous connecterez vos clés API, MISEN pourra
-                  générer le même prompt sur plusieurs modèles pour une comparaison réelle.
+              {/* Methodology & Sources */}
+              <div className="bg-dark-850/50 border border-dark-700/50 rounded-lg p-3 space-y-2">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle size={14} className="text-yellow-500/60 flex-shrink-0 mt-0.5" />
+                  <p className="text-[10px] text-slate-500 leading-relaxed">
+                    {result.methodology?.description || 'Le scoring MCAP est basé sur les spécifications constructeur et benchmarks publiés. Les résultats réels peuvent varier.'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-4 ml-5">
+                  {Object.entries(CONF_COLORS).map(([key, { dot, label }]) => (
+                    <div key={key} className="flex items-center gap-1">
+                      <div className={`w-1.5 h-1.5 rounded-full ${dot}`} />
+                      <span className="text-[9px] text-slate-600">{label}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[9px] text-slate-600 ml-5 italic">
+                  Survolez chaque axe pour voir la source du score. {result.methodology?.recommendation || ''}
                 </p>
               </div>
             </>
