@@ -116,9 +116,9 @@ export default function ProjectPage() {
         <h1 className="text-xl font-bold text-slate-50">{project?.name || 'Projet'}</h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* LEFT: Script Editor */}
-        <div>
+        <div className="lg:col-span-3">
           <div className="bg-dark-900 border border-dark-700 rounded-xl overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-dark-700">
               <span className="text-sm text-slate-300 font-medium">Script</span>
@@ -168,7 +168,7 @@ export default function ProjectPage() {
         </div>
 
         {/* RIGHT: Results */}
-        <div>
+        <div className="lg:col-span-2">
           {!analysis ? (
             <div className="bg-dark-900 border border-dark-700 rounded-xl p-12 flex flex-col items-center justify-center text-center">
               <Brain size={48} className="text-slate-700 mb-4" />
