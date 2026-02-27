@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Film, Clapperboard, Clock, MoreHorizontal, Trash2, Download, Upload, X, Loader2 } from 'lucide-react'
+import { Plus, Film, Clapperboard, Clock, MoreHorizontal, Trash2, Download, Upload, X, Loader2, Play } from 'lucide-react'
 import type { Project } from '@/types/database'
 
 const statusLabels: Record<string, { label: string; class: string }> = {
@@ -57,6 +57,24 @@ export default function DashboardPage() {
     URL.revokeObjectURL(url)
   }
 
+  const handleDemo = async () => {
+    try {
+      const res = await fetch('/api/projects', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Les deux rives — Démo MISEN' }),
+      })
+      if (res.ok) {
+        const proj = await res.json()
+        const { DEMO_SCENARIO } = await import('@/lib/data/demo-scenario')
+        await fetch(`/api/projects/${proj.id}`, {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ script_text: DEMO_SCENARIO.script }),
+        })
+        router.push(`/project/${proj.id}`)
+      }
+    } catch {}
+  }
+
   const handleImport = async () => {
     const input = document.createElement('input')
     input.type = 'file'
@@ -98,6 +116,10 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <button onClick={handleDemo} disabled={importing} className="btn-ghost btn-md text-orange-400 border-orange-500/30 hover:bg-orange-500/10">
+            <Play size={18} className="mr-2" />
+            Démo
+          </button>
           <button onClick={handleImport} disabled={importing} className="btn-ghost btn-md">
             {importing ? <Loader2 size={18} className="mr-2 animate-spin" /> : <Upload size={18} className="mr-2" />}
             Importer
