@@ -72,12 +72,11 @@ export function LandingHero() {
 
       {/* ═══ HERO ═══ */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 relative">
-        {/* Background glow */}
+        {/* Background image */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] rounded-full"
-            style={{ background: 'radial-gradient(ellipse, rgba(249,115,22,0.08) 0%, rgba(249,115,22,0.03) 40%, transparent 70%)' }} />
-          <div className="absolute bottom-1/4 left-1/3 w-[600px] h-[400px] rounded-full"
-            style={{ background: 'radial-gradient(ellipse, rgba(6,182,212,0.04) 0%, transparent 60%)' }} />
+          <img src="/images/hero_bg.png" alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" />
+          <div className="absolute inset-0 bg-gradient-to-b from-dark-950/60 via-dark-950/80 to-dark-950" />
+          <div className="absolute inset-0 bg-gradient-to-r from-dark-950/80 via-transparent to-dark-950/80" />
         </div>
 
         {/* NEW badge */}
@@ -179,6 +178,45 @@ export function LandingHero() {
           ))}
         </div>
       </div>
+
+      {/* ═══ VISUAL SHOWCASE ═══ */}
+      <section className="px-6 py-16 max-w-5xl mx-auto w-full">
+        <h2 className="font-display text-2xl text-white text-center mb-3 tracking-tight">
+          Du concept au rendu
+        </h2>
+        <p className="text-sm text-slate-500 text-center mb-8">
+          MISEN analyse votre scénario et orchestre la production visuelle
+        </p>
+        {/* Demo scene grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
+          {[
+            { src: '/images/demo_sc1_p1_fleuve.png', label: 'SC1-P1 · Plan large', model: 'Kling 3.0', color: '#3B82F6' },
+            { src: '/images/demo_sc1_p2_visage.png', label: 'SC1-P2 · Gros plan', model: 'Veo 3.1', color: '#10B981' },
+            { src: '/images/demo_sc1_p3_photo.png', label: 'SC1-P3 · Insert', model: 'Runway Gen-4.5', color: '#8B5CF6' },
+            { src: '/images/demo_sc2_p1_pont.png', label: 'SC2-P1 · Plan large', model: 'Sora 2', color: '#EC4899' },
+            { src: '/images/demo_sc2_p2_main.png', label: 'SC2-P2 · Gros plan', model: 'Kling 3.0', color: '#3B82F6' },
+            { src: '/images/demo_sc2_p3_silhouettes.png', label: 'SC2-P3 · Plan moyen', model: 'Hailuo 2.3', color: '#D946EF' },
+          ].map((scene) => (
+            <div key={scene.label} className="group relative rounded-xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all">
+              <img src={scene.src} alt={scene.label} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-3">
+                <p className="text-[11px] text-white font-medium">{scene.label}</p>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: scene.color }} />
+                  <span className="text-[9px] text-slate-400">{scene.model}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Mockups */}
+        <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+          <img src="/images/mockup_desktop.png" alt="MISEN Desktop" className="w-full md:w-[55%] rounded-xl border border-white/[0.08] shadow-2xl shadow-black/50" />
+          <img src="/images/mockup_mobile.png" alt="MISEN Mobile" className="w-40 md:w-32 rounded-2xl border border-white/[0.08] shadow-2xl shadow-black/50" />
+        </div>
+      </section>
 
       {/* ═══ MODELS SHOWCASE ═══ */}
       <section className="px-6 py-16 max-w-4xl mx-auto w-full">

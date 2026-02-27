@@ -190,6 +190,32 @@ function DemoAnalyse() {
           </div>
         ))}
       </div>
+      {/* Plan previews with real images */}
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          { src: '/images/demo_sc1_p1_fleuve.png', label: 'SC1-P1', type: 'PL · pan', model: 'Kling', color: '#3B82F6' },
+          { src: '/images/demo_sc1_p2_visage.png', label: 'SC1-P2', type: 'GP · fixe', model: 'Veo', color: '#10B981' },
+          { src: '/images/demo_sc1_p3_photo.png', label: 'SC1-P3', type: 'Insert · dolly', model: 'Runway', color: '#8B5CF6' },
+          { src: '/images/demo_sc2_p1_pont.png', label: 'SC2-P1', type: 'PL · travelling', model: 'Sora', color: '#EC4899' },
+          { src: '/images/demo_sc2_p2_main.png', label: 'SC2-P2', type: 'GP · fixe', model: 'Kling', color: '#3B82F6' },
+          { src: '/images/demo_sc2_p3_silhouettes.png', label: 'SC2-P3', type: 'PM · steadicam', model: 'Hailuo', color: '#D946EF' },
+        ].map((p) => (
+          <div key={p.label} className="relative rounded-lg overflow-hidden border border-dark-700 group">
+            <img src={p.src} alt={p.label} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            <div className="absolute top-1.5 left-1.5">
+              <span className="text-[9px] font-bold text-white bg-black/50 px-1.5 py-0.5 rounded">{p.label}</span>
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 p-2">
+              <p className="text-[9px] text-slate-300">{p.type}</p>
+              <div className="flex items-center gap-1 mt-0.5">
+                <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: p.color }} />
+                <span className="text-[8px] text-slate-500">{p.model}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
       <div className="bg-dark-900 rounded-xl border border-dark-700 p-4">
         <div className="flex items-center gap-2 mb-3">
           <TrendingUp size={16} className="text-red-400" />
@@ -290,27 +316,29 @@ function DemoCopilot() {
 
 function DemoMedia() {
   const results = [
-    { label: 'Appartement parisien', gradient: 'from-amber-900/30 to-dark-900' },
-    { label: 'Miroir portrait', gradient: 'from-blue-900/30 to-dark-900' },
-    { label: 'Rivière crépuscule', gradient: 'from-purple-900/30 to-dark-900' },
-    { label: 'Couloir hôpital', gradient: 'from-cyan-900/30 to-dark-900' },
-    { label: 'Salle de cinéma', gradient: 'from-red-900/30 to-dark-900' },
-    { label: 'Cailloux eau cercles', gradient: 'from-green-900/30 to-dark-900' },
+    { label: 'Poursuite urbaine', src: '/images/media_action.png' },
+    { label: 'Conversation intime', src: '/images/media_drama.png' },
+    { label: 'Laboratoire futuriste', src: '/images/media_scifi.png' },
+    { label: 'Artisan au travail', src: '/images/media_docu.png' },
+    { label: 'Rue pluvieuse', src: '/images/media_noir.png' },
+    { label: 'Forêt brumeuse', src: '/images/media_nature.png' },
   ]
 
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
         <div className="flex-1 h-9 px-3 bg-dark-900 border border-dark-700 rounded-lg flex items-center text-sm text-slate-500">
-          🔍 appartement parisien miroir…
+          🔍 scène action nuit urbaine…
         </div>
         <div className="px-3 py-2 bg-orange-600 text-white text-xs font-medium rounded-lg">Pexels</div>
         <div className="px-3 py-2 bg-dark-700 text-slate-300 text-xs font-medium rounded-lg">Pixabay</div>
       </div>
       <div className="grid grid-cols-3 gap-3">
         {results.map((r, i) => (
-          <div key={i} className={`aspect-video bg-gradient-to-br ${r.gradient} rounded-lg border border-dark-700 flex items-end p-2`}>
-            <span className="text-[10px] text-slate-400">{r.label}</span>
+          <div key={i} className="relative aspect-video rounded-lg border border-dark-700 overflow-hidden group">
+            <img src={r.src} alt={r.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+            <span className="absolute bottom-2 left-2 text-[10px] text-white font-medium">{r.label}</span>
           </div>
         ))}
       </div>
