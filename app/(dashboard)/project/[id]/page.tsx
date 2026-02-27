@@ -138,14 +138,13 @@ export default function ProjectPage() {
                 </button>
               </div>
             </div>
-            <div style={{ width: '100%', overflow: 'hidden' }}>
+            <div>
               <textarea
                 value={scriptText}
                 onChange={(e) => setScriptText(e.target.value)}
                 placeholder={`Collez votre script ici...\n\nExemple :\nINT. APPARTEMENT - JOUR\n\nMARC\nJe ne sais plus quoi faire...\n\nEXT. RUE - NUIT\nMarc marche seul sous la pluie.`}
                 rows={12}
-                style={{ width: '100%', boxSizing: 'border-box', overflowX: 'hidden', wordWrap: 'break-word', whiteSpace: 'pre-wrap' }}
-                className="px-4 py-3 bg-transparent text-slate-200 placeholder:text-slate-600 text-sm leading-relaxed focus:outline-none resize-none"
+                className="block w-full px-4 py-3 bg-transparent text-slate-200 placeholder:text-slate-600 text-sm leading-relaxed focus:outline-none resize-none overflow-x-hidden"
                 spellCheck={false}
               />
             </div>
