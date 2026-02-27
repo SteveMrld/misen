@@ -48,9 +48,9 @@ export default async function HomePage() {
           <Link href="/register" className="px-8 py-3 bg-orange-600 hover:bg-orange-500 text-white font-medium rounded-xl transition-colors flex items-center gap-2">
             Essayer gratuitement <ArrowRight size={18} />
           </Link>
-          <a href="#features" className="px-8 py-3 bg-dark-800 hover:bg-dark-700 text-slate-300 font-medium rounded-xl transition-colors border border-dark-700">
-            Découvrir
-          </a>
+          <Link href="/demo" className="px-8 py-3 bg-dark-800 hover:bg-dark-700 text-slate-300 font-medium rounded-xl transition-colors border border-dark-700 flex items-center gap-2">
+            <Play size={18} /> Voir la démo
+          </Link>
         </div>
       </section>
 

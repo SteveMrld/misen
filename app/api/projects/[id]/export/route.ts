@@ -1,17 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { exportProject } from '@/lib/db/projects';
+import { getProject } from '@/lib/db/projects';
+import { generateExport } from '@/lib/engines/export';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const data = await exportProject(params.id);
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
-    return new NextResponse(JSON.stringify(data, null, 2), {
+    const project = await getProject(params.id);
+    if (!project) return NextResponse.json({ error: 'Projet introuvable' }, { status: 404 });
+
+    const { data: analyses } = await supabase
+      .from('analyses')
+      .select('result')
+      .eq('project_id', params.id)
+      .order('version', { ascending: false })
+      .limit(1);
+
+    const analysis = analyses?.[0]?.result || {};
+    const format = (request.nextUrl.searchParams.get('format') || 'json') as any;
+
+    const result = generateExport({
+      projectName: project.name || 'MISEN Export',
+      scriptText: project.script_text || '',
+      analysis,
+      format,
+    });
+
+    return new NextResponse(result.content, {
       headers: {
-        'Content-Type': 'application/json',
-        'Content-Disposition': `attachment; filename="misen-${data.project.name.replace(/\s+/g, '-').toLowerCase()}-v7.json"`,
+        'Content-Type': result.mimeType,
+        'Content-Disposition': `attachment; filename="${result.filename}"`,
       },
     });
   } catch (error: any) {

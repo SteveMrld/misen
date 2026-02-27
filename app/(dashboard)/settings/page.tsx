@@ -12,6 +12,9 @@ const AI_PROVIDERS = [
   { id: 'seedance', name: 'Seedance 2.0', placeholder: 'sd-...' },
   { id: 'wan', name: 'Wan 2.5', placeholder: 'wan-...' },
   { id: 'hailuo', name: 'Hailuo 2.3', placeholder: 'hl-...' },
+  { id: 'pexels', name: 'Pexels (Banque média)', placeholder: 'Votre clé Pexels...' },
+  { id: 'pixabay', name: 'Pixabay (Banque média)', placeholder: 'Votre clé Pixabay...' },
+  { id: 'elevenlabs', name: 'ElevenLabs (Voix off)', placeholder: 'Votre clé ElevenLabs...' },
 ]
 
 const PLANS = [
