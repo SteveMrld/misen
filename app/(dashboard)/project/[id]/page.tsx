@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import {
   ArrowLeft, Play, Loader2, Save,
   Brain, AlertTriangle, ChevronDown, ChevronRight,
-  Film, Eye, DollarSign, Shield, Users, TrendingUp, Camera
+  Film, Eye, DollarSign, Shield, Users, TrendingUp, Camera, Zap
 } from 'lucide-react'
 
 export default function ProjectPage() {
@@ -212,19 +212,7 @@ function AnalysisResults({ analysis }: { analysis: any }) {
           <Section icon={Camera} title={`Plans (${plans.length})`} color="text-orange-400" startOpen={false}>
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {plans.slice(0, 20).map((plan: any, i: number) => (
-                <div key={i} className="bg-dark-800 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-slate-300 font-medium">Plan {i + 1} — Scène {(plan?.sceneIndex || 0) + 1}</span>
-                    <span className="text-xs text-orange-400">{plan?.modelId || '-'}</span>
-                  </div>
-                  <p className="text-xs text-slate-400 leading-relaxed">{plan?.finalPrompt || plan?.adaptedPrompt || plan?.basePrompt || '-'}</p>
-                  <div className="flex items-center gap-3 mt-1.5 text-[11px] text-slate-600">
-                    <span>{plan?.shotType || '-'}</span>
-                    <span>{plan?.cameraMove || '-'}</span>
-                    <span>{(plan?.estimatedDuration || 0).toFixed(1)}s</span>
-                    <span>${(plan?.estimatedCost || 0).toFixed(3)}</span>
-                  </div>
-                </div>
+                <PlanCard key={i} plan={plan} index={i} analysisId={analysis?._analysisId} />
               ))}
             </div>
           </Section>
@@ -249,6 +237,69 @@ function AnalysisResults({ analysis }: { analysis: any }) {
       </div>
     )
   }
+}
+
+function PlanCard({ plan, index, analysisId }: { plan: any; index: number; analysisId?: string }) {
+  const [generating, setGenerating] = useState(false)
+  const [genStatus, setGenStatus] = useState<'idle' | 'processing' | 'completed' | 'failed'>('idle')
+  const [genError, setGenError] = useState('')
+
+  const handleGenerate = async () => {
+    if (!analysisId) return
+    setGenerating(true)
+    setGenStatus('processing')
+    setGenError('')
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          analysisId,
+          planIndex: index,
+          sceneIndex: plan?.sceneIndex || 0,
+          modelId: plan?.modelId,
+          prompt: plan?.finalPrompt || plan?.adaptedPrompt || plan?.basePrompt || '',
+          negativePrompt: plan?.negativePrompt,
+        }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setGenStatus(data.status || 'processing')
+        if (data.error) { setGenError(data.error); setGenStatus('failed') }
+      } else {
+        setGenStatus('failed')
+        setGenError(data.error || 'Erreur')
+      }
+    } catch { setGenStatus('failed'); setGenError('Erreur réseau') }
+    finally { setGenerating(false) }
+  }
+
+  return (
+    <div className="bg-dark-800 rounded-lg p-3">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-xs text-slate-300 font-medium">Plan {index + 1} — Scène {(plan?.sceneIndex || 0) + 1}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-orange-400">{plan?.modelId || '-'}</span>
+          {genStatus === 'idle' && (
+            <button onClick={handleGenerate} disabled={generating} className="px-2 py-0.5 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-medium rounded flex items-center gap-1 transition-colors">
+              <Zap size={10} /> Générer
+            </button>
+          )}
+          {genStatus === 'processing' && <span className="text-[10px] text-yellow-400 flex items-center gap-1"><Loader2 size={10} className="animate-spin" /> En cours...</span>}
+          {genStatus === 'completed' && <span className="text-[10px] text-green-400">✓ Terminé</span>}
+          {genStatus === 'failed' && <span className="text-[10px] text-red-400" title={genError}>✗ Erreur</span>}
+        </div>
+      </div>
+      <p className="text-xs text-slate-400 leading-relaxed">{plan?.finalPrompt || plan?.adaptedPrompt || plan?.basePrompt || '-'}</p>
+      {genError && <p className="text-[10px] text-red-400 mt-1">{genError}</p>}
+      <div className="flex items-center gap-3 mt-1.5 text-[11px] text-slate-600">
+        <span>{plan?.shotType || '-'}</span>
+        <span>{plan?.cameraMove || '-'}</span>
+        <span>{(plan?.estimatedDuration || 0).toFixed(1)}s</span>
+        <span>${(plan?.estimatedCost || 0).toFixed(3)}</span>
+      </div>
+    </div>
+  )
 }
 
 function Stat({ icon: Icon, label, value }: { icon: any; label: string; value: string | number }) {
