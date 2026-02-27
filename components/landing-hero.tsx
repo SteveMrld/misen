@@ -219,19 +219,33 @@ export function LandingHero() {
       </section>
 
       {/* ═══ MODELS SHOWCASE ═══ */}
-      <section className="px-6 py-16 max-w-4xl mx-auto w-full">
+      <section className="px-6 py-16 max-w-5xl mx-auto w-full">
         <h2 className="font-display text-2xl text-white text-center mb-3 tracking-tight">
           7 modèles IA orchestrés
         </h2>
         <p className="text-sm text-slate-500 text-center mb-8">
           Chaque plan est assigné au modèle optimal selon son contenu
         </p>
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          {MODELS.map((m) => (
-            <div key={m.id} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] transition-colors group">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: m.color }} />
-              <span className="text-sm text-slate-300 group-hover:text-white transition-colors">{m.name}</span>
-              <span className="text-[10px] text-slate-600">{m.tag}</span>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { id: 'kling3', name: 'Kling 3.0', tag: 'Réalisme · Physique', color: '#3B82F6', src: '/images/model_kling.png' },
+            { id: 'runway', name: 'Runway Gen-4.5', tag: 'Style · Contrôle', color: '#8B5CF6', src: '/images/model_runway.png' },
+            { id: 'sora', name: 'Sora 2', tag: 'VFX · Émotion', color: '#EC4899', src: '/images/model_sora.png' },
+            { id: 'veo', name: 'Veo 3.1', tag: 'Dialogue · Audio', color: '#10B981', src: '/images/model_veo.png' },
+            { id: 'seedance', name: 'Seedance 2.0', tag: 'Mouvement · Multimodal', color: '#14B8A6', src: '/images/model_seedance.png' },
+            { id: 'wan', name: 'Wan 2.5', tag: 'Animation · Caméra', color: '#6366F1', src: '/images/model_wan.png' },
+            { id: 'hailuo', name: 'Hailuo 2.3', tag: 'Cohérence personnage', color: '#D946EF', src: '/images/model_hailuo.png' },
+          ].map((m) => (
+            <div key={m.id} className="group relative rounded-xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all">
+              <img src={m.src} alt={m.name} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-3">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: m.color }} />
+                  <span className="text-xs font-medium text-white">{m.name}</span>
+                </div>
+                <p className="text-[10px] text-slate-400">{m.tag}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -261,19 +275,21 @@ export function LandingHero() {
       {/* ═══ HOW IT WORKS ═══ */}
       <section className="px-6 py-16 max-w-4xl mx-auto w-full">
         <h2 className="font-display text-2xl text-white text-center mb-10 tracking-tight">Comment ça marche</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[
-            { step: '01', title: 'Collez', desc: 'Votre scénario, traitement, séquencier...', icon: Terminal, color: '#F97316' },
-            { step: '02', title: 'Analysez', desc: '13 moteurs en parallèle décomposent chaque plan', icon: Brain, color: '#F97316' },
-            { step: '03', title: 'Générez', desc: 'Prompts optimisés, modèle assigné, coût estimé', icon: Zap, color: '#06B6D4' },
+            { step: '01', title: 'Collez', desc: 'Votre scénario, traitement, séquencier...', src: '/images/step_script.png', color: '#F97316' },
+            { step: '02', title: 'Analysez', desc: '13 moteurs décomposent chaque plan', src: '/images/step_analysis.png', color: '#F97316' },
+            { step: '03', title: 'Storyboard', desc: 'Plans visuels avec caméra et cadrage', src: '/images/step_storyboard.png', color: '#06B6D4' },
+            { step: '04', title: 'Générez', desc: 'Prompts optimisés, modèle assigné', src: '/images/step_render.png', color: '#06B6D4' },
           ].map((s) => (
-            <div key={s.step} className="text-center group">
-              <div className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center transition-colors" style={{ backgroundColor: `${s.color}10` }}>
-                <s.icon size={22} style={{ color: s.color }} />
+            <div key={s.step} className="group">
+              <div className="relative rounded-xl overflow-hidden mb-3 border border-white/[0.06]">
+                <img src={s.src} alt={s.title} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute top-2 left-2 text-[10px] font-bold tracking-widest px-2 py-0.5 rounded" style={{ color: s.color, backgroundColor: `${s.color}15` }}>{s.step}</div>
               </div>
-              <div className="text-[10px] font-bold tracking-widest mb-2" style={{ color: s.color }}>{s.step}</div>
-              <h3 className="text-base font-semibold text-white mb-1">{s.title}</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">{s.desc}</p>
+              <h3 className="text-sm font-semibold text-white mb-0.5">{s.title}</h3>
+              <p className="text-[11px] text-slate-500 leading-relaxed">{s.desc}</p>
             </div>
           ))}
         </div>

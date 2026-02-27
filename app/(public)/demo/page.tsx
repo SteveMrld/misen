@@ -174,8 +174,8 @@ function DemoScript() {
 
 function DemoAnalyse() {
   const stats = [
-    { icon: Film, label: 'Scènes', value: '6' },
-    { icon: Eye, label: 'Plans', value: '13' },
+    { icon: Film, label: 'Scènes', value: '8' },
+    { icon: Eye, label: 'Plans', value: '17' },
     { icon: Users, label: 'Personnages', value: '4' },
     { icon: DollarSign, label: 'Coût estimé', value: '$2.45' },
   ]
@@ -199,6 +199,10 @@ function DemoAnalyse() {
           { src: '/images/demo_sc2_p1_pont.png', label: 'SC2-P1', type: 'PL · travelling', model: 'Sora', color: '#EC4899' },
           { src: '/images/demo_sc2_p2_main.png', label: 'SC2-P2', type: 'GP · fixe', model: 'Kling', color: '#3B82F6' },
           { src: '/images/demo_sc2_p3_silhouettes.png', label: 'SC2-P3', type: 'PM · steadicam', model: 'Hailuo', color: '#D946EF' },
+          { src: '/images/demo_sc3_p1_hopital.png', label: 'SC3-P1', type: 'PM · travelling', model: 'Runway', color: '#8B5CF6' },
+          { src: '/images/demo_sc3_p2_fenetre.png', label: 'SC3-P2', type: 'GP · fixe', model: 'Veo', color: '#10B981' },
+          { src: '/images/demo_sc4_p1_retrouvailles.png', label: 'SC4-P1', type: 'PL · crane', model: 'Kling', color: '#3B82F6' },
+          { src: '/images/demo_sc4_p2_caillou.png', label: 'SC4-P2', type: 'Insert · fixe', model: 'Seedance', color: '#14B8A6' },
         ].map((p) => (
           <div key={p.label} className="relative rounded-lg overflow-hidden border border-dark-700 group">
             <img src={p.src} alt={p.label} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300" />

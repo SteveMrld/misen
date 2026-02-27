@@ -184,23 +184,11 @@ export default function DashboardPage() {
 }
 
 function EmptyState({ onNew }: { onNew: () => void }) {
-  const svg = `<svg width="180" height="120" viewBox="0 0 180 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="40" y="30" width="100" height="65" rx="6" fill="#111827" stroke="#252B3B" stroke-width="1.5"/>
-    <rect x="40" y="30" width="100" height="16" rx="6" fill="#1A1F2E"/>
-    <rect x="40" y="41" width="100" height="5" fill="#1A1F2E"/>
-    <rect x="45" y="32" width="7" height="12" rx="1" fill="#F97316" opacity="0.6" transform="rotate(-15 49 38)"/>
-    <rect x="56" y="32" width="7" height="12" rx="1" fill="#252B3B" transform="rotate(-15 60 38)"/>
-    <rect x="67" y="32" width="7" height="12" rx="1" fill="#F97316" opacity="0.6" transform="rotate(-15 71 38)"/>
-    <circle cx="90" cy="72" r="12" fill="none" stroke="#F97316" stroke-width="1.5" opacity="0.7"/>
-    <polygon points="87,66 87,78 97,72" fill="#F97316" opacity="0.7"/>
-    <circle cx="148" cy="28" r="2.5" fill="#F97316" opacity="0.4"/>
-    <circle cx="30" cy="50" r="2" fill="#06B6D4" opacity="0.3"/>
-    <circle cx="155" cy="80" r="1.5" fill="#FBBF24" opacity="0.3"/>
-  </svg>`
-
   return (
     <div className="flex flex-col items-center justify-center py-20">
-      <div className="mb-6" dangerouslySetInnerHTML={{ __html: svg }} />
+      <div className="mb-6 w-48 h-48 rounded-2xl overflow-hidden opacity-70">
+        <img src="/images/empty_projects.png" alt="" className="w-full h-full object-cover" />
+      </div>
       <h3 className="text-xl font-display text-slate-200 mb-2">Créez votre premier projet</h3>
       <p className="text-sm text-slate-400 text-center max-w-md mb-8">
         Importez un scénario et laissez MISEN orchestrer votre production
