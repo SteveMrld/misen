@@ -1,15 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import {
   ArrowLeft, Play, Loader2, Save, Brain, AlertTriangle, ChevronDown, ChevronRight,
   Film, Eye, DollarSign, Shield, Users, TrendingUp, Camera, Zap, Copy, Check,
   Subtitles, Mic, Clock, Download, Volume2, Pause, SkipForward, SkipBack,
-  Sparkles, Image, Search, RefreshCw, Wand2, SlidersHorizontal
+  Sparkles, Image, Search, RefreshCw, Wand2, SlidersHorizontal, Keyboard
 } from 'lucide-react'
 import { StoryboardSVG } from '@/components/ui/storyboard-svg'
 import { ModelBadge, getModelColor, ModelLegend } from '@/components/ui/model-badge'
+import { CompareButton } from '@/components/ui/compare-panel'
+import { useKeyboardShortcuts, ShortcutOverlay } from '@/components/ui/keyboard-shortcuts'
 
 type Mode = 'simple' | 'expert'
 type Tab = 'script' | 'analyse' | 'timeline' | 'copilot' | 'media' | 'subtitles' | 'voiceover'
@@ -31,6 +33,10 @@ export default function ProjectPage() {
   const [error, setError] = useState('')
   const [mode, setMode] = useState<Mode>('simple')
   const [tab, setTab] = useState<Tab>('script')
+  const [showShortcuts, setShowShortcuts] = useState(false)
+
+  // Keyboard shortcuts — defined after handlers
+  const tabKeys: Tab[] = ['script', 'analyse', 'timeline', 'copilot', 'media', 'subtitles', 'voiceover']
 
   useEffect(() => {
     if (!projectId) return
@@ -75,6 +81,15 @@ export default function ProjectPage() {
     } catch {}
   }
 
+  useKeyboardShortcuts([
+    { key: '?', label: 'Raccourcis', action: () => setShowShortcuts(s => !s) },
+    { key: 'Escape', label: 'Fermer', action: () => showShortcuts ? setShowShortcuts(false) : router.push('/dashboard') },
+    { key: 'e', label: 'Mode', action: () => setMode(m => m === 'simple' ? 'expert' : 'simple') },
+    { key: 's', ctrl: true, label: 'Sauver', action: handleSave },
+    { key: 'Enter', ctrl: true, label: 'Analyser', action: handleAnalyze },
+    ...tabKeys.map((t, i) => ({ key: String(i + 1), label: t, action: () => { setMode('expert'); setTab(t) } })),
+  ])
+
   if (loading) return <div className="flex items-center justify-center py-24"><Loader2 size={32} className="text-orange-500 animate-spin" /></div>
 
   const tabs: { id: Tab; label: string; icon: any; disabled?: boolean }[] = [
@@ -89,6 +104,7 @@ export default function ProjectPage() {
 
   return (
     <div>
+      <ShortcutOverlay show={showShortcuts} onClose={() => setShowShortcuts(false)} />
       {/* HEADER */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
@@ -228,6 +244,7 @@ function SPC({ plan, index, analysisId }: { plan: any; index: number; analysisId
           <div className="flex items-center gap-2 mb-1">
             <span className="text-[10px] text-slate-500">{plan?.shotType}</span>
             {plan?.cameraMove && plan.cameraMove !== 'fixe' && <span className="text-[10px] text-cyan-400/60">{plan.cameraMove}</span>}
+            <CompareButton plan={plan} />
           </div>
           <p className="text-[11px] text-slate-400 leading-relaxed font-mono line-clamp-2">{prompt || '—'}</p>
         </div>
@@ -544,6 +561,7 @@ function PC({ plan, index, analysisId }: { plan: any; index: number; analysisId?
           {plan?.cameraMove && plan.cameraMove !== 'fixe' && <span className="text-cyan-400/60">{plan.cameraMove}</span>}
           <span className="text-slate-600">{(plan?.estimatedDuration||0).toFixed(1)}s</span>
           <span className="text-slate-600">${(plan?.estimatedCost||0).toFixed(3)}</span>
+          <CompareButton plan={plan} />
         </div>
         <p className="text-[11px] text-slate-400 leading-relaxed font-mono line-clamp-2">{prompt||'—'}</p>
       </div>
