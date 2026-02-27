@@ -116,9 +116,9 @@ export default function ProjectPage() {
         <h1 className="text-xl font-bold text-slate-50">{project?.name || 'Projet'}</h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {/* LEFT: Script Editor */}
-        <div className="lg:col-span-3">
+      <div className="space-y-6">
+        {/* Script Editor */}
+        <div>
           <div className="bg-dark-900 border border-dark-700 rounded-xl overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-dark-700">
               <span className="text-sm text-slate-300 font-medium">Script</span>
@@ -142,7 +142,7 @@ export default function ProjectPage() {
               value={scriptText}
               onChange={(e) => setScriptText(e.target.value)}
               placeholder={`Collez votre script ici...\n\nExemple :\nINT. APPARTEMENT - JOUR\n\nMARC\nJe ne sais plus quoi faire...\n\nEXT. RUE - NUIT\nMarc marche seul sous la pluie.`}
-              rows={20}
+              rows={12}
               className="w-full px-4 py-3 bg-transparent text-slate-200 placeholder:text-slate-600 font-mono text-sm leading-relaxed focus:outline-none resize-none break-words"
               spellCheck={false}
             />
@@ -167,8 +167,8 @@ export default function ProjectPage() {
           </button>
         </div>
 
-        {/* RIGHT: Results */}
-        <div className="lg:col-span-2">
+        {/* Results */}
+        <div>
           {!analysis ? (
             <div className="bg-dark-900 border border-dark-700 rounded-xl p-12 flex flex-col items-center justify-center text-center">
               <Brain size={48} className="text-slate-700 mb-4" />
