@@ -8,14 +8,11 @@ import {
   Subtitles, Mic, Clock, Download, Volume2, Pause, SkipForward, SkipBack,
   Sparkles, Image, Search, RefreshCw, Wand2, SlidersHorizontal
 } from 'lucide-react'
+import { StoryboardSVG } from '@/components/ui/storyboard-svg'
+import { ModelBadge, getModelColor, ModelLegend } from '@/components/ui/model-badge'
 
 type Mode = 'simple' | 'expert'
 type Tab = 'script' | 'analyse' | 'timeline' | 'copilot' | 'media' | 'subtitles' | 'voiceover'
-
-const MC: Record<string, string> = {
-  kling: '#3B82F6', runway: '#8B5CF6', sora: '#EC4899',
-  veo: '#10B981', seedance: '#14B8A6', wan: '#6366F1', hailuo: '#D946EF',
-}
 
 function fmt(s: number) { return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` }
 
@@ -198,30 +195,43 @@ function SPC({ plan, index, analysisId }: { plan: any; index: number; analysisId
   const [status, setStatus] = useState<string>('idle')
   const prompt = plan?.finalPrompt || plan?.basePrompt || ''
   const mid = (plan?.modelId || 'kling').toLowerCase()
-  const mc = MC[mid] || '#E07840'
+  const mc = getModelColor(mid)
   const copy = () => { navigator.clipboard.writeText(prompt).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) }).catch(() => {}) }
   const gen = async () => {
     if (!analysisId) return; setStatus('processing')
     try { const r = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ analysisId, planIndex: index, sceneIndex: plan?.sceneIndex||0, modelId: plan?.modelId, prompt, negativePrompt: plan?.negativePrompt }) }); setStatus(r.ok ? 'completed' : 'failed') } catch { setStatus('failed') }
   }
   return (
-    <div className="px-4 py-3 hover:bg-white/[0.02]">
-      <div className="flex items-center justify-between mb-1.5">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-slate-300">P{index+1}</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ backgroundColor: `${mc}20`, color: mc }}>{plan?.modelId||'kling'}</span>
-          <span className="text-[10px] text-slate-500">{plan?.shotType} · {(plan?.estimatedDuration||0).toFixed(1)}s</span>
+    <div className="card overflow-hidden group hover:border-dark-600 transition-all">
+      <div className="flex gap-3 p-3">
+        {/* SVG Storyboard Preview */}
+        <div className="flex-shrink-0">
+          <StoryboardSVG shotType={plan?.shotType} cameraMove={plan?.cameraMove} width={160} height={90} modelColor={mc} />
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] text-slate-600">${(plan?.estimatedCost||0).toFixed(3)}</span>
-          <button onClick={copy} className="p-1 rounded hover:bg-white/5">{copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} className="text-slate-500" />}</button>
-          {status === 'idle' && <button onClick={gen} className="px-2 py-0.5 bg-orange-600/80 hover:bg-orange-500 text-white text-[10px] rounded flex items-center gap-0.5"><Zap size={9} /> Go</button>}
-          {status === 'processing' && <Loader2 size={12} className="text-yellow-400 animate-spin" />}
-          {status === 'completed' && <Check size={12} className="text-green-400" />}
-          {status === 'failed' && <AlertTriangle size={12} className="text-red-400" />}
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-300">P{index+1}</span>
+              <ModelBadge modelId={mid} size="xs" />
+              <span className="text-[10px] text-slate-500">{(plan?.estimatedDuration||0).toFixed(1)}s</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] text-slate-600">${(plan?.estimatedCost||0).toFixed(3)}</span>
+              <button onClick={copy} className="p-1 rounded hover:bg-white/5">{copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} className="text-slate-500" />}</button>
+              {status === 'idle' && <button onClick={gen} className="px-2 py-0.5 bg-orange-600/80 hover:bg-orange-500 text-white text-[10px] rounded flex items-center gap-0.5"><Zap size={9} /> Go</button>}
+              {status === 'processing' && <Loader2 size={12} className="text-yellow-400 animate-spin" />}
+              {status === 'completed' && <Check size={12} className="text-green-400" />}
+              {status === 'failed' && <AlertTriangle size={12} className="text-red-400" />}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] text-slate-500">{plan?.shotType}</span>
+            {plan?.cameraMove && plan.cameraMove !== 'fixe' && <span className="text-[10px] text-cyan-400/60">{plan.cameraMove}</span>}
+          </div>
+          <p className="text-[11px] text-slate-400 leading-relaxed font-mono line-clamp-2">{prompt || '—'}</p>
         </div>
       </div>
-      <p className="text-xs text-slate-400 leading-relaxed font-mono">{prompt || '—'}</p>
     </div>
   )
 }
@@ -293,9 +303,9 @@ function TL({ analysis }: { analysis: any }) {
   const [playing, setPlaying] = useState(false); const [ph, setPh] = useState(0)
   const plans = analysis?.plans || []; const scenes = analysis?.scenes || []
   const total = plans.reduce((s:number,p:any)=>s+(p?.estimatedDuration||3),0)||1
-  const cols = ['#f97316','#22d3ee','#a78bfa','#34d399','#f472b6','#fbbf24','#60a5fa']
   useEffect(() => { if(!playing)return; const id=setInterval(()=>{setPh(p=>{if(p>=total){setPlaying(false);return 0};return p+0.1})},100); return()=>clearInterval(id) }, [playing, total])
   return (<div className="space-y-4">
+    {/* Transport controls */}
     <div className="flex items-center gap-3 bg-dark-900 rounded-xl border border-dark-700 px-4 py-3">
       <button onClick={()=>setPh(0)} className="p-1.5 rounded hover:bg-white/5"><SkipBack size={16} className="text-slate-400" /></button>
       <button onClick={()=>setPlaying(!playing)} className="p-2 rounded-full bg-orange-600 hover:bg-orange-500">{playing ? <Pause size={16} className="text-white" /> : <Play size={16} className="text-white" />}</button>
@@ -306,11 +316,42 @@ function TL({ analysis }: { analysis: any }) {
       </div>
       <span className="text-sm text-slate-500 font-mono">{fmt(total)}</span>
     </div>
+    {/* Model legend */}
+    <ModelLegend className="px-1" />
+    {/* Tracks */}
     <div className="bg-dark-900 rounded-xl border border-dark-700 p-4 overflow-x-auto">
-      <div className="relative min-h-[80px]">
-        <div className="flex h-8 mb-1 rounded overflow-hidden">{scenes.map((s:any,i:number)=>{const sp=plans.filter((p:any)=>(p?.sceneIndex||0)===i);const d=sp.reduce((sum:number,p:any)=>sum+(p?.estimatedDuration||3),0)||1;return<div key={i} className="flex items-center justify-center text-[9px] text-white font-medium border-r border-dark-700/50 px-1" style={{width:`${(d/total)*100}%`,backgroundColor:cols[i%cols.length]+'60'}}>S{i+1}</div>})}</div>
-        <div className="flex h-10 rounded overflow-hidden">{plans.map((p:any,i:number)=>{const d=p?.estimatedDuration||3;const mc=MC[(p?.modelId||'').toLowerCase()]||'#E07840';return<div key={i} className="flex flex-col items-center justify-center border-r border-dark-700/30 px-0.5" style={{width:`${(d/total)*100}%`,backgroundColor:`${mc}15`}} title={p?.finalPrompt||''}><span className="text-[7px] font-bold" style={{color:mc}}>P{i+1}</span><span className="text-[6px] text-slate-500">{p?.shotType}</span></div>})}</div>
-        <div className="absolute top-0 bottom-0 w-0.5 bg-orange-500 pointer-events-none z-10" style={{left:`${(ph/total)*100}%`}}><div className="w-2 h-2 bg-orange-500 rounded-full -ml-[3px] -mt-1" /></div>
+      <div className="relative" style={{ minWidth: Math.max(plans.length * 120, 600) }}>
+        {/* Scene track */}
+        <div className="flex h-7 mb-2 rounded overflow-hidden">
+          {scenes.map((s:any,i:number)=>{
+            const sp=plans.filter((p:any)=>(p?.sceneIndex||0)===i)
+            const d=sp.reduce((sum:number,p:any)=>sum+(p?.estimatedDuration||3),0)||1
+            return <div key={i} className="flex items-center justify-center text-[10px] text-slate-300 font-medium border-r border-dark-700/50" style={{width:`${(d/total)*100}%`, backgroundColor:'rgba(249,115,22,0.08)'}}>
+              <Film size={10} className="text-orange-400/60 mr-1" />S{i+1}
+            </div>
+          })}
+        </div>
+        {/* Plan track with storyboard thumbnails */}
+        <div className="flex gap-1 min-h-[72px]">
+          {plans.map((p:any,i:number)=>{
+            const d=p?.estimatedDuration||3
+            const mc=getModelColor((p?.modelId||'').toLowerCase())
+            return <div key={i} className="flex-shrink-0 rounded-lg overflow-hidden border border-dark-700/50 hover:border-dark-600 transition-all cursor-pointer group relative" style={{width:`${Math.max((d/total)*100,5)}%`, minWidth: 80}}>
+              <StoryboardSVG shotType={p?.shotType} cameraMove={p?.cameraMove} width={120} height={68} modelColor={mc} />
+              {/* Overlay info */}
+              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-dark-950/90 to-transparent px-1.5 py-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[8px] font-bold text-slate-300">P{i+1}</span>
+                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: mc }} />
+                </div>
+              </div>
+            </div>
+          })}
+        </div>
+        {/* Playhead */}
+        <div className="absolute top-0 bottom-0 w-0.5 bg-orange-500 pointer-events-none z-10" style={{left:`${(ph/total)*100}%`}}>
+          <div className="w-2.5 h-2.5 bg-orange-500 rounded-full -ml-[4px] -mt-1" />
+        </div>
       </div>
     </div>
   </div>)
@@ -389,20 +430,38 @@ function Sec({ icon: I, title, color, children, open: so = true }: { icon: any; 
 }
 function PC({ plan, index, analysisId }: { plan: any; index: number; analysisId?: string | null }) {
   const [status, setStatus] = useState<string>('idle'); const [copied, setCopied] = useState(false)
-  const prompt = plan?.finalPrompt || plan?.basePrompt || ''; const mid=(plan?.modelId||'kling').toLowerCase(); const mc=MC[mid]||'#E07840'
+  const prompt = plan?.finalPrompt || plan?.basePrompt || ''; const mid=(plan?.modelId||'kling').toLowerCase(); const mc=getModelColor(mid)
   const gen = async () => { if(!analysisId)return;setStatus('processing'); try{const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({analysisId,planIndex:index,sceneIndex:plan?.sceneIndex||0,modelId:plan?.modelId,prompt,negativePrompt:plan?.negativePrompt})});setStatus(r.ok?'completed':'failed')}catch{setStatus('failed')} }
-  return (<div className="bg-dark-800 rounded-lg p-3">
-    <div className="flex items-center justify-between mb-1">
-      <div className="flex items-center gap-2"><span className="text-xs text-slate-300 font-medium">Plan {index+1} — S{(plan?.sceneIndex||0)+1}</span><span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{backgroundColor:`${mc}20`,color:mc}}>{plan?.modelId}</span></div>
-      <div className="flex items-center gap-1.5">
-        <button onClick={()=>{navigator.clipboard.writeText(prompt);setCopied(true);setTimeout(()=>setCopied(false),2000)}} className="p-1 rounded hover:bg-white/5">{copied?<Check size={11} className="text-green-400" />:<Copy size={11} className="text-slate-500" />}</button>
-        {status==='idle'&&<button onClick={gen} className="px-2 py-0.5 bg-orange-600 hover:bg-orange-500 text-white text-[10px] rounded flex items-center gap-1"><Zap size={10} /> Générer</button>}
-        {status==='processing'&&<Loader2 size={12} className="text-yellow-400 animate-spin" />}
-        {status==='completed'&&<Check size={12} className="text-green-400" />}
-        {status==='failed'&&<AlertTriangle size={12} className="text-red-400" />}
+  return (<div className="card overflow-hidden hover:border-dark-600 transition-all">
+    <div className="flex gap-3">
+      {/* SVG Preview */}
+      <div className="flex-shrink-0">
+        <StoryboardSVG shotType={plan?.shotType} cameraMove={plan?.cameraMove} width={180} height={101} modelColor={mc} />
+      </div>
+      {/* Content */}
+      <div className="flex-1 min-w-0 py-2 pr-3">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-300 font-bold">P{index+1}</span>
+            <span className="text-[10px] text-slate-500">S{(plan?.sceneIndex||0)+1}</span>
+            <ModelBadge modelId={mid} size="xs" />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button onClick={()=>{navigator.clipboard.writeText(prompt);setCopied(true);setTimeout(()=>setCopied(false),2000)}} className="p-1 rounded hover:bg-white/5">{copied?<Check size={11} className="text-green-400" />:<Copy size={11} className="text-slate-500" />}</button>
+            {status==='idle'&&<button onClick={gen} className="px-2 py-0.5 bg-orange-600 hover:bg-orange-500 text-white text-[10px] rounded flex items-center gap-1"><Zap size={10} /> Générer</button>}
+            {status==='processing'&&<Loader2 size={12} className="text-yellow-400 animate-spin" />}
+            {status==='completed'&&<Check size={12} className="text-green-400" />}
+            {status==='failed'&&<AlertTriangle size={12} className="text-red-400" />}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 mb-1 text-[10px]">
+          <span className="text-slate-500">{plan?.shotType}</span>
+          {plan?.cameraMove && plan.cameraMove !== 'fixe' && <span className="text-cyan-400/60">{plan.cameraMove}</span>}
+          <span className="text-slate-600">{(plan?.estimatedDuration||0).toFixed(1)}s</span>
+          <span className="text-slate-600">${(plan?.estimatedCost||0).toFixed(3)}</span>
+        </div>
+        <p className="text-[11px] text-slate-400 leading-relaxed font-mono line-clamp-2">{prompt||'—'}</p>
       </div>
     </div>
-    <p className="text-xs text-slate-400 leading-relaxed">{prompt||'—'}</p>
-    <div className="flex items-center gap-3 mt-1 text-[10px] text-slate-600"><span>{plan?.shotType}</span><span>{plan?.cameraMove}</span><span>{(plan?.estimatedDuration||0).toFixed(1)}s</span><span>${(plan?.estimatedCost||0).toFixed(3)}</span></div>
   </div>)
 }
