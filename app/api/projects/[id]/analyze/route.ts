@@ -1,21 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getProject, updateProject, saveAnalysis } from '@/lib/db/projects';
 import { runPipeline } from '@/lib/engines/pipeline';
-import { checkLimit, incrementUsage } from '@/lib/db/subscriptions';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    // Vérifie les limites du plan
-    const limit = await checkLimit('analyses');
-    if (!limit.allowed) {
-      return NextResponse.json({
-        error: `Limite atteinte : ${limit.used}/${limit.limit} analyses ce mois. Passez au plan supérieur.`
-      }, { status: 403 });
-    }
-
     const project = await getProject(params.id);
     if (!project) {
       return NextResponse.json({ error: 'Projet introuvable' }, { status: 404 });
@@ -33,9 +24,6 @@ export async function POST(
 
     // Sauvegarde l'analyse (auto-versionning)
     const analysis = await saveAnalysis(params.id, result, stylePreset);
-
-    // Incrémente le compteur d'usage
-    await incrementUsage('analyses');
 
     // Met à jour le statut du projet
     await updateProject(params.id, {
