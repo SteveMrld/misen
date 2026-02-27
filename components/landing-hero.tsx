@@ -61,12 +61,20 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
           <Link href="/demo" className="px-3 py-1.5 text-sm text-slate-400 hover:text-white transition-colors">
             Démo
           </Link>
-          <Link href="/login" className="px-3 py-1.5 text-sm text-slate-400 hover:text-white transition-colors">
-            Connexion
-          </Link>
-          <Link href="/register" className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-500 rounded-xl transition-colors">
-            Commencer
-          </Link>
+          {isLoggedIn ? (
+            <Link href="/dashboard" className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-500 rounded-xl transition-colors">
+              Mon dashboard
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" className="px-3 py-1.5 text-sm text-slate-400 hover:text-white transition-colors">
+                Connexion
+              </Link>
+              <Link href="/register" className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-500 rounded-xl transition-colors">
+                Commencer
+              </Link>
+            </>
+          )}
         </div>
       </nav>
 
@@ -157,7 +165,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
                 onClick={handleGo}
                 className="flex items-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-500 text-white text-sm font-semibold rounded-xl transition-all shadow-lg shadow-orange-600/20 hover:shadow-orange-500/30"
               >
-                <Play size={14} fill="white" /> Analyser
+                <Play size={14} fill="white" /> {isLoggedIn ? 'Dashboard' : 'Analyser'}
               </button>
             </div>
           </div>
