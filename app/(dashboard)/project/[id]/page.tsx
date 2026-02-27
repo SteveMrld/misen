@@ -401,17 +401,102 @@ function AR({ analysis, analysisId }: { analysis: any; analysisId?: string | nul
   try {
     const scenes=analysis?.scenes||[]; const plans=analysis?.plans||[]; const tension=analysis?.tension; const chars=analysis?.characterBible||[]
     const comp=analysis?.compliance||{level:'OK',score:100,flags:[]}; const cont=analysis?.continuity||{score:100,alerts:[]}; const cost=analysis?.costTotal||0
+
+    // Model distribution
+    const modelCounts: Record<string, number> = {}
+    plans.forEach((p: any) => { const m = p?.modelId || 'kling'; modelCounts[m] = (modelCounts[m] || 0) + 1 })
+    const modelEntries = Object.entries(modelCounts).sort((a, b) => b[1] - a[1])
+
     return (<div className="space-y-4">
+      {/* Stats */}
       <div className="grid grid-cols-4 gap-3">
         <St icon={Film} label="Scènes" value={scenes.length} /><St icon={Eye} label="Plans" value={plans.length} />
         <St icon={DollarSign} label="Coût" value={`$${cost.toFixed(2)}`} /><St icon={Shield} label="Continuité" value={`${cont.score}%`} />
       </div>
-      {tension?.curve?.length>0 && <Sec icon={TrendingUp} title={`Courbe de tension — Arc: ${tension.arc||'standard'} Moy: ${tension.mean?.toFixed(0)||0}`} color="text-red-400"><div className="flex items-end gap-1 h-16">{tension.curve.map((t:any,i:number)=><div key={i} className="flex-1 flex flex-col items-center gap-0.5"><div className="w-full bg-red-500/60 rounded-t" style={{height:`${Math.max((t?.tension||0)*0.6,2)}px`}} /><span className="text-[9px] text-slate-600">{i+1}</span></div>)}</div></Sec>}
+
+      {/* Model Distribution */}
+      {modelEntries.length > 0 && (
+        <div className="bg-dark-900 border border-dark-700 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Zap size={16} className="text-orange-400" />
+            <span className="text-sm text-slate-200 font-medium">Répartition modèles</span>
+          </div>
+          <div className="flex h-3 rounded-full overflow-hidden mb-3">
+            {modelEntries.map(([mid, count]) => (
+              <div key={mid} className="h-full transition-all" style={{ width: `${(count / plans.length) * 100}%`, backgroundColor: getModelColor(mid) }} title={`${mid}: ${count} plans`} />
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {modelEntries.map(([mid, count]) => (
+              <div key={mid} className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getModelColor(mid) }} />
+                <span className="text-[11px] text-slate-400">{mid}</span>
+                <span className="text-[10px] text-slate-600">({count})</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tension Curve */}
+      {tension?.curve?.length>0 && (
+        <div className="bg-dark-900 border border-dark-700 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <TrendingUp size={16} className="text-red-400" />
+              <span className="text-sm text-slate-200 font-medium">Courbe de tension</span>
+            </div>
+            <div className="flex items-center gap-3 text-[11px] text-slate-500">
+              <span>Arc: <span className="text-slate-300">{tension.arc||'standard'}</span></span>
+              <span>Moy: <span className="text-slate-300">{tension.mean?.toFixed(0)||0}</span></span>
+            </div>
+          </div>
+          <div className="relative h-20">
+            {/* Grid lines */}
+            <div className="absolute inset-0 flex flex-col justify-between">
+              {[0,1,2].map(i => <div key={i} className="border-b border-dark-700/50" />)}
+            </div>
+            {/* Bars */}
+            <div className="relative flex items-end gap-px h-full">
+              {tension.curve.map((t:any,i:number)=> {
+                const val = t?.tension || 0
+                const maxT = Math.max(...tension.curve.map((c:any) => c?.tension || 0), 1)
+                const h = Math.max((val / maxT) * 100, 4)
+                const intensity = val / maxT
+                return (
+                  <div key={i} className="flex-1 flex flex-col items-center justify-end h-full group relative">
+                    <div className="w-full rounded-t transition-all" style={{
+                      height: `${h}%`,
+                      backgroundColor: intensity > 0.7 ? 'rgba(239,68,68,0.7)' : intensity > 0.4 ? 'rgba(249,115,22,0.5)' : 'rgba(249,115,22,0.25)'
+                    }} />
+                    {/* Tooltip on hover */}
+                    <div className="absolute -top-5 bg-dark-800 px-1.5 py-0.5 rounded text-[9px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                      S{i+1}: {val.toFixed(0)}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          <div className="flex justify-between mt-1">
+            <span className="text-[9px] text-slate-600">S1</span>
+            <span className="text-[9px] text-slate-600">S{tension.curve.length}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Characters */}
       {chars.length>0 && <Sec icon={Users} title="Personnages" color="text-blue-400">{chars.map((c:any,i:number)=><div key={i} className="flex items-center gap-3 py-1.5"><span className="w-24 text-sm text-slate-200 font-medium truncate">{c?.name||'Inconnu'}</span><span className="text-xs text-slate-500 flex-1 truncate">{c?.apparence||c?.description||'apparence non décrite'}</span></div>)}</Sec>}
+
+      {/* Compliance */}
       <Sec icon={Shield} title={`Compliance — ${comp.level} (${comp.score}/100)`} color={comp.level==='OK'?'text-green-400':'text-yellow-400'}>
         {comp.flags?.length>0 ? comp.flags.map((f:any,i:number)=><div key={i} className="flex items-center gap-2 py-0.5"><span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${f?.severity==='critical'?'bg-red-600/20 text-red-300':f?.severity==='high'?'bg-red-500/20 text-red-400':'bg-yellow-500/20 text-yellow-400'}`}>{(f?.severity||'medium').toUpperCase()}</span><span className="text-xs text-slate-400">{f?.type||f?.message}</span></div>) : <p className="text-xs text-green-400">Aucun flag</p>}
       </Sec>
+
+      {/* Continuity */}
       {cont.alerts?.length>0 && <Sec icon={AlertTriangle} title={`Continuité — ${cont.score}/100`} color="text-yellow-400">{cont.alerts.map((a:any,i:number)=><div key={i} className="flex items-center gap-2 py-0.5"><span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${a?.severity==='critical'?'bg-red-600/20 text-red-300':a?.severity==='high'?'bg-red-500/20 text-red-400':'bg-yellow-500/20 text-yellow-400'}`}>{(a?.severity||'medium').toUpperCase()}</span><span className="text-xs text-slate-400">{a?.type}</span></div>)}</Sec>}
+
+      {/* Plans */}
       {plans.length>0 && <Sec icon={Camera} title={`Plans (${plans.length})`} color="text-orange-400" open={false}><div className="space-y-2 max-h-96 overflow-y-auto">{plans.slice(0,30).map((p:any,i:number)=><PC key={i} plan={p} index={i} analysisId={analysisId} />)}</div></Sec>}
     </div>)
   } catch { return <p className="text-red-400 text-sm text-center p-6">Erreur d&apos;affichage</p> }
