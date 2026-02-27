@@ -18,14 +18,16 @@ export default async function DashboardLayout({
   const userName = user.user_metadata?.name || user.email?.split('@')[0] || null
 
   return (
-    <div className="min-h-screen bg-dark-950 overflow-x-hidden">
+    <div className="min-h-screen bg-dark-950 flex">
       {/* Sidebar */}
-      <Sidebar userName={userName} />
+      <div className="flex-shrink-0">
+        <Sidebar userName={userName} />
+      </div>
 
-      {/* Main area — offset by sidebar width */}
-      <div className="ml-sidebar overflow-x-hidden">
+      {/* Main area */}
+      <div className="flex-1 min-w-0">
         <Header />
-        <main className="p-4 overflow-x-hidden">
+        <main className="p-4">
           {children}
         </main>
       </div>

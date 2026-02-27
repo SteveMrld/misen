@@ -16,18 +16,10 @@
   html {
     @apply antialiased;
     scroll-behavior: smooth;
-    overflow-x: hidden;
   }
 
   body {
     overflow-x: hidden;
-  }
-
-  textarea {
-    max-width: 100%;
-    overflow-x: hidden;
-    word-wrap: break-word;
-    white-space: pre-wrap;
   }
 
   body {

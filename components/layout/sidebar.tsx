@@ -51,7 +51,7 @@ export function Sidebar({ userName }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 h-screen bg-dark-900 border-r border-dark-700 flex flex-col z-40 transition-all duration-300',
+        'sticky left-0 top-0 h-screen bg-dark-900 border-r border-dark-700 flex flex-col z-40 transition-all duration-300',
         collapsed ? 'w-sidebar-collapsed' : 'w-sidebar'
       )}
     >
