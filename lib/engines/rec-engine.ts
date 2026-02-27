@@ -121,10 +121,26 @@ export function recEngineV2(input: RecInput): RecResult {
     tips.push('Hailuo 2.3 — cohérence personnage longue durée (community consensus)');
   }
 
-  // Kling pour le réalisme physique — Chrono-Magic-Bench, physics benchmarks
+  // Kling pour le réalisme physique + MULTI-SHOT natif (Annexe 1-C, Kuaishou 2026)
   if (input.sceneType === 'EXT' && input.intensity < 50) {
     scores['kling3'] = Math.min(100, scores['kling3'] + 8);
     tips.push('Kling 3.0 — réalisme physique extérieur (benchmarks physics)');
+  }
+  // Kling multi-shot: 6 cuts cohérents en 16s (source: Annexe 1-C)
+  if (input.duree > 8) {
+    scores['kling3'] = Math.min(100, scores['kling3'] + 10);
+    tips.push('Kling 3.0 — multi-shot natif, 4K 60fps, idéal plans longs (source: Kuaishou 2026)');
+  }
+  // Kling pour mouvement rapide (Physics → Sora/Kling)
+  if (input.intensity > 70 && input.camera !== 'fixe') {
+    scores['kling3'] = Math.min(100, scores['kling3'] + 8);
+    tips.push('Kling 3.0 — Motion Master pour mouvement rapide + physique (PhysicsBench)');
+  }
+
+  // Veo pour narratif long — ScaleLong Story Score leader (Annexe 1-C)
+  if (input.duree > 6 && input.hasDialogue) {
+    scores['veo3.1'] = Math.min(100, scores['veo3.1'] + 10);
+    tips.push('Veo 3.1 — leader narratif long, ScaleLong Story Score (source: Annexe 1-C)');
   }
 
   // Wan pour l'animation/caméra
@@ -137,6 +153,18 @@ export function recEngineV2(input: RecInput): RecResult {
   if (input.isFlashback) {
     scores['runway4.5'] = Math.min(100, scores['runway4.5'] + 10);
     tips.push('Runway Gen-4.5 — rendu stylisé flashback (modes contrôle I2V/keyframes)');
+  }
+  // Runway pour vitesse/bas coût social (Annexe 1-C expert grid)
+  if (input.duree <= 4 && !input.needsVFX && !input.hasDialogue) {
+    scores['runway4.5'] = Math.min(100, scores['runway4.5'] + 8);
+    tips.push('Runway Gen-4.5 — vitesse/bas coût optimal pour contenu court (TTFT/Throughput)');
+  }
+
+  // Multi-personnages → Seedance/Veo (Annexe 1-C: cohérence)
+  if (input.personnageCount >= 2) {
+    scores['seedance2'] = Math.min(100, scores['seedance2'] + 8);
+    scores['veo3.1'] = Math.min(100, scores['veo3.1'] + 6);
+    tips.push('Multi-personnages → Seedance 2.0 (édition multimodale) + Veo 3.1 (cohérence narrative)');
   }
 
   // ─── FAILURE MODE ROUTING (pénalités) ───
