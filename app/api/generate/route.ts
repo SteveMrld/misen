@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { startGeneration, getGenerations } from '@/lib/services/generation';
+import { checkLimit, incrementUsage } from '@/lib/db/subscriptions';
 
 export async function POST(request: NextRequest) {
   try {
+    // Vérifie les limites du plan
+    const limit = await checkLimit('generations');
+    if (!limit.allowed) {
+      return NextResponse.json({
+        error: `Limite atteinte : ${limit.used}/${limit.limit} générations ce mois. Passez au plan supérieur.`
+      }, { status: 403 });
+    }
+
     const body = await request.json();
     const { analysisId, planIndex, sceneIndex, modelId, prompt, negativePrompt } = body;
 
@@ -18,6 +27,9 @@ export async function POST(request: NextRequest) {
       prompt,
       negativePrompt,
     });
+
+    // Incrémente le compteur
+    await incrementUsage('generations');
 
     return NextResponse.json(result);
   } catch (error: any) {
