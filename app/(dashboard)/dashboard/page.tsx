@@ -111,14 +111,14 @@ export default function DashboardPage() {
 
   return (
     <div className="animate-fade-in">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-display font-bold text-slate-50">Mes projets</h1>
           <p className="text-sm text-slate-400 mt-1">
             {projects.length} projet{projects.length > 1 ? 's' : ''}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <button onClick={handleDemo} disabled={importing} className="px-3 py-2 text-sm text-orange-400 border border-orange-500/30 hover:bg-orange-500/10 rounded-lg flex items-center gap-2 transition-colors">
             <Play size={16} /> Démo
           </button>
@@ -133,7 +133,7 @@ export default function DashboardPage() {
 
       {/* Stats row */}
       {projects.length > 0 && (
-        <div className="grid grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
           {[
             { icon: Film, label: 'Projets', value: projects.length, color: 'text-orange-400' },
             { icon: Camera, label: 'Scènes', value: projects.reduce((s, p) => s + (p.scenes_count || 0), 0), color: 'text-blue-400' },
@@ -290,8 +290,8 @@ function NewProjectModal({ onClose, onCreated }: {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-dark-900 border border-dark-700 rounded-2xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={onClose}>
+      <div className="bg-dark-900 border border-dark-700 rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 w-full sm:max-w-md max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-h4 text-slate-100">Nouveau projet</h2>
           <button onClick={onClose} className="btn-ghost p-1.5 rounded-md">

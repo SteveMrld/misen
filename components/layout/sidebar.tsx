@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
@@ -11,8 +11,8 @@ import {
   LogOut,
   ChevronsLeft,
   ChevronsRight,
-  Film,
-  Sparkles,
+  Menu,
+  X,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -40,6 +40,22 @@ export function Sidebar({ userName }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [pathname])
+
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [mobileOpen])
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -48,23 +64,23 @@ export function Sidebar({ userName }: SidebarProps) {
     router.refresh()
   }
 
-  return (
-    <aside
-      className={cn(
-        'sticky left-0 top-0 h-screen bg-dark-900 border-r border-dark-700 flex flex-col z-40 transition-all duration-300',
-        collapsed ? 'w-sidebar-collapsed' : 'w-sidebar'
-      )}
-    >
+  const sidebarContent = (isMobile: boolean) => (
+    <>
       {/* Logo */}
-      <div className="h-header flex items-center px-4 border-b border-dark-700">
-        <Logo size="sm" showText={!collapsed} />
+      <div className="h-header flex items-center justify-between px-4 border-b border-dark-700">
+        <Logo size="sm" showText={isMobile || !collapsed} />
+        {isMobile && (
+          <button onClick={() => setMobileOpen(false)} className="p-1.5 rounded-lg hover:bg-dark-800 lg:hidden">
+            <X size={20} className="text-slate-400" />
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 py-4 overflow-y-auto">
         {navigation.map((section) => (
           <div key={section.label} className="mb-4">
-            {!collapsed && (
+            {(isMobile || !collapsed) && (
               <p className="px-4 mb-2 text-overline uppercase text-slate-500 tracking-widest">
                 {section.label}
               </p>
@@ -87,7 +103,7 @@ export function Sidebar({ userName }: SidebarProps) {
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-orange-500 rounded-r" />
                   )}
                   <Icon size={20} />
-                  {!collapsed && (
+                  {(isMobile || !collapsed) && (
                     <span className="text-body-sm font-medium">{item.name}</span>
                   )}
                 </Link>
@@ -99,22 +115,23 @@ export function Sidebar({ userName }: SidebarProps) {
 
       {/* Bottom section */}
       <div className="border-t border-dark-700 p-3 space-y-1">
-        {/* User */}
-        {!collapsed && userName && (
+        {(isMobile || !collapsed) && userName && (
           <div className="px-3 py-2 mb-1">
             <p className="text-body-sm text-slate-300 font-medium truncate">{userName}</p>
             <p className="text-caption text-slate-500">Free plan</p>
           </div>
         )}
 
-        {/* Collapse toggle */}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="flex items-center gap-3 px-3 py-2 w-full rounded-lg text-slate-500 hover:bg-dark-800 hover:text-slate-300 transition-all duration-150"
-        >
-          {collapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
-          {!collapsed && <span className="text-body-sm">Réduire</span>}
-        </button>
+        {/* Collapse toggle — desktop only */}
+        {!isMobile && (
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="flex items-center gap-3 px-3 py-2 w-full rounded-lg text-slate-500 hover:bg-dark-800 hover:text-slate-300 transition-all duration-150"
+          >
+            {collapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
+            {!collapsed && <span className="text-body-sm">Réduire</span>}
+          </button>
+        )}
 
         {/* Logout */}
         <button
@@ -122,9 +139,50 @@ export function Sidebar({ userName }: SidebarProps) {
           className="flex items-center gap-3 px-3 py-2 w-full rounded-lg text-slate-500 hover:bg-dark-800 hover:text-red-400 transition-all duration-150"
         >
           <LogOut size={18} />
-          {!collapsed && <span className="text-body-sm">Déconnexion</span>}
+          {(isMobile || !collapsed) && <span className="text-body-sm">Déconnexion</span>}
         </button>
       </div>
-    </aside>
+    </>
+  )
+
+  return (
+    <>
+      {/* Mobile hamburger button */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="fixed top-3 left-3 z-50 p-2 rounded-lg bg-dark-900 border border-dark-700 lg:hidden"
+        aria-label="Ouvrir le menu"
+      >
+        <Menu size={20} className="text-slate-300" />
+      </button>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Mobile drawer */}
+      <aside
+        className={cn(
+          'fixed inset-y-0 left-0 z-50 w-[280px] bg-dark-900 border-r border-dark-700 flex flex-col transition-transform duration-300 lg:hidden',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        {sidebarContent(true)}
+      </aside>
+
+      {/* Desktop sidebar */}
+      <aside
+        className={cn(
+          'sticky left-0 top-0 h-screen bg-dark-900 border-r border-dark-700 flex-col z-40 transition-all duration-300 hidden lg:flex',
+          collapsed ? 'w-sidebar-collapsed' : 'w-sidebar'
+        )}
+      >
+        {sidebarContent(false)}
+      </aside>
+    </>
   )
 }

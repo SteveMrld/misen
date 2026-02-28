@@ -19,10 +19,8 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-dark-950 flex">
-      {/* Sidebar */}
-      <div className="flex-shrink-0">
-        <Sidebar userName={userName} />
-      </div>
+      {/* Sidebar — handles its own responsive behavior */}
+      <Sidebar userName={userName} />
 
       {/* Main area */}
       <div className="flex-1 min-w-0">

@@ -106,7 +106,7 @@ export default function ProjectPage() {
     <div>
       <ShortcutOverlay show={showShortcuts} onClose={() => setShowShortcuts(false)} />
       {/* HEADER */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div className="flex items-center gap-3">
           <button onClick={() => router.push('/dashboard')} className="p-2 rounded-lg hover:bg-white/5"><ArrowLeft size={20} className="text-slate-400" /></button>
           <div>
@@ -114,7 +114,7 @@ export default function ProjectPage() {
             {analysis && <p className="text-xs text-slate-500">{analysis.scenes?.length || 0} scènes • {analysis.plans?.length || 0} plans • ${(analysis.costTotal || 0).toFixed(2)}</p>}
           </div>
         </div>
-        <div className="flex items-center gap-2 bg-dark-900 rounded-lg p-1 border border-dark-700">
+        <div className="flex items-center gap-2 bg-dark-900 rounded-lg p-1 border border-dark-700 self-start sm:self-auto ml-12 sm:ml-0">
           <button onClick={() => setMode('simple')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${mode === 'simple' ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20' : 'text-slate-400 hover:text-slate-200'}`}>
             <Wand2 size={13} /> Simple
           </button>
@@ -128,12 +128,12 @@ export default function ProjectPage() {
       {mode === 'simple' && (
         <div className="max-w-3xl mx-auto space-y-5">
           <div className="bg-dark-900 rounded-2xl border border-dark-700 overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-dark-700">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-dark-700">
               <div className="flex items-center gap-2">
                 <Film size={16} className="text-orange-500" />
                 <span className="text-sm font-medium text-slate-200">Votre scénario</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <select value={stylePreset} onChange={(e: any) => setStylePreset(e.target.value)} className="px-2 py-1 bg-dark-800 border border-dark-600 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-orange-500/50">
                   <option value="cinematique">🎬 Cinématique</option><option value="documentaire">📹 Documentaire</option>
                   <option value="noir">🌑 Film noir</option><option value="onirique">🌙 Onirique</option>
@@ -156,7 +156,7 @@ export default function ProjectPage() {
 
           {analysis && (
             <div className="space-y-4">
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <St icon={Film} label="Scènes" value={analysis.scenes?.length || 0} /><St icon={Eye} label="Plans" value={analysis.plans?.length || 0} />
                 <St icon={DollarSign} label="Budget" value={`$${(analysis.costTotal || 0).toFixed(2)}`} /><St icon={Shield} label="Continuité" value={`${analysis.continuity?.score || 0}%`} />
               </div>
@@ -171,7 +171,7 @@ export default function ProjectPage() {
                   ))}
                 </div>
               </div>
-              <div className="flex items-center gap-3 justify-center">
+              <div className="flex items-center gap-2 sm:gap-3 justify-center flex-wrap">
                 <button onClick={() => { setMode('expert'); setTab('timeline') }} className="px-4 py-2 bg-dark-800 hover:bg-dark-700 border border-dark-600 text-slate-300 text-xs font-medium rounded-lg flex items-center gap-1.5"><Clock size={14} /> Timeline</button>
                 <button onClick={() => { setMode('expert'); setTab('copilot') }} className="px-4 py-2 bg-dark-800 hover:bg-dark-700 border border-dark-600 text-slate-300 text-xs font-medium rounded-lg flex items-center gap-1.5"><Sparkles size={14} /> Copilote IA</button>
                 <button onClick={() => { setMode('expert'); setTab('subtitles') }} className="px-4 py-2 bg-dark-800 hover:bg-dark-700 border border-dark-600 text-slate-300 text-xs font-medium rounded-lg flex items-center gap-1.5"><Subtitles size={14} /> Sous-titres</button>
@@ -184,7 +184,7 @@ export default function ProjectPage() {
       {/* MODE EXPERT */}
       {mode === 'expert' && (
         <div>
-          <div className="flex gap-1 mb-5 bg-dark-900 rounded-xl p-1.5 overflow-x-auto border border-dark-700">
+          <div className="flex gap-1 mb-5 bg-dark-900 rounded-xl p-1.5 overflow-x-auto border border-dark-700 scrollbar-hide">
             {tabs.map(t => (
               <button key={t.id} onClick={() => !t.disabled && setTab(t.id)} disabled={t.disabled}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${tab === t.id ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20' : t.disabled ? 'text-slate-700 cursor-not-allowed' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>

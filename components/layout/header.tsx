@@ -13,9 +13,9 @@ export function Header() {
   const title = pageTitles[pathname] || 'MISEN'
 
   return (
-    <header className="sticky top-0 z-30 h-header bg-dark-900 border-b border-dark-700 flex items-center justify-between px-6">
-      {/* Page title */}
-      <h2 className="text-h4 text-slate-100 font-sans">{title}</h2>
+    <header className="sticky top-0 z-30 h-header bg-dark-900 border-b border-dark-700 flex items-center justify-between px-4 lg:px-6">
+      {/* Page title — offset on mobile for hamburger */}
+      <h2 className="text-h4 text-slate-100 font-sans pl-10 lg:pl-0">{title}</h2>
 
       {/* Actions */}
       <div className="flex items-center gap-2">

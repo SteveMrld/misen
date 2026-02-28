@@ -142,7 +142,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-dark-900 rounded-lg p-1 w-fit">
+      <div className="flex gap-1 mb-6 bg-dark-900 rounded-lg p-1 w-fit overflow-x-auto scrollbar-hide">
         {[
           { id: 'profile' as const, label: 'Profil', icon: User },
           { id: 'apikeys' as const, label: 'Clés API', icon: Key },
@@ -151,7 +151,7 @@ export default function SettingsPage() {
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
               tab === t.id ? 'bg-orange-600 text-white' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
