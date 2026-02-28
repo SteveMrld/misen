@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { User, Key, Save, Loader2, Check, Trash2, Eye, EyeOff, CreditCard, Zap, Crown, Sparkles } from 'lucide-react'
+import { User, Key, Save, Loader2, Check, Trash2, Eye, EyeOff, CreditCard, Zap, Crown, Sparkles, BarChart3 } from 'lucide-react'
+import { CostsDashboard } from '@/components/ui/costs-dashboard'
 
 const AI_PROVIDERS = [
   { id: 'kling', name: 'Kling 3.0', placeholder: 'sk-kling-...' },
@@ -33,9 +35,13 @@ const PLANS = [
 ]
 
 export default function SettingsPage() {
+  const searchParams = useSearchParams()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'profile' | 'apikeys' | 'billing'>('profile')
+  const initialTab = (searchParams.get('tab') as any) || 'profile'
+  const [tab, setTab] = useState<'profile' | 'apikeys' | 'billing' | 'usage'>(
+    ['profile', 'apikeys', 'billing', 'usage'].includes(initialTab) ? initialTab : 'profile'
+  )
 
   // API Keys state
   const [keys, setKeys] = useState<Record<string, { masked: string; hasKey: boolean }>>({})
@@ -147,6 +153,7 @@ export default function SettingsPage() {
           { id: 'profile' as const, label: 'Profil', icon: User },
           { id: 'apikeys' as const, label: 'Clés API', icon: Key },
           { id: 'billing' as const, label: 'Plan & Facturation', icon: CreditCard },
+          { id: 'usage' as const, label: 'Coûts & Crédits', icon: BarChart3 },
         ].map(t => (
           <button
             key={t.id}
@@ -327,6 +334,10 @@ export default function SettingsPage() {
             </div>
           )}
         </div>
+      )}
+
+      {tab === 'usage' && (
+        <CostsDashboard />
       )}
     </div>
   )

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import emptyProjectsImg from '@/public/images/empty_projects.png'
 import { useRouter } from 'next/navigation'
-import { Plus, Film, Clapperboard, Clock, MoreHorizontal, Trash2, Download, Upload, X, Loader2, Play, Camera, Zap, TrendingUp } from 'lucide-react'
+import { Plus, Film, Clapperboard, Clock, MoreHorizontal, Trash2, Download, Upload, X, Loader2, Play, Camera, Zap, TrendingUp, DollarSign } from 'lucide-react'
 import { ModelLegend } from '@/components/ui/model-badge'
 import { StoryboardSVG } from '@/components/ui/storyboard-svg'
 import demoThumb from '@/public/images/demo_sc1_p1_fleuve.png'
@@ -148,6 +148,9 @@ export default function DashboardPage() {
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <button onClick={handleDemo} disabled={importing} className="px-3 py-2 text-sm text-orange-400 border border-orange-500/30 hover:bg-orange-500/10 rounded-lg flex items-center gap-2 transition-colors">
             <Play size={16} /> Démo
+          </button>
+          <button onClick={() => router.push('/settings?tab=usage')} className="px-3 py-2 text-sm text-slate-300 border border-dark-600 hover:bg-dark-800 rounded-lg flex items-center gap-2 transition-colors">
+            <DollarSign size={16} /> Coûts
           </button>
           <button onClick={handleImport} disabled={importing} className="px-3 py-2 text-sm text-slate-300 border border-dark-600 hover:bg-dark-800 rounded-lg flex items-center gap-2 transition-colors">
             {importing ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} Importer
