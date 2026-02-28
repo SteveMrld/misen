@@ -36,6 +36,7 @@ const TAB_ICONS: Record<string, any> = {
   media: Image,
   subtitles: Subtitles,
   generate: Zap,
+  result: Play,
 }
 
 export default function DemoPage() {
@@ -139,6 +140,7 @@ export default function DemoPage() {
         {step.step === 'media' && <DemoMedia />}
         {step.step === 'subtitles' && <DemoSubtitles />}
         {step.step === 'generate' && <DemoGenerate />}
+        {step.step === 'result' && <DemoResult />}
       </div>
 
       {/* Controls */}
@@ -467,6 +469,135 @@ function DemoGenerate() {
       <div className="bg-orange-500/5 border border-orange-500/20 rounded-xl p-4 mt-4 text-center">
         <p className="text-sm text-orange-400 font-medium">De l&apos;écriture à l&apos;écran.</p>
         <p className="text-xs text-slate-500 mt-1">13 plans × 4 modèles IA × $2.45 budget total</p>
+      </div>
+    </div>
+  )
+}
+
+function DemoResult() {
+  const [playing, setPlaying] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [currentPlan, setCurrentPlan] = useState(0)
+
+  const plans = [
+    { src: imgSc1P1.src, label: 'SC1-P1 · Plan large', sub: '', dur: 4.2 },
+    { src: imgSc1P2.src, label: 'SC1-P2 · Gros plan', sub: 'On y va aujourd\'hui. Pas vrai ?', dur: 3.1 },
+    { src: imgSc1P3.src, label: 'SC1-P3 · Insert', sub: '', dur: 2.8 },
+    { src: imgSc2P1.src, label: 'SC2-P1 · Plan large', sub: '', dur: 5.0 },
+    { src: imgSc2P2.src, label: 'SC2-P2 · Gros plan', sub: 'On se promet un truc...', dur: 3.5 },
+    { src: imgSc2P3.src, label: 'SC2-P3 · Plan moyen', sub: '', dur: 4.0 },
+    { src: imgSc3P1.src, label: 'SC3-P1 · Couloir', sub: 'Ça fait deux ans.', dur: 3.8 },
+    { src: imgSc3P2.src, label: 'SC3-P2 · Fenêtre', sub: 'On avait dit... ensemble.', dur: 3.2 },
+    { src: imgSc4P1.src, label: 'SC4-P1 · Retrouvailles', sub: '', dur: 5.5 },
+    { src: imgSc4P2.src, label: 'SC4-P2 · Caillou', sub: 'FIN', dur: 2.5 },
+  ]
+
+  const totalDur = plans.reduce((s, p) => s + p.dur, 0)
+
+  useEffect(() => {
+    if (!playing) return
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        const next = prev + 0.5
+        if (next >= totalDur) { setPlaying(false); return totalDur }
+        // Find current plan
+        let acc = 0
+        for (let i = 0; i < plans.length; i++) {
+          acc += plans[i].dur
+          if (next < acc) { setCurrentPlan(i); break }
+        }
+        return next
+      })
+    }, 500)
+    return () => clearInterval(interval)
+  }, [playing])
+
+  const current = plans[currentPlan]
+  const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
+
+  return (
+    <div className="bg-dark-900 rounded-xl border border-dark-700 overflow-hidden">
+      {/* Video player */}
+      <div className="relative aspect-video bg-black">
+        <img
+          src={current.src}
+          alt={current.label}
+          className="w-full h-full object-cover transition-opacity duration-700"
+        />
+        {/* Cinematic bars */}
+        <div className="absolute top-0 left-0 right-0 h-[10%] bg-black" />
+        <div className="absolute bottom-0 left-0 right-0 h-[10%] bg-black" />
+        {/* Subtitle */}
+        {current.sub && (
+          <div className="absolute bottom-[12%] left-0 right-0 text-center">
+            <span className="bg-black/70 px-4 py-1.5 rounded text-sm text-white font-medium tracking-wide">
+              {current.sub}
+            </span>
+          </div>
+        )}
+        {/* Play button overlay */}
+        {!playing && progress === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+            <button
+              onClick={() => setPlaying(true)}
+              className="w-16 h-16 rounded-full bg-orange-600 hover:bg-orange-500 flex items-center justify-center shadow-2xl shadow-orange-600/40 transition-all hover:scale-110"
+            >
+              <Play size={28} fill="white" className="text-white ml-1" />
+            </button>
+          </div>
+        )}
+        {/* Plan indicator */}
+        <div className="absolute top-[12%] left-3 px-2 py-1 bg-black/60 rounded backdrop-blur-sm">
+          <span className="text-[10px] text-white font-medium">{current.label}</span>
+        </div>
+        {/* Film title */}
+        <div className="absolute top-[12%] right-3 px-2 py-1 bg-black/60 rounded backdrop-blur-sm">
+          <span className="text-[10px] text-orange-400 font-medium">Les Deux Rives</span>
+        </div>
+      </div>
+
+      {/* Timeline strip */}
+      <div className="px-3 py-2 flex gap-0.5">
+        {plans.map((p, i) => (
+          <button
+            key={i}
+            onClick={() => {
+              let acc = 0
+              for (let j = 0; j < i; j++) acc += plans[j].dur
+              setProgress(acc)
+              setCurrentPlan(i)
+            }}
+            className={`h-1 rounded-full transition-all ${
+              i === currentPlan ? 'bg-orange-500' : i < currentPlan ? 'bg-orange-500/40' : 'bg-dark-600'
+            }`}
+            style={{ width: `${(p.dur / totalDur) * 100}%` }}
+          />
+        ))}
+      </div>
+
+      {/* Controls */}
+      <div className="px-3 pb-3 flex items-center gap-3">
+        <button
+          onClick={() => { setPlaying(!playing); if (progress >= totalDur) { setProgress(0); setCurrentPlan(0) } }}
+          className="w-8 h-8 rounded-full bg-orange-600 hover:bg-orange-500 flex items-center justify-center"
+        >
+          {playing ? <Pause size={14} fill="white" className="text-white" /> : <Play size={14} fill="white" className="text-white ml-0.5" />}
+        </button>
+        <span className="text-[11px] text-slate-400 tabular-nums">{fmt(progress)} / {fmt(totalDur)}</span>
+        <div className="flex-1" />
+        <span className="text-[10px] text-slate-600">10 plans • 4K • 5 modèles IA</span>
+      </div>
+
+      {/* Export bar */}
+      <div className="border-t border-dark-700 px-3 py-3 flex items-center gap-2">
+        <button className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium rounded-lg flex items-center gap-1.5">
+          <ArrowRight size={12} /> Exporter 4K
+        </button>
+        <button className="px-3 py-1.5 bg-dark-700 hover:bg-dark-600 text-slate-300 text-xs rounded-lg">MP4</button>
+        <button className="px-3 py-1.5 bg-dark-700 hover:bg-dark-600 text-slate-300 text-xs rounded-lg">ProRes</button>
+        <button className="px-3 py-1.5 bg-dark-700 hover:bg-dark-600 text-slate-300 text-xs rounded-lg">SRT</button>
+        <div className="flex-1" />
+        <span className="text-[10px] text-green-400 font-medium">✓ Prêt à l&apos;export</span>
       </div>
     </div>
   )

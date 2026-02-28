@@ -99,4 +99,10 @@ export const DEMO_WALKTHROUGH = [
     narration: 'Chaque plan reçoit le modèle IA optimal. Un clic sur "Générer" et Kling, Runway, Sora ou Veo produisent la vidéo. De l\'écriture à l\'écran.',
     duration: 5000,
   },
+  {
+    step: 'result',
+    title: '8. Votre film',
+    narration: 'Voilà. Votre scénario est devenu un film. Plans montés, transitions, sous-titres synchronisés. Exportez en 4K, partagez, ou continuez à affiner. De l\'écriture à l\'écran — c\'est fait.',
+    duration: 8000,
+  },
 ];
