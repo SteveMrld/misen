@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import { Plus, Film, Clapperboard, Clock, MoreHorizontal, Trash2, Download, Upload, X, Loader2, Play, Camera, Zap, TrendingUp } from 'lucide-react'
 import { ModelLegend } from '@/components/ui/model-badge'
 import { StoryboardSVG } from '@/components/ui/storyboard-svg'
+import { Onboarding } from '@/components/ui/onboarding'
+import { createClient } from '@/lib/supabase/client'
 import type { Project } from '@/types/database'
 
 const statusLabels: Record<string, { label: string; class: string }> = {
@@ -21,6 +23,21 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [showNewModal, setShowNewModal] = useState(false)
   const [importing, setImporting] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  const [userName, setUserName] = useState<string | null>(null)
+
+  // Check if first visit for onboarding
+  useEffect(() => {
+    const done = localStorage.getItem('misen_onboarding_done')
+    if (!done) {
+      setShowOnboarding(true)
+      // Get user name for greeting
+      const supabase = createClient()
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) setUserName(user.user_metadata?.name || user.email?.split('@')[0] || null)
+      })
+    }
+  }, [])
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -111,6 +128,15 @@ export default function DashboardPage() {
 
   return (
     <div className="animate-fade-in">
+      {/* Onboarding overlay */}
+      {showOnboarding && (
+        <Onboarding
+          userName={userName}
+          onComplete={() => { setShowOnboarding(false); localStorage.setItem('misen_onboarding_done', '1') }}
+          onDemo={handleDemo}
+          onNewProject={() => setShowNewModal(true)}
+        />
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-display font-bold text-slate-50">Mes projets</h1>
