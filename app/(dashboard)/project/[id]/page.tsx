@@ -182,6 +182,12 @@ export default function ProjectPage() {
       {/* MODE SIMPLE */}
       {mode === 'simple' && (
         <div className="max-w-3xl mx-auto space-y-5">
+          {/* AI Screenplay Assistant */}
+          <ScreenplayAssistant
+            onUseScript={(script: string) => setScriptText(script)}
+            existingScript={scriptText.trim() || undefined}
+          />
+
           <div className="bg-dark-900 rounded-2xl border border-dark-700 overflow-hidden">
             <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-dark-700">
               <div className="flex items-center gap-2">

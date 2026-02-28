@@ -100,31 +100,35 @@ async function callGPT(apiKey: string, messages: { role: string; content: string
 // ---------------------------------------------------------------------------
 
 async function getAssistantUsage(supabase: any, userId: string): Promise<number> {
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
+  try {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
 
-  const { count } = await supabase
-    .from('assistant_usage')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .gte('created_at', startOfMonth.toISOString());
+    const { count } = await supabase
+      .from('assistant_usage')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .gte('created_at', startOfMonth.toISOString());
 
-  return count || 0;
+    return count || 0;
+  } catch { return 0; }
 }
 
 async function getGlobalMonthlyUsage(supabase: any): Promise<number> {
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
+  try {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
 
-  const { count } = await supabase
-    .from('assistant_usage')
-    .select('*', { count: 'exact', head: true })
-    .eq('used_server_key', true)
-    .gte('created_at', startOfMonth.toISOString());
+    const { count } = await supabase
+      .from('assistant_usage')
+      .select('*', { count: 'exact', head: true })
+      .eq('used_server_key', true)
+      .gte('created_at', startOfMonth.toISOString());
 
-  return count || 0;
+    return count || 0;
+  } catch { return 0; }
 }
 
 async function logUsage(supabase: any, userId: string, provider: string, usedServerKey: boolean): Promise<void> {
@@ -178,8 +182,11 @@ export async function POST(request: NextRequest) {
       }
     } else if (serverKey) {
       // ── Server key → check quotas ──
-      const sub = await getSubscription();
-      const plan = PLANS[sub.plan as PlanId] || PLANS.free;
+      let plan: { assistantQuota: number; name: string } = PLANS.free;
+      try {
+        const sub = await getSubscription();
+        if (sub?.plan) plan = PLANS[sub.plan as PlanId] || PLANS.free;
+      } catch { /* default to free */ }
       const quota = plan.assistantQuota;
 
       // Check user monthly quota
@@ -219,8 +226,11 @@ export async function POST(request: NextRequest) {
     // Return remaining quota info if using server key
     let quotaInfo = undefined;
     if (usedServerKey) {
-      const sub = await getSubscription();
-      const plan = PLANS[sub.plan as PlanId] || PLANS.free;
+      let plan: { assistantQuota: number; name: string } = PLANS.free;
+      try {
+        const sub = await getSubscription();
+        if (sub?.plan) plan = PLANS[sub.plan as PlanId] || PLANS.free;
+      } catch { /* default to free */ }
       const quota = plan.assistantQuota;
       if (quota !== -1) {
         const usage = await getAssistantUsage(supabase, user.id);
