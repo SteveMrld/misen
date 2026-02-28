@@ -256,11 +256,11 @@ export default function ProjectPage() {
           </div>
           {tab === 'script' && <ScriptTab scriptText={scriptText} setScriptText={setScriptText} stylePreset={stylePreset} setStylePreset={setStylePreset} saving={saving} analyzing={analyzing} error={error} handleSave={handleSave} handleAnalyze={handleAnalyze} loadDemo={loadDemo} />}
           {tab === 'analyse' && analysis && <AR analysis={analysis} analysisId={analysisId} />}
-          {tab === 'timeline' && analysis && <TL analysis={analysis} />}
-          {tab === 'copilot' && analysis && <CP projectId={projectId} />}
-          {tab === 'media' && analysis && <MB analysis={analysis} projectId={projectId} />}
-          {tab === 'subtitles' && analysis && <SV projectId={projectId} />}
-          {tab === 'voiceover' && analysis && <VO projectId={projectId} />}
+          {tab === 'timeline' && analysis && <TL analysis={analysis} projectName={project?.name} />}
+          {tab === 'copilot' && analysis && <CP projectId={projectId} projectName={project?.name} />}
+          {tab === 'media' && analysis && <MB analysis={analysis} projectId={projectId} projectName={project?.name} />}
+          {tab === 'subtitles' && analysis && <SV projectId={projectId} projectName={project?.name} />}
+          {tab === 'voiceover' && analysis && <VO projectId={projectId} projectName={project?.name} />}
           {tab === 'render' && analysis && <RenderPanel analysis={analysis} analysisId={analysisId} projectName={project?.name} />}
         </div>
       )}
@@ -474,9 +474,17 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
 }
 
 // ═══ Copilot ═══
-function CP({ projectId }: { projectId: string }) {
-  const [sug, setSug] = useState<any[]>([]); const [ld, setLd] = useState(false)
-  const load = async () => { setLd(true); try { const r = await fetch(`/api/projects/${projectId}/copilot`); if(r.ok){const d=await r.json();setSug(d.suggestions||[])} } catch{} finally{setLd(false)} }
+function CP({ projectId, projectName }: { projectId: string; projectName?: string }) {
+  const isDemo = (projectName || '').toLowerCase().includes('démo') || (projectName || '').toLowerCase().includes('demo')
+  const DEMO_SUGGESTIONS = [
+    { icon: '🎬', title: 'Ça me fait penser à...', detail: 'Cinema Paradiso (Tornatore, 1988) — la scène du cinéma. Technique recommandée : lumière projetée sur les visages, contrejour de l\'écran.' },
+    { icon: '🎵', title: 'Suggestion musicale', detail: 'Piano solo minimaliste type Yann Tiersen. Les cordes lentes de Max Richter (On the Nature of Daylight) colleraient aussi au thème du deuil.' },
+    { icon: '📐', title: 'As-tu pensé à...', detail: 'Un plan-séquence sans coupe pour la scène de l\'hôpital. La tension continue sans montage renforcerait l\'émotion.' },
+    { icon: '🪑', title: 'L\'art du vide', detail: 'La place vide au cinéma est un personnage. Yasujirō Ozu filmait les espaces vides après le départ des personnages — les "pillow shots".' },
+    { icon: '💡', title: 'Astuce flashback', detail: 'Change le ratio d\'image (2.35:1 → 4:3) ou désature légèrement pour distinguer les temporalités. Nolan utilise IMAX vs 35mm dans Oppenheimer.' },
+  ]
+  const [sug, setSug] = useState<any[]>(isDemo ? DEMO_SUGGESTIONS : []); const [ld, setLd] = useState(false)
+  const load = async () => { if (isDemo) { setSug(DEMO_SUGGESTIONS); return } setLd(true); try { const r = await fetch(`/api/projects/${projectId}/copilot`); if(r.ok){const d=await r.json();setSug(d.suggestions||[])} } catch{} finally{setLd(false)} }
   return (<div>
     <div className="flex items-center justify-between mb-4">
       <div><h3 className="text-sm font-medium text-slate-100">Copilote IA</h3><p className="text-xs text-slate-500">Références cinéma, suggestions musicales, cadrage</p></div>
@@ -488,8 +496,17 @@ function CP({ projectId }: { projectId: string }) {
 }
 
 // ═══ Media Bank ═══
-function MB({ analysis, projectId }: { analysis: any; projectId: string }) {
-  const [q, setQ] = useState(''); const [res, setRes] = useState<any[]>([]); const [ld, setLd] = useState(false); const [err, setErr] = useState('')
+function MB({ analysis, projectId, projectName }: { analysis: any; projectId: string; projectName?: string }) {
+  const isDemoMB = (projectName || '').toLowerCase().includes('démo') || (projectName || '').toLowerCase().includes('demo')
+  const DEMO_MEDIA = [
+    { id: 'd1', thumbnail: imgSc1P1.src, title: 'Fleuve au crépuscule', source: 'Référence' },
+    { id: 'd2', thumbnail: imgSc2P1.src, title: 'Pont suspendu — brume', source: 'Référence' },
+    { id: 'd3', thumbnail: imgSc3P1.src, title: 'Couloir hôpital — lumière', source: 'Référence' },
+    { id: 'd4', thumbnail: imgSc4P1.src, title: 'Silhouettes retrouvailles', source: 'Référence' },
+    { id: 'd5', thumbnail: imgSc1P2.src, title: 'Portrait — clair-obscur', source: 'Moodboard' },
+    { id: 'd6', thumbnail: imgSc2P3.src, title: 'Jumeaux — contrejour', source: 'Moodboard' },
+  ]
+  const [q, setQ] = useState(''); const [res, setRes] = useState<any[]>(isDemoMB ? DEMO_MEDIA : []); const [ld, setLd] = useState(false); const [err, setErr] = useState('')
   const srch = async (sq?: string) => { const s=sq||q; if(!s.trim())return; setLd(true);setErr(''); try{const r=await fetch(`/api/media?q=${encodeURIComponent(s)}&type=all`);const d=await r.json();if(d.error&&!d.results?.length)setErr(d.error);setRes(d.results||[])}catch{setErr('Erreur')}finally{setLd(false)} }
   const sugs = (analysis?.scenes||[]).slice(0,4).map((s:any)=>(s.heading||'').replace(/^(INT\.|EXT\.)\s*/i,'').replace(/–.*/g,'').trim()).filter(Boolean)
   return (<div>
@@ -507,7 +524,8 @@ function MB({ analysis, projectId }: { analysis: any; projectId: string }) {
 }
 
 // ═══ Timeline ═══
-function TL({ analysis }: { analysis: any }) {
+function TL({ analysis, projectName }: { analysis: any; projectName?: string }) {
+  const isDemoTL = (projectName || '').toLowerCase().includes('démo') || (projectName || '').toLowerCase().includes('demo')
   const [playing, setPlaying] = useState(false); const [ph, setPh] = useState(0)
   const plans = analysis?.plans || []; const scenes = analysis?.scenes || []
   const total = plans.reduce((s:number,p:any)=>s+(p?.estimatedDuration||3),0)||1
@@ -545,7 +563,11 @@ function TL({ analysis }: { analysis: any }) {
             const d=p?.estimatedDuration||3
             const mc=getModelColor((p?.modelId||'').toLowerCase())
             return <div key={i} className="flex-shrink-0 rounded-lg overflow-hidden border border-dark-700/50 hover:border-dark-600 transition-all cursor-pointer group relative" style={{width:`${Math.max((d/total)*100,5)}%`, minWidth: 80}}>
-              <StoryboardSVG shotType={p?.shotType} cameraMove={p?.cameraMove} width={120} height={68} modelColor={mc} />
+              {isDemoTL && DEMO_IMAGES[i % DEMO_IMAGES.length] ? (
+                <img src={DEMO_IMAGES[i % DEMO_IMAGES.length].src} alt={`P${i+1}`} className="w-full h-[68px] object-cover" />
+              ) : (
+                <StoryboardSVG shotType={p?.shotType} cameraMove={p?.cameraMove} width={120} height={68} modelColor={mc} />
+              )}
               {/* Overlay info */}
               <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-dark-950/90 to-transparent px-1.5 py-1">
                 <div className="flex items-center justify-between">
@@ -566,8 +588,18 @@ function TL({ analysis }: { analysis: any }) {
 }
 
 // ═══ Subtitles ═══
-function SV({ projectId }: { projectId: string }) {
-  const [subs, setSubs] = useState<any>(null); const [ld, setLd] = useState(false)
+function SV({ projectId, projectName }: { projectId: string; projectName?: string }) {
+  const isDemoSV = (projectName || '').toLowerCase().includes('démo') || (projectName || '').toLowerCase().includes('demo')
+  const DEMO_SUBS = { entries: [
+    { index: 1, startTime: 3, character: 'ADRIEN', text: 'On y va aujourd\'hui. Pas vrai\u00A0?' },
+    { index: 2, startTime: 12, character: 'LÉO', text: 'On se promet un truc. Même quand on sera grands\u2026' },
+    { index: 3, startTime: 16, character: 'ADRIEN ENFANT', text: 'On fera tout ensemble.' },
+    { index: 4, startTime: 25, character: 'INFIRMIÈRE', text: 'Vous pouvez arrêter de venir\u2026 ça fait deux ans.' },
+    { index: 5, startTime: 30, character: 'ADRIEN', text: 'On avait dit\u2026 ensemble.' },
+    { index: 6, startTime: 40, character: 'CONTRÔLEUR', text: 'Vous êtes seul\u00A0?' },
+    { index: 7, startTime: 43, character: 'ADRIEN', text: 'Non. Jamais.' },
+  ] }
+  const [subs, setSubs] = useState<any>(isDemoSV ? DEMO_SUBS : null); const [ld, setLd] = useState(false)
   const load = async () => { setLd(true); try{const r=await fetch(`/api/projects/${projectId}/subtitles?format=json`);if(r.ok)setSubs(await r.json())}catch{}finally{setLd(false)} }
   return (<div>
     <div className="flex items-center justify-between mb-4">
@@ -583,8 +615,18 @@ function SV({ projectId }: { projectId: string }) {
 }
 
 // ═══ Voiceover ═══
-function VO({ projectId }: { projectId: string }) {
-  const [segs, setSegs] = useState<any[]>([]); const [ld, setLd] = useState(false); const [sp, setSp] = useState(false); const [prov, setProv] = useState('browser')
+function VO({ projectId, projectName }: { projectId: string; projectName?: string }) {
+  const isDemoVO = (projectName || '').toLowerCase().includes('démo') || (projectName || '').toLowerCase().includes('demo')
+  const DEMO_SEGS = [
+    { character: 'ADRIEN', text: 'On y va aujourd\'hui. Pas vrai\u00A0?', emotion: 'mélancolie' },
+    { character: 'LÉO', text: 'On se promet un truc. Même quand on sera grands\u2026', emotion: 'tendresse' },
+    { character: 'ADRIEN ENFANT', text: 'On fera tout ensemble.', emotion: 'innocence' },
+    { character: 'INFIRMIÈRE', text: 'Vous pouvez arrêter de venir\u2026 ça fait deux ans.', emotion: 'compassion' },
+    { character: 'ADRIEN', text: 'On avait dit\u2026 ensemble.', emotion: 'douleur' },
+    { character: 'CONTRÔLEUR', text: 'Vous êtes seul\u00A0?', emotion: 'neutre' },
+    { character: 'ADRIEN', text: 'Non. Jamais.', emotion: 'résolution' },
+  ]
+  const [segs, setSegs] = useState<any[]>(isDemoVO ? DEMO_SEGS : []); const [ld, setLd] = useState(false); const [sp, setSp] = useState(false); const [prov, setProv] = useState('browser')
   const load = async () => { setLd(true); try{const r=await fetch(`/api/projects/${projectId}/voiceover`);if(r.ok){const d=await r.json();setSegs(d.segments||[])}}catch{}finally{setLd(false)} }
   const speak = (text: string) => {
     if(typeof window==='undefined')return; if(sp){window.speechSynthesis?.cancel();setSp(false);return}
