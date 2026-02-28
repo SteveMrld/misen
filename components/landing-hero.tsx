@@ -3,6 +3,28 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+
+// Static image imports — webpack bundles these into _next/static/media/
+import heroBg from '@/public/images/hero_bg.png'
+import demoSc1P1 from '@/public/images/demo_sc1_p1_fleuve.png'
+import demoSc1P2 from '@/public/images/demo_sc1_p2_visage.png'
+import demoSc1P3 from '@/public/images/demo_sc1_p3_photo.png'
+import demoSc2P1 from '@/public/images/demo_sc2_p1_pont.png'
+import demoSc2P2 from '@/public/images/demo_sc2_p2_main.png'
+import demoSc2P3 from '@/public/images/demo_sc2_p3_silhouettes.png'
+import modelKling from '@/public/images/model_kling.png'
+import modelRunway from '@/public/images/model_runway.png'
+import modelSora from '@/public/images/model_sora.png'
+import modelVeo from '@/public/images/model_veo.png'
+import modelSeedance from '@/public/images/model_seedance.png'
+import modelWan from '@/public/images/model_wan.png'
+import modelHailuo from '@/public/images/model_hailuo.png'
+import stepScript from '@/public/images/step_script.png'
+import stepAnalysis from '@/public/images/step_analysis.png'
+import stepStoryboard from '@/public/images/step_storyboard.png'
+import stepRender from '@/public/images/step_render.png'
+import mockupDesktop from '@/public/images/mockup_desktop.png'
+import mockupMobile from '@/public/images/mockup_mobile.png'
 import {
   Play, ArrowRight, Brain, Film, Zap, Check, ChevronDown,
   Terminal, Users, Shield, Eye, DollarSign, Cpu, BookOpen,
@@ -82,7 +104,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
       <div className="flex-1 flex flex-col items-center justify-center px-6 relative">
         {/* Background image */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <img src="/images/hero_bg.png" alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" />
+          <img src={heroBg.src} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" />
           <div className="absolute inset-0 bg-gradient-to-b from-dark-950/60 via-dark-950/80 to-dark-950" />
           <div className="absolute inset-0 bg-gradient-to-r from-dark-950/80 via-transparent to-dark-950/80" />
         </div>
@@ -198,12 +220,12 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
         {/* Demo scene grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
           {[
-            { src: '/images/demo_sc1_p1_fleuve.png', label: 'SC1-P1 · Plan large', model: 'Kling 3.0', color: '#3B82F6' },
-            { src: '/images/demo_sc1_p2_visage.png', label: 'SC1-P2 · Gros plan', model: 'Veo 3.1', color: '#10B981' },
-            { src: '/images/demo_sc1_p3_photo.png', label: 'SC1-P3 · Insert', model: 'Runway Gen-4.5', color: '#8B5CF6' },
-            { src: '/images/demo_sc2_p1_pont.png', label: 'SC2-P1 · Plan large', model: 'Sora 2', color: '#EC4899' },
-            { src: '/images/demo_sc2_p2_main.png', label: 'SC2-P2 · Gros plan', model: 'Kling 3.0', color: '#3B82F6' },
-            { src: '/images/demo_sc2_p3_silhouettes.png', label: 'SC2-P3 · Plan moyen', model: 'Hailuo 2.3', color: '#D946EF' },
+            { src: demoSc1P1.src, label: 'SC1-P1 · Plan large', model: 'Kling 3.0', color: '#3B82F6' },
+            { src: demoSc1P2.src, label: 'SC1-P2 · Gros plan', model: 'Veo 3.1', color: '#10B981' },
+            { src: demoSc1P3.src, label: 'SC1-P3 · Insert', model: 'Runway Gen-4.5', color: '#8B5CF6' },
+            { src: demoSc2P1.src, label: 'SC2-P1 · Plan large', model: 'Sora 2', color: '#EC4899' },
+            { src: demoSc2P2.src, label: 'SC2-P2 · Gros plan', model: 'Kling 3.0', color: '#3B82F6' },
+            { src: demoSc2P3.src, label: 'SC2-P3 · Plan moyen', model: 'Hailuo 2.3', color: '#D946EF' },
           ].map((scene) => (
             <div key={scene.label} className="group relative rounded-xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all">
               <img src={scene.src} alt={scene.label} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -221,8 +243,8 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
 
         {/* Mockups */}
         <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-          <img src="/images/mockup_desktop.png" alt="MISEN Desktop" className="w-full md:w-[55%] rounded-xl border border-white/[0.08] shadow-2xl shadow-black/50" />
-          <img src="/images/mockup_mobile.png" alt="MISEN Mobile" className="w-40 md:w-32 rounded-2xl border border-white/[0.08] shadow-2xl shadow-black/50" />
+          <img src={mockupDesktop.src} alt="MISEN Desktop" className="w-full md:w-[55%] rounded-xl border border-white/[0.08] shadow-2xl shadow-black/50" />
+          <img src={mockupMobile.src} alt="MISEN Mobile" className="w-40 md:w-32 rounded-2xl border border-white/[0.08] shadow-2xl shadow-black/50" />
         </div>
       </section>
 
@@ -236,13 +258,13 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { id: 'kling3', name: 'Kling 3.0', tag: 'Réalisme · Physique', color: '#3B82F6', src: '/images/model_kling.png' },
-            { id: 'runway', name: 'Runway Gen-4.5', tag: 'Style · Contrôle', color: '#8B5CF6', src: '/images/model_runway.png' },
-            { id: 'sora', name: 'Sora 2', tag: 'VFX · Émotion', color: '#EC4899', src: '/images/model_sora.png' },
-            { id: 'veo', name: 'Veo 3.1', tag: 'Dialogue · Audio', color: '#10B981', src: '/images/model_veo.png' },
-            { id: 'seedance', name: 'Seedance 2.0', tag: 'Mouvement · Multimodal', color: '#14B8A6', src: '/images/model_seedance.png' },
-            { id: 'wan', name: 'Wan 2.5', tag: 'Animation · Caméra', color: '#6366F1', src: '/images/model_wan.png' },
-            { id: 'hailuo', name: 'Hailuo 2.3', tag: 'Cohérence personnage', color: '#D946EF', src: '/images/model_hailuo.png' },
+            { id: 'kling3', name: 'Kling 3.0', tag: 'Réalisme · Physique', color: '#3B82F6', src: modelKling.src },
+            { id: 'runway', name: 'Runway Gen-4.5', tag: 'Style · Contrôle', color: '#8B5CF6', src: modelRunway.src },
+            { id: 'sora', name: 'Sora 2', tag: 'VFX · Émotion', color: '#EC4899', src: modelSora.src },
+            { id: 'veo', name: 'Veo 3.1', tag: 'Dialogue · Audio', color: '#10B981', src: modelVeo.src },
+            { id: 'seedance', name: 'Seedance 2.0', tag: 'Mouvement · Multimodal', color: '#14B8A6', src: modelSeedance.src },
+            { id: 'wan', name: 'Wan 2.5', tag: 'Animation · Caméra', color: '#6366F1', src: modelWan.src },
+            { id: 'hailuo', name: 'Hailuo 2.3', tag: 'Cohérence personnage', color: '#D946EF', src: modelHailuo.src },
           ].map((m) => (
             <div key={m.id} className="group relative rounded-xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all">
               <img src={m.src} alt={m.name} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -285,10 +307,10 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
         <h2 className="font-display text-2xl text-white text-center mb-10 tracking-tight">Comment ça marche</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[
-            { step: '01', title: 'Collez', desc: 'Votre scénario, traitement, séquencier...', src: '/images/step_script.png', color: '#F97316' },
-            { step: '02', title: 'Analysez', desc: '13 moteurs décomposent chaque plan', src: '/images/step_analysis.png', color: '#F97316' },
-            { step: '03', title: 'Storyboard', desc: 'Plans visuels avec caméra et cadrage', src: '/images/step_storyboard.png', color: '#06B6D4' },
-            { step: '04', title: 'Générez', desc: 'Prompts optimisés, modèle assigné', src: '/images/step_render.png', color: '#06B6D4' },
+            { step: '01', title: 'Collez', desc: 'Votre scénario, traitement, séquencier...', src: stepScript.src, color: '#F97316' },
+            { step: '02', title: 'Analysez', desc: '13 moteurs décomposent chaque plan', src: stepAnalysis.src, color: '#F97316' },
+            { step: '03', title: 'Storyboard', desc: 'Plans visuels avec caméra et cadrage', src: stepStoryboard.src, color: '#06B6D4' },
+            { step: '04', title: 'Générez', desc: 'Prompts optimisés, modèle assigné', src: stepRender.src, color: '#06B6D4' },
           ].map((s) => (
             <div key={s.step} className="group">
               <div className="relative rounded-xl overflow-hidden mb-3 border border-white/[0.06]">

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import emptyProjectsImg from '@/public/images/empty_projects.png'
 import { useRouter } from 'next/navigation'
 import { Plus, Film, Clapperboard, Clock, MoreHorizontal, Trash2, Download, Upload, X, Loader2, Play, Camera, Zap, TrendingUp } from 'lucide-react'
 import { ModelLegend } from '@/components/ui/model-badge'
@@ -187,7 +188,7 @@ function EmptyState({ onNew }: { onNew: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-20">
       <div className="mb-6 w-48 h-48 rounded-2xl overflow-hidden opacity-70">
-        <img src="/images/empty_projects.png" alt="" className="w-full h-full object-cover" />
+        <img src={emptyProjectsImg.src} alt="" className="w-full h-full object-cover" />
       </div>
       <h3 className="text-xl font-display text-slate-200 mb-2">Créez votre premier projet</h3>
       <p className="text-sm text-slate-400 text-center max-w-md mb-8">

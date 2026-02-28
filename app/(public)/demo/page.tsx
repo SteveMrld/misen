@@ -8,6 +8,24 @@ import {
   ArrowRight, X
 } from 'lucide-react'
 import { DEMO_SCRIPT, DEMO_WALKTHROUGH } from '@/lib/demo/data'
+
+// Static image imports
+import imgSc1P1 from '@/public/images/demo_sc1_p1_fleuve.png'
+import imgSc1P2 from '@/public/images/demo_sc1_p2_visage.png'
+import imgSc1P3 from '@/public/images/demo_sc1_p3_photo.png'
+import imgSc2P1 from '@/public/images/demo_sc2_p1_pont.png'
+import imgSc2P2 from '@/public/images/demo_sc2_p2_main.png'
+import imgSc2P3 from '@/public/images/demo_sc2_p3_silhouettes.png'
+import imgSc3P1 from '@/public/images/demo_sc3_p1_hopital.png'
+import imgSc3P2 from '@/public/images/demo_sc3_p2_fenetre.png'
+import imgSc4P1 from '@/public/images/demo_sc4_p1_retrouvailles.png'
+import imgSc4P2 from '@/public/images/demo_sc4_p2_caillou.png'
+import imgMediaAction from '@/public/images/media_action.png'
+import imgMediaDrama from '@/public/images/media_drama.png'
+import imgMediaScifi from '@/public/images/media_scifi.png'
+import imgMediaDocu from '@/public/images/media_docu.png'
+import imgMediaNoir from '@/public/images/media_noir.png'
+import imgMediaNature from '@/public/images/media_nature.png'
 import Link from 'next/link'
 
 const TAB_ICONS: Record<string, any> = {
@@ -193,16 +211,16 @@ function DemoAnalyse() {
       {/* Plan previews with real images */}
       <div className="grid grid-cols-3 gap-2">
         {[
-          { src: '/images/demo_sc1_p1_fleuve.png', label: 'SC1-P1', type: 'PL · pan', model: 'Kling', color: '#3B82F6' },
-          { src: '/images/demo_sc1_p2_visage.png', label: 'SC1-P2', type: 'GP · fixe', model: 'Veo', color: '#10B981' },
-          { src: '/images/demo_sc1_p3_photo.png', label: 'SC1-P3', type: 'Insert · dolly', model: 'Runway', color: '#8B5CF6' },
-          { src: '/images/demo_sc2_p1_pont.png', label: 'SC2-P1', type: 'PL · travelling', model: 'Sora', color: '#EC4899' },
-          { src: '/images/demo_sc2_p2_main.png', label: 'SC2-P2', type: 'GP · fixe', model: 'Kling', color: '#3B82F6' },
-          { src: '/images/demo_sc2_p3_silhouettes.png', label: 'SC2-P3', type: 'PM · steadicam', model: 'Hailuo', color: '#D946EF' },
-          { src: '/images/demo_sc3_p1_hopital.png', label: 'SC3-P1', type: 'PM · travelling', model: 'Runway', color: '#8B5CF6' },
-          { src: '/images/demo_sc3_p2_fenetre.png', label: 'SC3-P2', type: 'GP · fixe', model: 'Veo', color: '#10B981' },
-          { src: '/images/demo_sc4_p1_retrouvailles.png', label: 'SC4-P1', type: 'PL · crane', model: 'Kling', color: '#3B82F6' },
-          { src: '/images/demo_sc4_p2_caillou.png', label: 'SC4-P2', type: 'Insert · fixe', model: 'Seedance', color: '#14B8A6' },
+          { src: imgSc1P1.src, label: 'SC1-P1', type: 'PL · pan', model: 'Kling', color: '#3B82F6' },
+          { src: imgSc1P2.src, label: 'SC1-P2', type: 'GP · fixe', model: 'Veo', color: '#10B981' },
+          { src: imgSc1P3.src, label: 'SC1-P3', type: 'Insert · dolly', model: 'Runway', color: '#8B5CF6' },
+          { src: imgSc2P1.src, label: 'SC2-P1', type: 'PL · travelling', model: 'Sora', color: '#EC4899' },
+          { src: imgSc2P2.src, label: 'SC2-P2', type: 'GP · fixe', model: 'Kling', color: '#3B82F6' },
+          { src: imgSc2P3.src, label: 'SC2-P3', type: 'PM · steadicam', model: 'Hailuo', color: '#D946EF' },
+          { src: imgSc3P1.src, label: 'SC3-P1', type: 'PM · travelling', model: 'Runway', color: '#8B5CF6' },
+          { src: imgSc3P2.src, label: 'SC3-P2', type: 'GP · fixe', model: 'Veo', color: '#10B981' },
+          { src: imgSc4P1.src, label: 'SC4-P1', type: 'PL · crane', model: 'Kling', color: '#3B82F6' },
+          { src: imgSc4P2.src, label: 'SC4-P2', type: 'Insert · fixe', model: 'Seedance', color: '#14B8A6' },
         ].map((p) => (
           <div key={p.label} className="relative rounded-lg overflow-hidden border border-dark-700 group">
             <img src={p.src} alt={p.label} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -320,12 +338,12 @@ function DemoCopilot() {
 
 function DemoMedia() {
   const results = [
-    { label: 'Poursuite urbaine', src: '/images/media_action.png' },
-    { label: 'Conversation intime', src: '/images/media_drama.png' },
-    { label: 'Laboratoire futuriste', src: '/images/media_scifi.png' },
-    { label: 'Artisan au travail', src: '/images/media_docu.png' },
-    { label: 'Rue pluvieuse', src: '/images/media_noir.png' },
-    { label: 'Forêt brumeuse', src: '/images/media_nature.png' },
+    { label: 'Poursuite urbaine', src: imgMediaAction.src },
+    { label: 'Conversation intime', src: imgMediaDrama.src },
+    { label: 'Laboratoire futuriste', src: imgMediaScifi.src },
+    { label: 'Artisan au travail', src: imgMediaDocu.src },
+    { label: 'Rue pluvieuse', src: imgMediaNoir.src },
+    { label: 'Forêt brumeuse', src: imgMediaNature.src },
   ]
 
   return (
