@@ -1,17 +1,10 @@
 // ============================================================================
 // MISEN V8 — Assistant Scénariste IA (Hybrid)
-// 
-// Modèle hybride :
-// - Clé perso (Settings) → illimité, pas de quota
-// - Clé serveur (env) → quota selon plan (Free=3, Pro=30, Studio=∞)
-// - Cap global serveur : 50€/mois max
+// Clé perso → illimité | Clé serveur → 3 req/mois Free, 30 Pro
 // ============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { getApiKey } from '@/lib/db/api-keys';
-import { getSubscription } from '@/lib/db/subscriptions';
-import { PLANS, PlanId } from '@/lib/stripe/config';
 
 const SYSTEM_PROMPT = `Tu es un scénariste professionnel intégré à MISEN, un outil de production vidéo IA.
 Ton rôle : transformer les idées de l'utilisateur en scénarios structurés au format cinématographique.
@@ -37,8 +30,12 @@ COMPORTEMENT :
 - Réponds TOUJOURS en français sauf demande contraire
 - Sois créatif mais pragmatique — le scénario sera analysé par des moteurs IA ensuite`;
 
+// Max server-key requests per month (~3€)
+const FREE_QUOTA = 3;
+const GLOBAL_CAP = 125;
+
 // ---------------------------------------------------------------------------
-// Provider calls
+// Claude API call
 // ---------------------------------------------------------------------------
 
 async function callClaude(apiKey: string, messages: { role: string; content: string }[]): Promise<string> {
@@ -69,81 +66,48 @@ async function callClaude(apiKey: string, messages: { role: string; content: str
   return data.content?.[0]?.text || '';
 }
 
-async function callGPT(apiKey: string, messages: { role: string; content: string }[]): Promise<string> {
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      max_tokens: 4096,
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        ...messages,
-      ],
-    }),
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || `OpenAI API erreur ${res.status}`);
-  }
-
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content || '';
-}
-
 // ---------------------------------------------------------------------------
-// Quota management
+// Usage tracking (graceful — works even without the table)
 // ---------------------------------------------------------------------------
 
-async function getAssistantUsage(supabase: any, userId: string): Promise<number> {
+async function getUserMonthlyCount(supabase: any, userId: string): Promise<number> {
   try {
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
-
     const { count } = await supabase
       .from('assistant_usage')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
       .gte('created_at', startOfMonth.toISOString());
-
     return count || 0;
   } catch { return 0; }
 }
 
-async function getGlobalMonthlyUsage(supabase: any): Promise<number> {
+async function getGlobalMonthlyCount(supabase: any): Promise<number> {
   try {
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
-
     const { count } = await supabase
       .from('assistant_usage')
       .select('*', { count: 'exact', head: true })
       .eq('used_server_key', true)
       .gte('created_at', startOfMonth.toISOString());
-
     return count || 0;
   } catch { return 0; }
 }
 
-async function logUsage(supabase: any, userId: string, provider: string, usedServerKey: boolean): Promise<void> {
-  await supabase.from('assistant_usage').insert({
-    user_id: userId,
-    provider,
-    used_server_key: usedServerKey,
-  });
+async function logUsage(supabase: any, userId: string, provider: string, usedServerKey: boolean) {
+  try {
+    await supabase.from('assistant_usage').insert({
+      user_id: userId, provider, used_server_key: usedServerKey,
+    });
+  } catch { /* silent */ }
 }
 
-// Max server-key requests per month (~3€ / 0.025$ per request = 125)
-const GLOBAL_MONTHLY_CAP = 125;
-
 // ---------------------------------------------------------------------------
-// POST handler
+// POST
 // ---------------------------------------------------------------------------
 
 export async function POST(request: NextRequest) {
@@ -152,98 +116,100 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
-    const body = await request.json();
-    const { messages } = body;
+    const { messages } = await request.json();
+    if (!messages?.length) return NextResponse.json({ error: 'Messages requis' }, { status: 400 });
 
-    if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return NextResponse.json({ error: 'Messages requis' }, { status: 400 });
+    // 1) Check user's own key
+    let userKey: string | null = null;
+    try {
+      const { data } = await supabase
+        .from('api_keys')
+        .select('api_key')
+        .eq('user_id', user.id)
+        .eq('provider', 'anthropic')
+        .single();
+      userKey = data?.api_key || null;
+    } catch { /* no key */ }
+
+    // If no user key, try openai
+    let userOpenaiKey: string | null = null;
+    if (!userKey) {
+      try {
+        const { data } = await supabase
+          .from('api_keys')
+          .select('api_key')
+          .eq('user_id', user.id)
+          .eq('provider', 'openai')
+          .single();
+        userOpenaiKey = data?.api_key || null;
+      } catch { /* no key */ }
     }
 
-    // Check user's own keys first
-    const userAnthropicKey = await getApiKey('anthropic');
-    const userOpenaiKey = await getApiKey('openai');
-    const hasOwnKey = !!(userAnthropicKey || userOpenaiKey);
-
-    // Server key from env
     const serverKey = process.env.ANTHROPIC_API_KEY;
 
-    let response: string;
-    let usedProvider: string;
-    let usedServerKey = false;
+    // 2) Route: user key → direct | server key → quota check | nothing → error
+    if (userKey) {
+      // User's own Anthropic key → unlimited
+      const response = await callClaude(userKey, messages);
+      await logUsage(supabase, user.id, 'claude', false);
+      return NextResponse.json({ response, provider: 'claude' });
+    }
 
-    if (hasOwnKey) {
-      // ── User's own key → no quota, direct call ──
-      if (userAnthropicKey) {
-        response = await callClaude(userAnthropicKey, messages);
-        usedProvider = 'claude';
-      } else {
-        response = await callGPT(userOpenaiKey!, messages);
-        usedProvider = 'openai';
+    if (userOpenaiKey) {
+      // User's own OpenAI key → unlimited (call GPT)
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${userOpenaiKey}` },
+        body: JSON.stringify({
+          model: 'gpt-4o', max_tokens: 4096,
+          messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error?.message || `OpenAI erreur ${res.status}`);
       }
-    } else if (serverKey) {
-      // ── Server key → check quotas ──
-      let plan: { assistantQuota: number; name: string } = PLANS.free;
-      try {
-        const sub = await getSubscription();
-        if (sub?.plan) plan = PLANS[sub.plan as PlanId] || PLANS.free;
-      } catch { /* default to free */ }
-      const quota = plan.assistantQuota;
+      const data = await res.json();
+      const response = data.choices?.[0]?.message?.content || '';
+      await logUsage(supabase, user.id, 'openai', false);
+      return NextResponse.json({ response, provider: 'openai' });
+    }
 
-      // Check user monthly quota
-      if (quota !== -1) {
-        const usage = await getAssistantUsage(supabase, user.id);
-        if (usage >= quota) {
-          const remaining = 0;
-          return NextResponse.json({
-            error: `Vous avez utilisé vos ${quota} requêtes assistant ce mois-ci (plan ${plan.name}). Ajoutez votre propre clé Claude dans Réglages → Clés API pour un accès illimité, ou passez au plan supérieur.`,
-            quota: { used: usage, limit: quota, remaining },
-          }, { status: 429 });
-        }
-      }
-
-      // Check global monthly cap
-      const globalUsage = await getGlobalMonthlyUsage(supabase);
-      if (globalUsage >= GLOBAL_MONTHLY_CAP) {
+    if (serverKey) {
+      // Server key → check quotas
+      const userCount = await getUserMonthlyCount(supabase, user.id);
+      if (userCount >= FREE_QUOTA) {
         return NextResponse.json({
-          error: 'L\'assistant est temporairement indisponible (quota global atteint). Ajoutez votre propre clé Claude dans Réglages → Clés API pour un accès garanti.',
+          error: `Vous avez utilisé vos ${FREE_QUOTA} requêtes assistant ce mois-ci. Ajoutez votre propre clé Claude dans Réglages → Clés API pour un accès illimité.`,
+          quota: { used: userCount, limit: FREE_QUOTA, remaining: 0 },
         }, { status: 429 });
       }
 
-      // Call with server key
-      response = await callClaude(serverKey, messages);
-      usedProvider = 'claude';
-      usedServerKey = true;
-    } else {
-      // ── No key at all ──
-      return NextResponse.json({
-        error: 'L\'assistant scénariste nécessite une clé API. Ajoutez votre clé Claude ou OpenAI dans Réglages → Clés API.',
-      }, { status: 400 });
-    }
-
-    // Log usage
-    await logUsage(supabase, user.id, usedProvider, usedServerKey).catch(() => {});
-
-    // Return remaining quota info if using server key
-    let quotaInfo = undefined;
-    if (usedServerKey) {
-      let plan: { assistantQuota: number; name: string } = PLANS.free;
-      try {
-        const sub = await getSubscription();
-        if (sub?.plan) plan = PLANS[sub.plan as PlanId] || PLANS.free;
-      } catch { /* default to free */ }
-      const quota = plan.assistantQuota;
-      if (quota !== -1) {
-        const usage = await getAssistantUsage(supabase, user.id);
-        quotaInfo = { used: usage, limit: quota, remaining: Math.max(0, quota - usage) };
+      const globalCount = await getGlobalMonthlyCount(supabase);
+      if (globalCount >= GLOBAL_CAP) {
+        return NextResponse.json({
+          error: 'Assistant temporairement indisponible. Ajoutez votre propre clé Claude dans Réglages → Clés API.',
+        }, { status: 429 });
       }
+
+      const response = await callClaude(serverKey, messages);
+      await logUsage(supabase, user.id, 'claude', true);
+
+      const newCount = userCount + 1;
+      return NextResponse.json({
+        response,
+        provider: 'claude',
+        quota: { used: newCount, limit: FREE_QUOTA, remaining: Math.max(0, FREE_QUOTA - newCount) },
+      });
     }
 
-    return NextResponse.json({ response, provider: usedProvider, quota: quotaInfo });
+    // No key at all
+    return NextResponse.json({
+      error: 'Ajoutez votre clé Claude ou OpenAI dans Réglages → Clés API pour utiliser l\'assistant.',
+    }, { status: 400 });
+
   } catch (error: any) {
-    console.error('[Assistant] Error:', error);
-    return NextResponse.json(
-      { error: error.message || 'Erreur assistant' },
-      { status: 500 }
-    );
+    console.error('[Assistant]', error);
+    return NextResponse.json({ error: error.message || 'Erreur assistant' }, { status: 500 });
   }
 }
