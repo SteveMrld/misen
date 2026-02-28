@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import {
   ArrowLeft, Play, Loader2, Save, Brain, AlertTriangle, ChevronDown, ChevronRight,
@@ -14,7 +14,7 @@ import { CompareButton } from '@/components/ui/compare-panel'
 import { useKeyboardShortcuts, ShortcutOverlay } from '@/components/ui/keyboard-shortcuts'
 
 type Mode = 'simple' | 'expert'
-type Tab = 'script' | 'analyse' | 'timeline' | 'copilot' | 'media' | 'subtitles' | 'voiceover'
+type Tab = 'script' | 'analyse' | 'timeline' | 'copilot' | 'media' | 'subtitles' | 'voiceover' | 'render'
 
 function fmt(s: number) { return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` }
 
@@ -37,7 +37,7 @@ export default function ProjectPage() {
   const [showExportMenu, setShowExportMenu] = useState(false)
 
   // Keyboard shortcuts — defined after handlers
-  const tabKeys: Tab[] = ['script', 'analyse', 'timeline', 'copilot', 'media', 'subtitles', 'voiceover']
+  const tabKeys: Tab[] = ['script', 'analyse', 'timeline', 'copilot', 'media', 'subtitles', 'voiceover', 'render']
 
   useEffect(() => {
     if (!projectId) return
@@ -101,6 +101,7 @@ export default function ProjectPage() {
     { id: 'media', label: 'Médias', icon: Image, disabled: !analysis },
     { id: 'subtitles', label: 'Sous-titres', icon: Subtitles, disabled: !analysis },
     { id: 'voiceover', label: 'Voix off', icon: Mic, disabled: !analysis },
+    { id: 'render', label: 'Rendu', icon: Play, disabled: !analysis },
   ]
 
   return (
@@ -199,7 +200,15 @@ export default function ProjectPage() {
               <div className="bg-dark-900 rounded-2xl border border-dark-700 overflow-hidden">
                 <div className="px-4 py-3 border-b border-dark-700 flex items-center justify-between">
                   <div className="flex items-center gap-2"><Camera size={16} className="text-orange-500" /><span className="text-sm font-medium text-slate-200">Plans & Prompts</span></div>
-                  <button onClick={() => setMode('expert')} className="text-xs text-orange-400 hover:text-orange-300 flex items-center gap-1"><SlidersHorizontal size={12} /> Mode Expert →</button>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => {
+                      // Trigger generate on all plan cards via custom event
+                      window.dispatchEvent(new CustomEvent('misen:generate-all'))
+                    }} className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-lg shadow-orange-600/20">
+                      <Zap size={12} /> Tout générer
+                    </button>
+                    <button onClick={() => setMode('expert')} className="text-xs text-orange-400 hover:text-orange-300 flex items-center gap-1"><SlidersHorizontal size={12} /> Mode Expert →</button>
+                  </div>
                 </div>
                 <div className="divide-y divide-dark-700/50">
                   {(analysis.plans || []).slice(0, 30).map((plan: any, i: number) => (
@@ -235,6 +244,7 @@ export default function ProjectPage() {
           {tab === 'media' && analysis && <MB analysis={analysis} projectId={projectId} />}
           {tab === 'subtitles' && analysis && <SV projectId={projectId} />}
           {tab === 'voiceover' && analysis && <VO projectId={projectId} />}
+          {tab === 'render' && analysis && <RenderPanel analysis={analysis} analysisId={analysisId} projectName={project?.name} />}
         </div>
       )}
     </div>
@@ -244,21 +254,117 @@ export default function ProjectPage() {
 // ═══ Simple Plan Card ═══
 function SPC({ plan, index, analysisId }: { plan: any; index: number; analysisId?: string | null }) {
   const [copied, setCopied] = useState(false)
-  const [status, setStatus] = useState<string>('idle')
+  const [status, setStatus] = useState<'idle'|'processing'|'polling'|'completed'|'failed'>('idle')
+  const [progress, setProgress] = useState(0)
+  const [videoUrl, setVideoUrl] = useState<string | null>(null)
+  const [jobId, setJobId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [showVideo, setShowVideo] = useState(false)
+  const pollRef = useRef<NodeJS.Timeout | null>(null)
+
   const prompt = plan?.finalPrompt || plan?.basePrompt || ''
   const mid = (plan?.modelId || 'kling').toLowerCase()
   const mc = getModelColor(mid)
+
   const copy = () => { navigator.clipboard.writeText(prompt).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) }).catch(() => {}) }
-  const gen = async () => {
-    if (!analysisId) return; setStatus('processing')
-    try { const r = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ analysisId, planIndex: index, sceneIndex: plan?.sceneIndex||0, modelId: plan?.modelId, prompt, negativePrompt: plan?.negativePrompt }) }); setStatus(r.ok ? 'completed' : 'failed') } catch { setStatus('failed') }
+
+  // Generate video
+  const generate = async () => {
+    if (!analysisId) return
+    setStatus('processing'); setProgress(0); setError(null)
+    try {
+      const r = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          analysisId,
+          planIndex: index,
+          sceneIndex: plan?.sceneIndex || 0,
+          modelId: plan?.modelId,
+          prompt,
+          negativePrompt: plan?.negativePrompt,
+          duration: plan?.estimatedDuration || 5,
+          aspectRatio: '16:9',
+        }),
+      })
+      const data = await r.json()
+      if (!r.ok) { setStatus('failed'); setError(data.error || 'Erreur'); return }
+      setJobId(data.jobId || data.generationId)
+      setStatus('polling')
+      // Start polling
+      startPolling(data.jobId || data.generationId)
+    } catch (e: any) {
+      setStatus('failed'); setError(e.message)
+    }
   }
+
+  // Poll for status
+  const startPolling = (id: string) => {
+    let tick = 0
+    pollRef.current = setInterval(async () => {
+      tick++
+      // Simulate progress while waiting
+      setProgress(prev => Math.min(prev + 2 + Math.random() * 3, 92))
+      try {
+        const r = await fetch(`/api/generate/status?jobId=${id}`)
+        if (!r.ok) return
+        const data = await r.json()
+        if (data.status === 'completed') {
+          clearInterval(pollRef.current!)
+          setProgress(100)
+          setVideoUrl(data.resultUrl || data.thumbnailUrl)
+          setStatus('completed')
+        } else if (data.status === 'failed') {
+          clearInterval(pollRef.current!)
+          setStatus('failed')
+          setError(data.errorMessage || 'Échec de la génération')
+        }
+        if (data.progress) setProgress(data.progress)
+      } catch {}
+      // Timeout after 5 minutes
+      if (tick > 150) {
+        clearInterval(pollRef.current!)
+        setStatus('failed')
+        setError('Timeout — la génération prend trop de temps')
+      }
+    }, 2000)
+  }
+
+  // Cleanup polling on unmount
+  useEffect(() => { return () => { if (pollRef.current) clearInterval(pollRef.current) } }, [])
+
+  const isGenerating = status === 'processing' || status === 'polling'
+
   return (
     <div className="card overflow-hidden group hover:border-dark-600 transition-all">
       <div className="flex gap-3 p-3">
-        {/* SVG Storyboard Preview */}
-        <div className="flex-shrink-0">
-          <StoryboardSVG shotType={plan?.shotType} cameraMove={plan?.cameraMove} width={160} height={90} modelColor={mc} />
+        {/* Preview: SVG storyboard or video thumbnail */}
+        <div className="flex-shrink-0 relative">
+          {status === 'completed' && videoUrl ? (
+            <div className="relative cursor-pointer" onClick={() => setShowVideo(!showVideo)}>
+              <div className="w-[160px] h-[90px] bg-dark-800 rounded-lg overflow-hidden">
+                <video src={videoUrl} className="w-full h-full object-cover" muted preload="metadata" />
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg hover:bg-black/10 transition-colors">
+                <Play size={20} fill="white" className="text-white drop-shadow-lg" />
+              </div>
+              <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
+                <Check size={9} className="text-white" />
+              </div>
+            </div>
+          ) : (
+            <div className="relative">
+              <StoryboardSVG shotType={plan?.shotType} cameraMove={plan?.cameraMove} width={160} height={90} modelColor={mc} />
+              {isGenerating && (
+                <div className="absolute inset-0 bg-dark-950/60 rounded-lg flex items-center justify-center">
+                  <div className="text-center">
+                    <Loader2 size={20} className="text-orange-400 animate-spin mx-auto" />
+                    <span className="text-[9px] text-orange-400 mt-1 block">{Math.round(progress)}%</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         {/* Info */}
         <div className="flex-1 min-w-0">
@@ -271,10 +377,26 @@ function SPC({ plan, index, analysisId }: { plan: any; index: number; analysisId
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] text-slate-600">${(plan?.estimatedCost||0).toFixed(3)}</span>
               <button onClick={copy} className="p-1 rounded hover:bg-white/5">{copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} className="text-slate-500" />}</button>
-              {status === 'idle' && <button onClick={gen} className="px-2 py-0.5 bg-orange-600/80 hover:bg-orange-500 text-white text-[10px] rounded flex items-center gap-0.5"><Zap size={9} /> Go</button>}
-              {status === 'processing' && <Loader2 size={12} className="text-yellow-400 animate-spin" />}
-              {status === 'completed' && <Check size={12} className="text-green-400" />}
-              {status === 'failed' && <AlertTriangle size={12} className="text-red-400" />}
+              {status === 'idle' && (
+                <button onClick={generate} className="px-2.5 py-1 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-medium rounded flex items-center gap-1 transition-colors">
+                  <Zap size={10} /> Générer
+                </button>
+              )}
+              {isGenerating && (
+                <span className="px-2 py-0.5 bg-yellow-500/10 text-yellow-400 text-[10px] rounded flex items-center gap-1">
+                  <Loader2 size={10} className="animate-spin" /> {Math.round(progress)}%
+                </span>
+              )}
+              {status === 'completed' && (
+                <span className="px-2 py-0.5 bg-green-500/10 text-green-400 text-[10px] rounded flex items-center gap-1">
+                  <Check size={10} /> Prêt
+                </span>
+              )}
+              {status === 'failed' && (
+                <button onClick={generate} className="px-2 py-0.5 bg-red-500/10 text-red-400 text-[10px] rounded flex items-center gap-1 hover:bg-red-500/20">
+                  <AlertTriangle size={10} /> Réessayer
+                </button>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2 mb-1">
@@ -283,8 +405,24 @@ function SPC({ plan, index, analysisId }: { plan: any; index: number; analysisId
             <CompareButton plan={plan} />
           </div>
           <p className="text-[11px] text-slate-400 leading-relaxed font-mono line-clamp-2">{prompt || '—'}</p>
+          {/* Progress bar */}
+          {isGenerating && (
+            <div className="mt-2 h-1 bg-dark-700 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-orange-600 to-yellow-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
+            </div>
+          )}
+          {/* Error message */}
+          {status === 'failed' && error && (
+            <p className="text-[10px] text-red-400/80 mt-1">{error}</p>
+          )}
         </div>
       </div>
+      {/* Expanded video player */}
+      {showVideo && videoUrl && (
+        <div className="border-t border-dark-700 bg-black">
+          <video src={videoUrl} controls autoPlay className="w-full aspect-video" />
+        </div>
+      )}
     </div>
   )
 }
@@ -603,4 +741,220 @@ function PC({ plan, index, analysisId }: { plan: any; index: number; analysisId?
       </div>
     </div>
   </div>)
+}
+
+// ═══ Render Panel — Assembly Player V8 ═══
+function RenderPanel({ analysis, analysisId, projectName }: { analysis: any; analysisId: string | null; projectName?: string }) {
+  const [generations, setGenerations] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const [currentClip, setCurrentClip] = useState(0)
+  const [playing, setPlaying] = useState(false)
+  const [elapsed, setElapsed] = useState(0)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  const plans = analysis?.plans || []
+
+  // Fetch generations
+  const fetchGenerations = async () => {
+    if (!analysisId) return
+    setLoading(true)
+    try {
+      const r = await fetch(`/api/generate?analysisId=${analysisId}`)
+      if (r.ok) {
+        const data = await r.json()
+        setGenerations(Array.isArray(data) ? data : [])
+      }
+    } catch {} finally { setLoading(false) }
+  }
+
+  useEffect(() => { fetchGenerations() }, [analysisId])
+
+  // Match generation to plan index
+  const getGenForPlan = (i: number) => generations.find((g: any) => g.plan_index === i && g.status === 'completed')
+  const completedCount = plans.filter((_: any, i: number) => getGenForPlan(i)).length
+  const totalPlans = plans.length
+
+  // Build clip list from completed generations
+  const clips = plans.map((p: any, i: number) => {
+    const gen = getGenForPlan(i)
+    return {
+      planIndex: i,
+      label: `P${i + 1}`,
+      shotType: p?.shotType || '',
+      modelId: p?.modelId || '',
+      duration: p?.estimatedDuration || 3,
+      videoUrl: gen?.result_url || null,
+      status: gen ? 'completed' : 'pending',
+    }
+  })
+
+  const totalDur = clips.reduce((s: number, c: any) => s + c.duration, 0)
+
+  // Auto-advance clips
+  useEffect(() => {
+    if (!playing) {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+      return
+    }
+    intervalRef.current = setInterval(() => {
+      setElapsed(prev => {
+        const next = prev + 0.1
+        let acc = 0
+        for (let i = 0; i < clips.length; i++) {
+          acc += clips[i].duration
+          if (next < acc) {
+            if (i !== currentClip) setCurrentClip(i)
+            break
+          }
+        }
+        if (next >= totalDur) { setPlaying(false); return 0 }
+        return next
+      })
+    }, 100)
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
+  }, [playing, currentClip])
+
+  const current = clips[currentClip] || clips[0]
+  const fmtTime = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
+
+  return (
+    <div className="space-y-4">
+      {/* Status bar */}
+      <div className="flex items-center justify-between bg-dark-900 rounded-xl border border-dark-700 px-4 py-3">
+        <div className="flex items-center gap-3">
+          <Film size={16} className="text-orange-500" />
+          <span className="text-sm font-medium text-slate-200">{projectName || 'Rendu'}</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-slate-400">{completedCount}/{totalPlans} plans générés</span>
+          <div className="w-24 h-1.5 bg-dark-700 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-orange-600 to-green-500 rounded-full transition-all" style={{ width: `${totalPlans > 0 ? (completedCount / totalPlans) * 100 : 0}%` }} />
+          </div>
+          <button onClick={fetchGenerations} className="p-1.5 rounded hover:bg-white/5">
+            <RefreshCw size={14} className={`text-slate-400 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
+      </div>
+
+      {/* Player */}
+      <div className="bg-black rounded-xl overflow-hidden border border-white/[0.06]">
+        {/* Video area */}
+        <div className="relative aspect-video bg-dark-950">
+          {current?.videoUrl ? (
+            <video
+              ref={videoRef}
+              key={current.videoUrl}
+              src={current.videoUrl}
+              className="w-full h-full object-contain"
+              autoPlay={playing}
+              muted
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center">
+              <StoryboardSVG
+                shotType={current?.shotType}
+                cameraMove={plans[currentClip]?.cameraMove}
+                width={320} height={180}
+                modelColor={getModelColor((current?.modelId || '').toLowerCase())}
+              />
+              <p className="text-xs text-slate-600 mt-3">
+                {current?.status === 'pending' ? 'En attente de génération' : 'Génération en cours...'}
+              </p>
+            </div>
+          )}
+          {/* Plan overlay */}
+          <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded">
+            <span className="text-[10px] text-white font-medium">{current?.label} · {current?.shotType}</span>
+          </div>
+          <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 bg-black/60 backdrop-blur-sm rounded">
+            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: getModelColor((current?.modelId || '').toLowerCase()) }} />
+            <span className="text-[10px] text-white/70">{current?.modelId}</span>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <div className="relative h-1.5 bg-dark-900 cursor-pointer" onClick={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect()
+          const pct = (e.clientX - rect.left) / rect.width
+          const newTime = pct * totalDur
+          setElapsed(newTime)
+          let acc = 0
+          for (let i = 0; i < clips.length; i++) { acc += clips[i].duration; if (newTime < acc) { setCurrentClip(i); break } }
+        }}>
+          {/* Clip segments */}
+          {(() => {
+            let acc = 0
+            return clips.map((c: any, i: number) => {
+              const left = (acc / totalDur) * 100
+              acc += c.duration
+              return <div key={i} className={`absolute top-0 h-full border-r border-dark-800 ${c.videoUrl ? '' : 'opacity-30'}`}
+                style={{ left: `${left}%`, width: `${(c.duration / totalDur) * 100}%`, backgroundColor: c.videoUrl ? getModelColor((c.modelId || '').toLowerCase()) + '30' : 'transparent' }} />
+            })
+          })()}
+          <div className="absolute top-0 left-0 h-full bg-orange-500 transition-all duration-100" style={{ width: `${(elapsed / totalDur) * 100}%` }} />
+        </div>
+
+        {/* Controls */}
+        <div className="bg-dark-950 px-4 py-2.5 flex items-center gap-3">
+          <button onClick={() => { setPlaying(!playing); if (elapsed >= totalDur) { setElapsed(0); setCurrentClip(0) } }}
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center">
+            {playing ? <Pause size={14} className="text-white" /> : <Play size={14} fill="white" className="text-white ml-0.5" />}
+          </button>
+          <span className="text-[11px] text-slate-500 tabular-nums">{fmtTime(elapsed)} / {fmtTime(totalDur)}</span>
+
+          {/* Clip dots */}
+          <div className="flex-1 flex items-center justify-center gap-1">
+            {clips.map((c: any, i: number) => (
+              <button key={i} onClick={() => {
+                let acc = 0; for (let j = 0; j < i; j++) acc += clips[j].duration
+                setElapsed(acc); setCurrentClip(i)
+              }}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  i === currentClip ? 'bg-orange-500 scale-125' :
+                  c.videoUrl ? 'bg-green-500/60' : 'bg-white/10'
+                }`}
+                title={c.label}
+              />
+            ))}
+          </div>
+
+          {/* Export */}
+          <button className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-medium rounded-lg flex items-center gap-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            disabled={completedCount < totalPlans}>
+            <Download size={12} /> Export {completedCount === totalPlans ? '4K' : `(${completedCount}/${totalPlans})`}
+          </button>
+        </div>
+      </div>
+
+      {/* Clip strip */}
+      <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide">
+        {clips.map((c: any, i: number) => (
+          <button key={i} onClick={() => {
+            let acc = 0; for (let j = 0; j < i; j++) acc += clips[j].duration
+            setElapsed(acc); setCurrentClip(i)
+          }}
+            className={`flex-shrink-0 rounded-lg overflow-hidden border transition-all ${
+              i === currentClip ? 'border-orange-500 ring-1 ring-orange-500/30' : 'border-dark-700 hover:border-dark-600'
+            }`}
+            style={{ width: 100 }}
+          >
+            <div className="relative h-14 bg-dark-900">
+              {c.videoUrl ? (
+                <video src={c.videoUrl} className="w-full h-full object-cover" muted preload="metadata" />
+              ) : (
+                <StoryboardSVG shotType={c.shotType} width={100} height={56} modelColor={getModelColor((c.modelId || '').toLowerCase())} />
+              )}
+              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent px-1.5 py-0.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[8px] font-bold text-white">{c.label}</span>
+                  {c.videoUrl ? <Check size={8} className="text-green-400" /> : <Clock size={8} className="text-slate-500" />}
+                </div>
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
 }

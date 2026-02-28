@@ -1,190 +1,812 @@
-import { getApiKey } from '@/lib/db/api-keys';
-import { createClient } from '@/lib/supabase/server';
+// ============================================================================
+// MISEN V8 — Generation Service
+// Session 1 : Service unifié de génération vidéo — 7 providers
+// Extends V7 generation.ts (Kling/Runway/Sora/Veo) + Seedance/Wan/Hailuo
+// © 2026 Jabrilia Éditions — Confidentiel
+// ============================================================================
 
-interface GenerationInput {
-  analysisId: string;
-  planIndex: number;
-  sceneIndex: number;
-  modelId: string;
-  prompt: string;
-  negativePrompt?: string;
-  duration?: number;
+import {
+  VideoProvider,
+  VideoModel,
+  GenerationRequest,
+  ProviderSubmitResponse,
+  ProviderStatusResponse,
+  GenerationStatus,
+  PROVIDER_MODEL_MAP,
+  PROVIDER_CAPABILITIES,
+  calculateCredits,
+} from '@/lib/types/generation';
+
+// ---------------------------------------------------------------------------
+// 1. Environment Config
+// ---------------------------------------------------------------------------
+
+interface ProviderConfig {
+  apiKey: string;
+  baseUrl: string;
+  version?: string;
 }
 
-interface GenerationResult {
-  generationId: string;
-  status: 'processing' | 'completed' | 'failed';
-  resultUrl?: string;
-  error?: string;
-}
-
-// Map modelId to provider
-function getProvider(modelId: string): string {
-  const map: Record<string, string> = {
-    'kling3': 'kling',
-    'runway4.5': 'runway',
-    'sora2': 'sora',
-    'veo3.1': 'veo',
-    'seedance2': 'seedance',
-    'wan2.5': 'wan',
-    'hailuo2.3': 'hailuo',
+function getProviderConfig(provider: VideoProvider): ProviderConfig {
+  const configs: Record<VideoProvider, () => ProviderConfig> = {
+    kling: () => ({
+      apiKey: process.env.KLING_API_KEY ?? '',
+      baseUrl: 'https://api.klingai.com/v1',
+    }),
+    runway: () => ({
+      apiKey: process.env.RUNWAY_API_KEY ?? '',
+      baseUrl: 'https://api.dev.runwayml.com/v1',
+      version: '2024-11-06',
+    }),
+    sora: () => ({
+      apiKey: process.env.OPENAI_API_KEY ?? '',
+      baseUrl: 'https://api.openai.com/v1',
+    }),
+    veo: () => ({
+      apiKey: process.env.GOOGLE_AI_API_KEY ?? '',
+      baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
+    }),
+    seedance: () => ({
+      apiKey: process.env.SEEDANCE_API_KEY ?? '',
+      baseUrl: 'https://api.seedance.com/v2',
+    }),
+    wan: () => ({
+      apiKey: process.env.WAN_API_KEY ?? '',
+      baseUrl: 'https://api.wan.ai/v1',
+    }),
+    hailuo: () => ({
+      apiKey: process.env.HAILUO_API_KEY ?? '',
+      baseUrl: 'https://api.hailuo.ai/v1',
+    }),
   };
-  return map[modelId] || modelId;
+
+  const config = configs[provider]();
+  if (!config.apiKey) {
+    throw new GenerationError(
+      `Missing API key for provider: ${provider}. Set the corresponding env variable.`,
+      provider,
+      'CONFIG_ERROR'
+    );
+  }
+  return config;
 }
 
-// Appels API vers les modèles IA
-async function callKling(apiKey: string, prompt: string, negativePrompt?: string): Promise<{ taskId: string }> {
-  const res = await fetch('https://api.klingai.com/v1/videos/text2video', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      prompt,
-      negative_prompt: negativePrompt || '',
-      cfg_scale: 0.5,
-      mode: 'std',
-      duration: '5',
-    }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'Kling API error');
-  return { taskId: data.data?.task_id || data.task_id };
-}
+// ---------------------------------------------------------------------------
+// 2. Custom Error
+// ---------------------------------------------------------------------------
 
-async function callRunway(apiKey: string, prompt: string): Promise<{ taskId: string }> {
-  const res = await fetch('https://api.dev.runwayml.com/v1/text_to_video', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      text_prompt: prompt,
-      seconds: 4,
-      seed: Math.floor(Math.random() * 999999),
-    }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Runway API error');
-  return { taskId: data.uuid || data.id };
-}
-
-async function callSora(apiKey: string, prompt: string): Promise<{ taskId: string }> {
-  const res = await fetch('https://api.openai.com/v1/videos/generations', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      model: 'sora',
-      prompt,
-      size: '1920x1080',
-      duration: 5,
-      n: 1,
-    }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error?.message || 'Sora API error');
-  return { taskId: data.id };
-}
-
-async function callVeo(apiKey: string, prompt: string): Promise<{ taskId: string }> {
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/veo-3.1:generateVideo?key=${apiKey}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      prompt: { text: prompt },
-      videoConfig: { aspectRatio: '16:9', durationSeconds: 5 },
-    }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error?.message || 'Veo API error');
-  return { taskId: data.name || data.id };
-}
-
-// Dispatch vers le bon modèle
-async function dispatchGeneration(provider: string, apiKey: string, prompt: string, negativePrompt?: string): Promise<{ taskId: string }> {
-  switch (provider) {
-    case 'kling': return callKling(apiKey, prompt, negativePrompt);
-    case 'runway': return callRunway(apiKey, prompt);
-    case 'sora': return callSora(apiKey, prompt);
-    case 'veo': return callVeo(apiKey, prompt);
-    // Les autres providers suivront le même pattern
-    default:
-      throw new Error(`Provider ${provider} non supporté pour le moment. Kling, Runway, Sora et Veo sont disponibles.`);
+export class GenerationError extends Error {
+  constructor(
+    message: string,
+    public provider: VideoProvider,
+    public code: string,
+    public retryable: boolean = false,
+  ) {
+    super(message);
+    this.name = 'GenerationError';
   }
 }
 
-export async function startGeneration(input: GenerationInput): Promise<GenerationResult> {
-  const provider = getProvider(input.modelId);
-  const apiKey = await getApiKey(provider);
+// ---------------------------------------------------------------------------
+// 3. Provider Adapters
+// ---------------------------------------------------------------------------
 
-  if (!apiKey) {
-    throw new Error(`Clé API manquante pour ${provider}. Configurez-la dans Réglages.`);
+interface ProviderAdapter {
+  submit(req: GenerationRequest, config: ProviderConfig): Promise<ProviderSubmitResponse>;
+  checkStatus(providerJobId: string, config: ProviderConfig): Promise<ProviderStatusResponse>;
+  cancel?(providerJobId: string, config: ProviderConfig): Promise<void>;
+}
+
+// ── 3.1 Kling 3.0 ──────────────────────────────────────────────────────────
+
+const klingAdapter: ProviderAdapter = {
+  async submit(req, config) {
+    const body: Record<string, unknown> = {
+      model_name: 'kling-v3',
+      prompt: req.prompt,
+      negative_prompt: req.negativePrompt ?? '',
+      duration: String(req.duration),
+      aspect_ratio: req.aspectRatio,
+      mode: 'professional',
+    };
+
+    if (req.referenceImageUrl) {
+      body.image_url = req.referenceImageUrl;
+    }
+    if (req.referenceVideoUrl) {
+      body.video_url = req.referenceVideoUrl;
+    }
+
+    const res = await fetchProvider(`${config.baseUrl}/videos/generations`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+    return {
+      providerJobId: data.data?.task_id ?? data.task_id,
+      estimatedDuration: req.duration * 10,
+    };
+  },
+
+  async checkStatus(providerJobId, config) {
+    const res = await fetchProvider(
+      `${config.baseUrl}/videos/generations/${providerJobId}`,
+      {
+        headers: { 'Authorization': `Bearer ${config.apiKey}` },
+      }
+    );
+
+    const data = await res.json();
+    const task = data.data ?? data;
+
+    return {
+      status: mapKlingStatus(task.task_status),
+      progress: task.task_status === 'processing' ? (task.progress ?? 50) : undefined,
+      resultUrl: task.task_result?.videos?.[0]?.url,
+      thumbnailUrl: task.task_result?.videos?.[0]?.thumbnail_url,
+      errorMessage: task.task_status_msg,
+    };
+  },
+
+  async cancel(providerJobId, config) {
+    await fetchProvider(`${config.baseUrl}/videos/generations/${providerJobId}/cancel`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${config.apiKey}` },
+    });
+  },
+};
+
+function mapKlingStatus(status: string): GenerationStatus {
+  const map: Record<string, GenerationStatus> = {
+    submitted: 'pending',
+    processing: 'processing',
+    succeed: 'completed',
+    failed: 'failed',
+    cancelled: 'cancelled',
+  };
+  return map[status] ?? 'processing';
+}
+
+// ── 3.2 Runway Gen-4.5 ─────────────────────────────────────────────────────
+
+const runwayAdapter: ProviderAdapter = {
+  async submit(req, config) {
+    const body: Record<string, unknown> = {
+      model: 'gen4_turbo',
+      promptText: req.prompt,
+      duration: req.duration,
+      ratio: req.aspectRatio.replace(':', ':'),
+      watermark: false,
+    };
+
+    if (req.referenceImageUrl) {
+      body.promptImage = req.referenceImageUrl;
+    }
+
+    const res = await fetchProvider(`${config.baseUrl}/image_to_video`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.apiKey}`,
+        'Content-Type': 'application/json',
+        ...(config.version ? { 'X-Runway-Version': config.version } : {}),
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+    return {
+      providerJobId: data.id,
+      estimatedDuration: 120,
+    };
+  },
+
+  async checkStatus(providerJobId, config) {
+    const res = await fetchProvider(`${config.baseUrl}/tasks/${providerJobId}`, {
+      headers: {
+        'Authorization': `Bearer ${config.apiKey}`,
+        ...(config.version ? { 'X-Runway-Version': config.version } : {}),
+      },
+    });
+
+    const data = await res.json();
+
+    return {
+      status: mapRunwayStatus(data.status),
+      progress: data.progress ? Math.round(data.progress * 100) : undefined,
+      resultUrl: data.output?.[0],
+      errorMessage: data.failure ?? data.failureCode,
+    };
+  },
+
+  async cancel(providerJobId, config) {
+    await fetchProvider(`${config.baseUrl}/tasks/${providerJobId}/cancel`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.apiKey}`,
+        ...(config.version ? { 'X-Runway-Version': config.version } : {}),
+      },
+    });
+  },
+};
+
+function mapRunwayStatus(status: string): GenerationStatus {
+  const map: Record<string, GenerationStatus> = {
+    PENDING: 'pending',
+    THROTTLED: 'pending',
+    RUNNING: 'processing',
+    SUCCEEDED: 'completed',
+    FAILED: 'failed',
+    CANCELLED: 'cancelled',
+  };
+  return map[status] ?? 'processing';
+}
+
+// ── 3.3 Sora 2 ─────────────────────────────────────────────────────────────
+
+const soraAdapter: ProviderAdapter = {
+  async submit(req, config) {
+    const body = {
+      model: 'sora-2',
+      input: {
+        prompt: req.prompt,
+        ...(req.referenceImageUrl ? { image_url: req.referenceImageUrl } : {}),
+      },
+      parameters: {
+        duration: req.duration,
+        aspect_ratio: req.aspectRatio,
+        n: 1,
+      },
+    };
+
+    const res = await fetchProvider(`${config.baseUrl}/videos/generations`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+    return {
+      providerJobId: data.id,
+      estimatedDuration: 180,
+    };
+  },
+
+  async checkStatus(providerJobId, config) {
+    const res = await fetchProvider(
+      `${config.baseUrl}/videos/generations/${providerJobId}`,
+      {
+        headers: { 'Authorization': `Bearer ${config.apiKey}` },
+      }
+    );
+
+    const data = await res.json();
+
+    return {
+      status: mapSoraStatus(data.status),
+      progress: data.status === 'in_progress' ? (data.progress ?? 50) : undefined,
+      resultUrl: data.data?.[0]?.url,
+      thumbnailUrl: data.data?.[0]?.thumbnail_url,
+      errorMessage: data.error?.message,
+    };
+  },
+};
+
+function mapSoraStatus(status: string): GenerationStatus {
+  const map: Record<string, GenerationStatus> = {
+    queued: 'pending',
+    in_progress: 'processing',
+    completed: 'completed',
+    failed: 'failed',
+    cancelled: 'cancelled',
+  };
+  return map[status] ?? 'processing';
+}
+
+// ── 3.4 Veo 3.1 ────────────────────────────────────────────────────────────
+
+const veoAdapter: ProviderAdapter = {
+  async submit(req, config) {
+    const body = {
+      model: 'veo-3.1',
+      contents: [{
+        parts: [
+          { text: req.prompt },
+          ...(req.referenceImageUrl
+            ? [{ inline_data: { mime_type: 'image/png', url: req.referenceImageUrl } }]
+            : []),
+        ],
+      }],
+      generationConfig: {
+        videoDuration: `${req.duration}s`,
+        aspectRatio: req.aspectRatio,
+        numberOfVideos: 1,
+        includeAudio: true,
+      },
+    };
+
+    const res = await fetchProvider(
+      `${config.baseUrl}/models/veo-3.1:generateContent`,
+      {
+        method: 'POST',
+        headers: {
+          'x-goog-api-key': config.apiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      }
+    );
+
+    const data = await res.json();
+    const operationName = data.name ?? data.operationName;
+
+    return {
+      providerJobId: operationName,
+      estimatedDuration: 120,
+    };
+  },
+
+  async checkStatus(providerJobId, config) {
+    const res = await fetchProvider(
+      `${config.baseUrl}/operations/${providerJobId}`,
+      {
+        headers: { 'x-goog-api-key': config.apiKey },
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.done) {
+      if (data.error) {
+        return {
+          status: 'failed' as GenerationStatus,
+          errorMessage: data.error.message,
+        };
+      }
+      const video = data.response?.generatedVideos?.[0];
+      return {
+        status: 'completed' as GenerationStatus,
+        resultUrl: video?.uri ?? video?.video?.uri,
+        thumbnailUrl: video?.thumbnail?.uri,
+      };
+    }
+
+    return {
+      status: 'processing' as GenerationStatus,
+      progress: data.metadata?.progress
+        ? Math.round(data.metadata.progress * 100)
+        : undefined,
+    };
+  },
+};
+
+// ── 3.5 Seedance 2.0 (NOUVEAU V8) ──────────────────────────────────────────
+
+const seedanceAdapter: ProviderAdapter = {
+  async submit(req, config) {
+    const body: Record<string, unknown> = {
+      model: 'seedance-2.0',
+      prompt: req.prompt,
+      negative_prompt: req.negativePrompt ?? '',
+      duration: req.duration,
+      aspect_ratio: req.aspectRatio,
+      fps: 24,
+      resolution: '2k',
+      audio: {
+        enabled: true,
+        mode: 'auto',
+      },
+    };
+
+    if (req.referenceImageUrl) {
+      body.reference_image = {
+        url: req.referenceImageUrl,
+        influence: 0.8,
+      };
+    }
+
+    if (req.referenceVideoUrl) {
+      body.reference_video = {
+        url: req.referenceVideoUrl,
+        mode: 'style_transfer',
+      };
+    }
+
+    if (req.seed !== undefined) {
+      body.seed = req.seed;
+    }
+
+    const res = await fetchProvider(`${config.baseUrl}/generations`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+    return {
+      providerJobId: data.generation_id ?? data.id,
+      estimatedDuration: req.duration * 8,
+    };
+  },
+
+  async checkStatus(providerJobId, config) {
+    const res = await fetchProvider(
+      `${config.baseUrl}/generations/${providerJobId}`,
+      {
+        headers: { 'Authorization': `Bearer ${config.apiKey}` },
+      }
+    );
+
+    const data = await res.json();
+
+    return {
+      status: mapSeedanceStatus(data.status),
+      progress: data.progress ?? undefined,
+      resultUrl: data.output?.video_url,
+      thumbnailUrl: data.output?.thumbnail_url,
+      errorMessage: data.error?.message ?? data.error_message,
+    };
+  },
+
+  async cancel(providerJobId, config) {
+    await fetchProvider(`${config.baseUrl}/generations/${providerJobId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${config.apiKey}` },
+    });
+  },
+};
+
+function mapSeedanceStatus(status: string): GenerationStatus {
+  const map: Record<string, GenerationStatus> = {
+    queued: 'pending',
+    pending: 'pending',
+    generating: 'processing',
+    processing: 'processing',
+    completed: 'completed',
+    success: 'completed',
+    failed: 'failed',
+    error: 'failed',
+    cancelled: 'cancelled',
+  };
+  return map[status] ?? 'processing';
+}
+
+// ── 3.6 Wan 2.5 (NOUVEAU V8) ───────────────────────────────────────────────
+
+const wanAdapter: ProviderAdapter = {
+  async submit(req, config) {
+    const body: Record<string, unknown> = {
+      model: 'wan-2.5',
+      prompt: req.prompt,
+      duration: req.duration,
+      aspect_ratio: req.aspectRatio,
+      resolution: '1080p',
+      fps: 16,
+    };
+
+    if (req.referenceImageUrl) {
+      body.image_url = req.referenceImageUrl;
+    }
+
+    if (req.negativePrompt) {
+      body.negative_prompt = req.negativePrompt;
+    }
+
+    const res = await fetchProvider(`${config.baseUrl}/video/generate`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+    return {
+      providerJobId: data.task_id ?? data.id,
+      estimatedDuration: req.duration * 12,
+    };
+  },
+
+  async checkStatus(providerJobId, config) {
+    const res = await fetchProvider(
+      `${config.baseUrl}/video/status/${providerJobId}`,
+      {
+        headers: { 'Authorization': `Bearer ${config.apiKey}` },
+      }
+    );
+
+    const data = await res.json();
+
+    return {
+      status: mapWanStatus(data.status),
+      progress: data.progress ?? undefined,
+      resultUrl: data.result?.video_url ?? data.video_url,
+      thumbnailUrl: data.result?.cover_url ?? data.cover_url,
+      errorMessage: data.message ?? data.error,
+    };
+  },
+};
+
+function mapWanStatus(status: string): GenerationStatus {
+  const map: Record<string, GenerationStatus> = {
+    pending: 'pending',
+    queued: 'pending',
+    running: 'processing',
+    processing: 'processing',
+    success: 'completed',
+    completed: 'completed',
+    failed: 'failed',
+    error: 'failed',
+  };
+  return map[status] ?? 'processing';
+}
+
+// ── 3.7 Hailuo 2.3 (NOUVEAU V8) ────────────────────────────────────────────
+
+const hailuoAdapter: ProviderAdapter = {
+  async submit(req, config) {
+    const body: Record<string, unknown> = {
+      model: 'hailuo-2.3',
+      prompt: req.prompt,
+      duration: req.duration,
+      aspect_ratio: req.aspectRatio,
+      resolution: '1080p',
+      enable_audio: true,
+    };
+
+    if (req.negativePrompt) {
+      body.negative_prompt = req.negativePrompt;
+    }
+
+    const res = await fetchProvider(`${config.baseUrl}/video/generations`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+    return {
+      providerJobId: data.id ?? data.generation_id,
+      estimatedDuration: req.duration * 10,
+    };
+  },
+
+  async checkStatus(providerJobId, config) {
+    const res = await fetchProvider(
+      `${config.baseUrl}/video/generations/${providerJobId}`,
+      {
+        headers: { 'Authorization': `Bearer ${config.apiKey}` },
+      }
+    );
+
+    const data = await res.json();
+
+    return {
+      status: mapHailuoStatus(data.status),
+      progress: data.progress ?? undefined,
+      resultUrl: data.video?.url ?? data.result_url,
+      thumbnailUrl: data.video?.thumbnail ?? data.thumbnail_url,
+      errorMessage: data.error?.message ?? data.error_msg,
+    };
+  },
+};
+
+function mapHailuoStatus(status: string): GenerationStatus {
+  const map: Record<string, GenerationStatus> = {
+    pending: 'pending',
+    queued: 'pending',
+    processing: 'processing',
+    generating: 'processing',
+    completed: 'completed',
+    success: 'completed',
+    failed: 'failed',
+    error: 'failed',
+  };
+  return map[status] ?? 'processing';
+}
+
+// ---------------------------------------------------------------------------
+// 4. Adapter Registry
+// ---------------------------------------------------------------------------
+
+const ADAPTERS: Record<VideoProvider, ProviderAdapter> = {
+  kling: klingAdapter,
+  runway: runwayAdapter,
+  sora: soraAdapter,
+  veo: veoAdapter,
+  seedance: seedanceAdapter,
+  wan: wanAdapter,
+  hailuo: hailuoAdapter,
+};
+
+// ---------------------------------------------------------------------------
+// 5. Public API — Generation Service
+// ---------------------------------------------------------------------------
+
+/**
+ * Submit a video generation request to the specified provider.
+ * Returns the provider job ID for subsequent polling.
+ */
+export async function submitGeneration(
+  req: GenerationRequest
+): Promise<ProviderSubmitResponse> {
+  const adapter = ADAPTERS[req.provider];
+  if (!adapter) {
+    throw new GenerationError(
+      `Unknown provider: ${req.provider}`,
+      req.provider,
+      'UNKNOWN_PROVIDER'
+    );
   }
 
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Non authentifié');
+  // Validate capabilities
+  const caps = PROVIDER_CAPABILITIES[req.provider];
+  if (req.duration > caps.maxDuration) {
+    throw new GenerationError(
+      `Duration ${req.duration}s exceeds max ${caps.maxDuration}s for ${req.provider}`,
+      req.provider,
+      'DURATION_EXCEEDED'
+    );
+  }
 
-  // Crée l'enregistrement generation
-  const { data: gen, error: insertError } = await supabase
-    .from('generations')
-    .insert({
-      analysis_id: input.analysisId,
-      user_id: user.id,
-      plan_index: input.planIndex,
-      scene_index: input.sceneIndex,
-      model_id: input.modelId,
-      prompt: input.prompt,
-      negative_prompt: input.negativePrompt || null,
-      status: 'processing',
-    })
-    .select()
-    .single();
+  if (req.referenceImageUrl && !caps.supportsImageRef) {
+    throw new GenerationError(
+      `${req.provider} does not support image references`,
+      req.provider,
+      'IMAGE_REF_UNSUPPORTED'
+    );
+  }
 
-  if (insertError) throw new Error(insertError.message);
+  if (req.referenceVideoUrl && !caps.supportsVideoRef) {
+    throw new GenerationError(
+      `${req.provider} does not support video references`,
+      req.provider,
+      'VIDEO_REF_UNSUPPORTED'
+    );
+  }
+
+  const config = getProviderConfig(req.provider);
 
   try {
-    // Appel API
-    const result = await dispatchGeneration(provider, apiKey, input.prompt, input.negativePrompt);
+    return await adapter.submit(req, config);
+  } catch (error) {
+    if (error instanceof GenerationError) throw error;
 
-    // Met à jour avec le taskId (on stocke dans result_url temporairement)
-    await supabase
-      .from('generations')
-      .update({
-        status: 'processing',
-        result_url: `task:${result.taskId}`,
-      })
-      .eq('id', gen.id);
-
-    return {
-      generationId: gen.id,
-      status: 'processing',
-    };
-  } catch (error: any) {
-    // Erreur API → marque comme failed
-    await supabase
-      .from('generations')
-      .update({
-        status: 'failed',
-        error_message: error.message,
-      })
-      .eq('id', gen.id);
-
-    return {
-      generationId: gen.id,
-      status: 'failed',
-      error: error.message,
-    };
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    throw new GenerationError(
+      `Generation submission failed for ${req.provider}: ${message}`,
+      req.provider,
+      'SUBMIT_FAILED',
+      true
+    );
   }
 }
 
-export async function getGenerations(analysisId: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
+/**
+ * Check the status of an existing generation job.
+ */
+export async function checkGenerationStatus(
+  provider: VideoProvider,
+  providerJobId: string
+): Promise<ProviderStatusResponse> {
+  const adapter = ADAPTERS[provider];
+  if (!adapter) {
+    throw new GenerationError(
+      `Unknown provider: ${provider}`,
+      provider,
+      'UNKNOWN_PROVIDER'
+    );
+  }
 
-  const { data } = await supabase
-    .from('generations')
-    .select('*')
-    .eq('analysis_id', analysisId)
-    .eq('user_id', user.id)
-    .order('plan_index', { ascending: true });
+  const config = getProviderConfig(provider);
 
-  return data || [];
+  try {
+    return await adapter.checkStatus(providerJobId, config);
+  } catch (error) {
+    if (error instanceof GenerationError) throw error;
+
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    throw new GenerationError(
+      `Status check failed for ${provider}: ${message}`,
+      provider,
+      'STATUS_CHECK_FAILED',
+      true
+    );
+  }
+}
+
+/**
+ * Cancel a running generation (if supported by the provider).
+ */
+export async function cancelGeneration(
+  provider: VideoProvider,
+  providerJobId: string
+): Promise<void> {
+  const adapter = ADAPTERS[provider];
+  if (!adapter?.cancel) {
+    throw new GenerationError(
+      `Cancellation not supported for ${provider}`,
+      provider,
+      'CANCEL_UNSUPPORTED'
+    );
+  }
+
+  const config = getProviderConfig(provider);
+  await adapter.cancel(providerJobId, config);
+}
+
+/**
+ * Get model string for a provider.
+ */
+export function getModelForProvider(provider: VideoProvider): VideoModel {
+  return PROVIDER_MODEL_MAP[provider];
+}
+
+// ---------------------------------------------------------------------------
+// 6. HTTP Helper with retry
+// ---------------------------------------------------------------------------
+
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 1000;
+
+async function fetchProvider(
+  url: string,
+  init?: RequestInit,
+  retries = MAX_RETRIES
+): Promise<Response> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, {
+        ...init,
+        signal: AbortSignal.timeout(30_000),
+      });
+
+      // Rate limited — retry
+      if (res.status === 429 && attempt < retries) {
+        const retryAfter = parseInt(res.headers.get('Retry-After') ?? '5', 10);
+        await sleep(retryAfter * 1000);
+        continue;
+      }
+
+      // Server error — retry
+      if (res.status >= 500 && attempt < retries) {
+        await sleep(RETRY_DELAY_MS * (attempt + 1));
+        continue;
+      }
+
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        throw new Error(`HTTP ${res.status}: ${body.slice(0, 200)}`);
+      }
+
+      return res;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      if (attempt < retries) {
+        await sleep(RETRY_DELAY_MS * (attempt + 1));
+      }
+    }
+  }
+
+  throw lastError ?? new Error('Request failed after retries');
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
