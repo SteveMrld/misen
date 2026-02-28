@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { StoryboardSVG } from '@/components/ui/storyboard-svg'
 import { ModelBadge, getModelColor, ModelLegend } from '@/components/ui/model-badge'
+import { ScreenplayAssistant } from '@/components/ui/screenplay-assistant'
 
 // Demo images for Render panel
 import imgSc1P1 from '@/public/images/demo_sc1_p1_fleuve.png'
@@ -448,6 +449,12 @@ function SPC({ plan, index, analysisId }: { plan: any; index: number; analysisId
 function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, saving, analyzing, error, handleSave, handleAnalyze, loadDemo }: any) {
   return (
     <div className="space-y-4">
+      {/* AI Screenplay Assistant */}
+      <ScreenplayAssistant
+        onUseScript={(script: string) => setScriptText(script)}
+        existingScript={scriptText.trim() || undefined}
+      />
+
       <div className="bg-dark-900 rounded-xl border border-dark-700">
         <div className="flex items-center justify-between px-4 py-3 border-b border-dark-700">
           <div className="flex items-center gap-2">
