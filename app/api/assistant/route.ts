@@ -135,8 +135,8 @@ async function logUsage(supabase: any, userId: string, provider: string, usedSer
   });
 }
 
-// Max server-key requests per month (~50€ / 0.025$ per request = 2000)
-const GLOBAL_MONTHLY_CAP = 2000;
+// Max server-key requests per month (~3€ / 0.025$ per request = 125)
+const GLOBAL_MONTHLY_CAP = 125;
 
 // ---------------------------------------------------------------------------
 // POST handler
