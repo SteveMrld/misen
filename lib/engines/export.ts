@@ -7,7 +7,7 @@ export interface ExportOptions {
   projectName: string;
   scriptText: string;
   analysis: any;
-  format: 'json' | 'csv' | 'fountain' | 'prompts' | 'bible_html';
+  format: 'json' | 'csv' | 'fountain' | 'prompts' | 'bible_html' | 'pdf';
 }
 
 // ─── JSON ───

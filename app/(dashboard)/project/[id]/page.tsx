@@ -34,6 +34,7 @@ export default function ProjectPage() {
   const [mode, setMode] = useState<Mode>('simple')
   const [tab, setTab] = useState<Tab>('script')
   const [showShortcuts, setShowShortcuts] = useState(false)
+  const [showExportMenu, setShowExportMenu] = useState(false)
 
   // Keyboard shortcuts — defined after handlers
   const tabKeys: Tab[] = ['script', 'analyse', 'timeline', 'copilot', 'media', 'subtitles', 'voiceover']
@@ -114,13 +115,48 @@ export default function ProjectPage() {
             {analysis && <p className="text-xs text-slate-500">{analysis.scenes?.length || 0} scènes • {analysis.plans?.length || 0} plans • ${(analysis.costTotal || 0).toFixed(2)}</p>}
           </div>
         </div>
-        <div className="flex items-center gap-2 bg-dark-900 rounded-lg p-1 border border-dark-700 self-start sm:self-auto ml-12 sm:ml-0">
+        <div className="flex items-center gap-2 self-start sm:self-auto ml-12 sm:ml-0">
+          {/* Export menu */}
+          {analysis && (
+            <div className="relative">
+              <button onClick={() => setShowExportMenu(!showExportMenu)} className="flex items-center gap-1.5 px-3 py-1.5 bg-dark-900 border border-dark-700 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors">
+                <Download size={13} /> Export
+              </button>
+              {showExportMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowExportMenu(false)} />
+                  <div className="absolute right-0 top-9 w-48 bg-dark-800 border border-dark-700 rounded-xl shadow-2xl shadow-black/40 z-50 py-1.5">
+                    {[
+                      { format: 'pdf', label: 'Bible PDF', icon: '📄', desc: 'Production book' },
+                      { format: 'bible_html', label: 'Bible HTML', icon: '🌐', desc: 'Vue navigateur' },
+                      { format: 'json', label: 'JSON complet', icon: '📦', desc: 'Données brutes' },
+                      { format: 'csv', label: 'CSV plans', icon: '📊', desc: 'Tableur' },
+                      { format: 'fountain', label: 'Fountain', icon: '🎬', desc: 'Scénario' },
+                      { format: 'prompts', label: 'Prompts TXT', icon: '📝', desc: 'Copier-coller' },
+                    ].map(exp => (
+                      <button key={exp.format} onClick={() => { window.open(`/api/projects/${projectId}/export?format=${exp.format}`); setShowExportMenu(false) }}
+                        className="flex items-center gap-3 w-full px-3 py-2 hover:bg-dark-700 transition-colors text-left">
+                        <span className="text-sm">{exp.icon}</span>
+                        <div>
+                          <p className="text-xs font-medium text-slate-200">{exp.label}</p>
+                          <p className="text-[10px] text-slate-500">{exp.desc}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+          {/* Mode toggle */}
+          <div className="flex items-center gap-2 bg-dark-900 rounded-lg p-1 border border-dark-700">
           <button onClick={() => setMode('simple')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${mode === 'simple' ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20' : 'text-slate-400 hover:text-slate-200'}`}>
             <Wand2 size={13} /> Simple
           </button>
           <button onClick={() => setMode('expert')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${mode === 'expert' ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20' : 'text-slate-400 hover:text-slate-200'}`}>
             <SlidersHorizontal size={13} /> Expert
           </button>
+          </div>
         </div>
       </div>
 
@@ -426,7 +462,7 @@ function AR({ analysis, analysisId }: { analysis: any; analysisId?: string | nul
 
     return (<div className="space-y-4">
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <St icon={Film} label="Scènes" value={scenes.length} /><St icon={Eye} label="Plans" value={plans.length} />
         <St icon={DollarSign} label="Coût" value={`$${cost.toFixed(2)}`} /><St icon={Shield} label="Continuité" value={`${cont.score}%`} />
       </div>

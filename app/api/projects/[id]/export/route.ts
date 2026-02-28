@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getProject } from '@/lib/db/projects';
 import { generateExport } from '@/lib/engines/export';
+import { exportPDF } from '@/lib/engines/export-pdf';
 import { createClient } from '@/lib/supabase/server';
 
 export async function GET(
@@ -24,6 +25,22 @@ export async function GET(
 
     const analysis = analyses?.[0]?.result || {};
     const format = (request.nextUrl.searchParams.get('format') || 'json') as any;
+
+    // PDF is special — returns binary Buffer
+    if (format === 'pdf') {
+      const safeName = (project.name || 'MISEN_Export').replace(/[^a-zA-Z0-9-_àâéèêëïîôùûç ]/gi, '').replace(/\s+/g, '_');
+      const pdfBuffer = await exportPDF({
+        projectName: project.name || 'MISEN Export',
+        scriptText: project.script_text || '',
+        analysis,
+      });
+      return new NextResponse(new Uint8Array(pdfBuffer), {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="${safeName}_bible.pdf"`,
+        },
+      });
+    }
 
     const result = generateExport({
       projectName: project.name || 'MISEN Export',
