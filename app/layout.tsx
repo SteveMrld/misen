@@ -9,7 +9,11 @@ export const metadata: Metadata = {
   keywords: ['MISEN', 'IA', 'cinéma', 'production', 'vidéo', 'scénario', 'storyboard', 'Kling', 'Runway', 'Sora', 'mise en scène', 'intelligence artificielle'],
   authors: [{ name: 'Steve Moradel' }],
   icons: {
-    icon: '/favicon.png',
+    icon: [
+      { url: '/favicon.ico', sizes: '16x16 32x32' },
+      { url: '/favicon.png', type: 'image/png', sizes: '32x32' },
+      { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
+    ],
     apple: '/apple-touch-icon.png',
   },
   openGraph: {
