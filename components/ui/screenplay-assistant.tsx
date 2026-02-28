@@ -57,12 +57,18 @@ export function ScreenplayAssistant({
         body: JSON.stringify({ messages: newMessages }),
       })
       const data = await res.json()
-      if (data.error) throw new Error(data.error)
-      setMessages([...newMessages, { role: 'assistant', content: data.response }])
+      if (data.error) {
+        const errMsg = data.error.includes('clé API')
+          ? `⚠️ ${data.error}\n\n👉 Rendez-vous dans Réglages → Clés API pour ajouter votre clé Claude (Anthropic) ou OpenAI.`
+          : `⚠️ Erreur : ${data.error}`
+        setMessages([...newMessages, { role: 'assistant', content: errMsg }])
+      } else {
+        setMessages([...newMessages, { role: 'assistant', content: data.response }])
+      }
     } catch (e: any) {
       setMessages([...newMessages, {
         role: 'assistant',
-        content: `⚠️ Erreur : ${e.message || 'Impossible de contacter l\'assistant'}. Vérifiez que la clé API est configurée dans les réglages.`,
+        content: `⚠️ Impossible de contacter l'assistant. Vérifiez votre connexion et vos clés API dans Réglages.`,
       }])
     } finally {
       setLoading(false)

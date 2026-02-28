@@ -7,6 +7,8 @@ import { User, Key, Save, Loader2, Check, Trash2, Eye, EyeOff, CreditCard, Zap, 
 import { CostsDashboard } from '@/components/ui/costs-dashboard'
 
 const AI_PROVIDERS = [
+  { id: 'anthropic', name: '🧠 Claude (Assistant scénariste)', placeholder: 'sk-ant-...' },
+  { id: 'openai', name: '🤖 OpenAI GPT (Assistant fallback)', placeholder: 'sk-...' },
   { id: 'kling', name: 'Kling 3.0', placeholder: 'sk-kling-...' },
   { id: 'runway', name: 'Runway Gen-4.5', placeholder: 'rw_...' },
   { id: 'sora', name: 'Sora 2', placeholder: 'sk-...' },

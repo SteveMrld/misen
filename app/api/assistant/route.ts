@@ -1,11 +1,12 @@
 // ============================================================================
 // MISEN V8 — Assistant Scénariste IA
-// Accompagne l'utilisateur de l'idée au scénario structuré
-// Utilise Claude (Anthropic) ou GPT (OpenAI) selon la config
+// Utilise la clé API de l'utilisateur (stockée dans Settings > Clés API)
+// Priorité : Claude (Anthropic) → GPT (OpenAI)
 // ============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getApiKey } from '@/lib/db/api-keys';
 
 const SYSTEM_PROMPT = `Tu es un scénariste professionnel intégré à MISEN, un outil de production vidéo IA.
 Ton rôle : transformer les idées de l'utilisateur en scénarios structurés au format cinématographique.
@@ -32,13 +33,10 @@ COMPORTEMENT :
 - Sois créatif mais pragmatique — le scénario sera analysé par des moteurs IA ensuite`;
 
 // ---------------------------------------------------------------------------
-// Provider abstraction
+// Provider calls
 // ---------------------------------------------------------------------------
 
-async function callClaude(messages: { role: string; content: string }[]): Promise<string> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error('ANTHROPIC_API_KEY non configurée');
-
+async function callClaude(apiKey: string, messages: { role: string; content: string }[]): Promise<string> {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -59,17 +57,14 @@ async function callClaude(messages: { role: string; content: string }[]): Promis
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || `Claude API error ${res.status}`);
+    throw new Error(err.error?.message || `Claude API erreur ${res.status}`);
   }
 
   const data = await res.json();
   return data.content?.[0]?.text || '';
 }
 
-async function callGPT(messages: { role: string; content: string }[]): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error('OPENAI_API_KEY non configurée');
-
+async function callGPT(apiKey: string, messages: { role: string; content: string }[]): Promise<string> {
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -88,7 +83,7 @@ async function callGPT(messages: { role: string; content: string }[]): Promise<s
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || `OpenAI API error ${res.status}`);
+    throw new Error(err.error?.message || `OpenAI API erreur ${res.status}`);
   }
 
   const data = await res.json();
@@ -107,26 +102,41 @@ export async function POST(request: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
     const body = await request.json();
-    const { messages, provider } = body;
+    const { messages, provider: requestedProvider } = body;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: 'Messages requis' }, { status: 400 });
     }
 
-    // Pick provider: prefer Claude, fallback to GPT
-    let response: string;
-    const useProvider = provider || (process.env.ANTHROPIC_API_KEY ? 'claude' : 'openai');
+    // Get user's API keys from their settings
+    const anthropicKey = await getApiKey('anthropic');
+    const openaiKey = await getApiKey('openai');
 
-    if (useProvider === 'claude') {
-      response = await callClaude(messages);
-    } else {
-      response = await callGPT(messages);
+    if (!anthropicKey && !openaiKey) {
+      return NextResponse.json({
+        error: 'Aucune clé API configurée. Allez dans Réglages → Clés API pour ajouter votre clé Claude ou OpenAI.',
+      }, { status: 400 });
     }
 
-    return NextResponse.json({
-      response,
-      provider: useProvider,
-    });
+    // Pick provider: respect user preference, otherwise Claude first
+    let response: string;
+    let usedProvider: string;
+
+    if (requestedProvider === 'openai' && openaiKey) {
+      response = await callGPT(openaiKey, messages);
+      usedProvider = 'openai';
+    } else if (requestedProvider === 'claude' && anthropicKey) {
+      response = await callClaude(anthropicKey, messages);
+      usedProvider = 'claude';
+    } else if (anthropicKey) {
+      response = await callClaude(anthropicKey, messages);
+      usedProvider = 'claude';
+    } else {
+      response = await callGPT(openaiKey!, messages);
+      usedProvider = 'openai';
+    }
+
+    return NextResponse.json({ response, provider: usedProvider });
   } catch (error: any) {
     console.error('[Assistant] Error:', error);
     return NextResponse.json(
