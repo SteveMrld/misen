@@ -10,6 +10,23 @@ import {
 } from 'lucide-react'
 import { StoryboardSVG } from '@/components/ui/storyboard-svg'
 import { ModelBadge, getModelColor, ModelLegend } from '@/components/ui/model-badge'
+
+// Demo images for Render panel
+import imgSc1P1 from '@/public/images/demo_sc1_p1_fleuve.png'
+import imgSc1P2 from '@/public/images/demo_sc1_p2_visage.png'
+import imgSc1P3 from '@/public/images/demo_sc1_p3_photo.png'
+import imgSc2P1 from '@/public/images/demo_sc2_p1_pont.png'
+import imgSc2P2 from '@/public/images/demo_sc2_p2_main.png'
+import imgSc2P3 from '@/public/images/demo_sc2_p3_silhouettes.png'
+import imgSc3P1 from '@/public/images/demo_sc3_p1_hopital.png'
+import imgSc3P2 from '@/public/images/demo_sc3_p2_fenetre.png'
+import imgSc4P1 from '@/public/images/demo_sc4_p1_retrouvailles.png'
+import imgSc4P2 from '@/public/images/demo_sc4_p2_caillou.png'
+
+const DEMO_IMAGES = [
+  imgSc1P1, imgSc1P2, imgSc1P3, imgSc2P1, imgSc2P2,
+  imgSc2P3, imgSc3P1, imgSc3P2, imgSc4P1, imgSc4P2,
+]
 import { CompareButton } from '@/components/ui/compare-panel'
 import { useKeyboardShortcuts, ShortcutOverlay } from '@/components/ui/keyboard-shortcuts'
 
@@ -775,9 +792,13 @@ function RenderPanel({ analysis, analysisId, projectName }: { analysis: any; ana
   const completedCount = plans.filter((_: any, i: number) => getGenForPlan(i)).length
   const totalPlans = plans.length
 
+  // Detect demo project for preview images
+  const isDemo = (projectName || '').toLowerCase().includes('démo') || (projectName || '').toLowerCase().includes('demo')
+
   // Build clip list from completed generations
   const clips = plans.map((p: any, i: number) => {
     const gen = getGenForPlan(i)
+    const demoImg = isDemo && DEMO_IMAGES[i % DEMO_IMAGES.length] ? DEMO_IMAGES[i % DEMO_IMAGES.length].src : null
     return {
       planIndex: i,
       label: `P${i + 1}`,
@@ -785,7 +806,8 @@ function RenderPanel({ analysis, analysisId, projectName }: { analysis: any; ana
       modelId: p?.modelId || '',
       duration: p?.estimatedDuration || 3,
       videoUrl: gen?.result_url || null,
-      status: gen ? 'completed' : 'pending',
+      imageUrl: demoImg,
+      status: gen ? 'completed' : (demoImg ? 'preview' : 'pending'),
     }
   })
 
@@ -827,9 +849,17 @@ function RenderPanel({ analysis, analysisId, projectName }: { analysis: any; ana
           <span className="text-sm font-medium text-slate-200">{projectName || 'Rendu'}</span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-400">{completedCount}/{totalPlans} plans générés</span>
+          <span className="text-xs text-slate-400">
+            {isDemo && completedCount === 0
+              ? `${Math.min(totalPlans, DEMO_IMAGES.length)}/${totalPlans} plans (aperçu)`
+              : `${completedCount}/${totalPlans} plans générés`}
+          </span>
           <div className="w-24 h-1.5 bg-dark-700 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-orange-600 to-green-500 rounded-full transition-all" style={{ width: `${totalPlans > 0 ? (completedCount / totalPlans) * 100 : 0}%` }} />
+            <div className="h-full bg-gradient-to-r from-orange-600 to-green-500 rounded-full transition-all" style={{
+              width: `${totalPlans > 0 ? (isDemo && completedCount === 0
+                ? (Math.min(totalPlans, DEMO_IMAGES.length) / totalPlans) * 100
+                : (completedCount / totalPlans) * 100) : 0}%`
+            }} />
           </div>
           <button onClick={fetchGenerations} className="p-1.5 rounded hover:bg-white/5">
             <RefreshCw size={14} className={`text-slate-400 ${loading ? 'animate-spin' : ''}`} />
@@ -840,7 +870,7 @@ function RenderPanel({ analysis, analysisId, projectName }: { analysis: any; ana
       {/* Player */}
       <div className="bg-black rounded-xl overflow-hidden border border-white/[0.06]">
         {/* Video area */}
-        <div className="relative aspect-video bg-dark-950">
+        <div className="relative aspect-video bg-dark-950 overflow-hidden">
           {current?.videoUrl ? (
             <video
               ref={videoRef}
@@ -849,6 +879,16 @@ function RenderPanel({ analysis, analysisId, projectName }: { analysis: any; ana
               className="w-full h-full object-contain"
               autoPlay={playing}
               muted
+            />
+          ) : current?.imageUrl ? (
+            <img
+              key={currentClip}
+              src={current.imageUrl}
+              alt={current.label}
+              className="w-full h-full object-cover transition-opacity duration-700"
+              style={{
+                animation: playing ? `kb-pan ${(current.duration || 3) * 1.5}s ease-in-out forwards` : 'none',
+              }}
             />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center">
@@ -863,6 +903,30 @@ function RenderPanel({ analysis, analysisId, projectName }: { analysis: any; ana
               </p>
             </div>
           )}
+          {/* Cinematic vignette for images */}
+          {(current?.imageUrl || current?.videoUrl) && (
+            <div className="absolute inset-0 shadow-[inset_0_0_80px_rgba(0,0,0,0.4)] pointer-events-none" />
+          )}
+          {/* Subtitle overlay for demo */}
+          {isDemo && current?.imageUrl && (() => {
+            const subs: Record<number, string> = { 1: 'On y va aujourd\u2019hui. Pas vrai\u00A0?', 4: 'On se promet un truc\u2026', 5: 'On fera tout ensemble.', 6: '\u00C7a fait deux ans.', 7: 'On avait dit\u2026 ensemble.' }
+            const sub = subs[currentClip]
+            return sub ? (
+              <div className="absolute bottom-6 left-0 right-0 text-center">
+                <span className="bg-black/70 backdrop-blur-sm px-4 py-1.5 rounded-md text-white text-sm font-medium">{sub}</span>
+              </div>
+            ) : null
+          })()}
+          {/* Play overlay */}
+          {!playing && elapsed === 0 && (current?.imageUrl || current?.videoUrl) && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 cursor-pointer"
+              onClick={() => setPlaying(true)}>
+              <p className="text-white/50 text-[10px] tracking-[0.2em] uppercase mb-3">{projectName}</p>
+              <div className="w-14 h-14 rounded-full bg-orange-600/90 hover:bg-orange-500 flex items-center justify-center shadow-xl transition-transform hover:scale-110">
+                <Play size={24} fill="white" className="text-white ml-0.5" />
+              </div>
+            </div>
+          )}
           {/* Plan overlay */}
           <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded">
             <span className="text-[10px] text-white font-medium">{current?.label} · {current?.shotType}</span>
@@ -872,6 +936,8 @@ function RenderPanel({ analysis, analysisId, projectName }: { analysis: any; ana
             <span className="text-[10px] text-white/70">{current?.modelId}</span>
           </div>
         </div>
+        {/* Ken Burns keyframe */}
+        <style dangerouslySetInnerHTML={{ __html: `@keyframes kb-pan { from { transform: scale(1.0) translateX(0); } to { transform: scale(1.08) translateX(-1%); } }` }} />
 
         {/* Progress bar */}
         <div className="relative h-1.5 bg-dark-900 cursor-pointer" onClick={(e) => {
@@ -912,7 +978,7 @@ function RenderPanel({ analysis, analysisId, projectName }: { analysis: any; ana
               }}
                 className={`w-2 h-2 rounded-full transition-all ${
                   i === currentClip ? 'bg-orange-500 scale-125' :
-                  c.videoUrl ? 'bg-green-500/60' : 'bg-white/10'
+                  c.videoUrl ? 'bg-green-500/60' : c.imageUrl ? 'bg-orange-500/40' : 'bg-white/10'
                 }`}
                 title={c.label}
               />
@@ -942,13 +1008,15 @@ function RenderPanel({ analysis, analysisId, projectName }: { analysis: any; ana
             <div className="relative h-14 bg-dark-900">
               {c.videoUrl ? (
                 <video src={c.videoUrl} className="w-full h-full object-cover" muted preload="metadata" />
+              ) : c.imageUrl ? (
+                <img src={c.imageUrl} alt={c.label} className="w-full h-full object-cover" />
               ) : (
                 <StoryboardSVG shotType={c.shotType} width={100} height={56} modelColor={getModelColor((c.modelId || '').toLowerCase())} />
               )}
               <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent px-1.5 py-0.5">
                 <div className="flex items-center justify-between">
                   <span className="text-[8px] font-bold text-white">{c.label}</span>
-                  {c.videoUrl ? <Check size={8} className="text-green-400" /> : <Clock size={8} className="text-slate-500" />}
+                  {c.videoUrl ? <Check size={8} className="text-green-400" /> : c.imageUrl ? <Eye size={8} className="text-orange-400" /> : <Clock size={8} className="text-slate-500" />}
                 </div>
               </div>
             </div>
