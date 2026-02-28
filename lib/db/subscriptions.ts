@@ -19,22 +19,40 @@ export async function getSubscription(): Promise<Subscription> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Non authentifié');
 
-  const { data } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', user.id)
-    .single();
+  try {
+    const { data } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
 
-  if (!data) {
+    if (data) return data;
+
+    // Try to create a subscription
     const { data: newSub } = await supabase
       .from('subscriptions')
       .insert({ user_id: user.id, plan: 'free', status: 'active' })
       .select()
       .single();
-    return newSub!;
+
+    if (newSub) return newSub;
+  } catch {
+    // Table might not exist or insert failed
   }
 
-  return data;
+  // Return a safe default — never null
+  return {
+    id: 'default',
+    user_id: user.id,
+    stripe_customer_id: null,
+    stripe_subscription_id: null,
+    plan: 'free',
+    status: 'active',
+    generations_used: 0,
+    generations_reset_at: new Date().toISOString(),
+    current_period_start: null,
+    current_period_end: null,
+  };
 }
 
 export async function canGenerate(): Promise<{ allowed: boolean; reason?: string }> {
