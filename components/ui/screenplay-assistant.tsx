@@ -32,6 +32,7 @@ export function ScreenplayAssistant({
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [expanded, setExpanded] = useState(!existingScript)
+  const [quota, setQuota] = useState<{ used: number; limit: number; remaining: number } | null>(null)
   const chatRef = useRef<HTMLDivElement>(null)
 
   // Auto-scroll chat
@@ -58,12 +59,13 @@ export function ScreenplayAssistant({
       })
       const data = await res.json()
       if (data.error) {
-        const errMsg = data.error.includes('clé API')
-          ? `⚠️ ${data.error}\n\n👉 Rendez-vous dans Réglages → Clés API pour ajouter votre clé Claude (Anthropic) ou OpenAI.`
+        const errMsg = data.error.includes('clé API') || data.error.includes('requêtes')
+          ? `⚠️ ${data.error}`
           : `⚠️ Erreur : ${data.error}`
         setMessages([...newMessages, { role: 'assistant', content: errMsg }])
       } else {
         setMessages([...newMessages, { role: 'assistant', content: data.response }])
+        if (data.quota) setQuota(data.quota)
       }
     } catch (e: any) {
       setMessages([...newMessages, {
@@ -121,6 +123,13 @@ export function ScreenplayAssistant({
           <Wand2 size={16} className="text-orange-500" />
           <span className="text-sm font-medium text-slate-200">Assistant scénariste</span>
           <span className="text-[10px] text-slate-600 bg-dark-800 px-1.5 py-0.5 rounded">Claude / GPT</span>
+          {quota && (
+            <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+              quota.remaining <= 1 ? 'text-red-400 bg-red-500/10' : 'text-green-400 bg-green-500/10'
+            }`}>
+              {quota.remaining}/{quota.limit} restantes
+            </span>
+          )}
         </div>
         <button onClick={() => setExpanded(false)} className="p-1 hover:bg-white/5 rounded">
           <X size={14} className="text-slate-500" />

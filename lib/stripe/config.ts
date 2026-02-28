@@ -16,7 +16,8 @@ export const PLANS = {
     generations: 5,
     projects: 3,
     engines: 7,
-    features: ['7 moteurs d\'analyse', '5 générations/mois', '3 projets max', 'Export JSON'],
+    assistantQuota: 3,  // 3 requêtes scénariste/mois (clé serveur)
+    features: ['7 moteurs d\'analyse', '5 générations/mois', '3 projets max', 'Assistant IA (3 requêtes)', 'Export JSON'],
   },
   pro: {
     id: 'pro',
@@ -26,7 +27,8 @@ export const PLANS = {
     generations: 100,
     projects: 20,
     engines: 13,
-    features: ['13 moteurs d\'analyse', '100 générations/mois', '20 projets', 'Export JSON + MP4', 'Support prioritaire'],
+    assistantQuota: 30,  // 30 requêtes/mois ou clé perso illimité
+    features: ['13 moteurs d\'analyse', '100 générations/mois', '20 projets', 'Assistant IA (30 requêtes)', 'Export JSON + MP4', 'Support prioritaire'],
   },
   studio: {
     id: 'studio',
@@ -36,7 +38,8 @@ export const PLANS = {
     generations: -1,
     projects: -1,
     engines: 13,
-    features: ['13 moteurs d\'analyse', 'Générations illimitées', 'Projets illimités', 'Export tous formats', 'API access', 'Support dédié'],
+    assistantQuota: -1,  // illimité (clé perso recommandée)
+    features: ['13 moteurs d\'analyse', 'Générations illimitées', 'Projets illimités', 'Assistant IA illimité', 'Export tous formats', 'API access', 'Support dédié'],
   },
 } as const;
 
