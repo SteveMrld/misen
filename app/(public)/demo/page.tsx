@@ -267,45 +267,84 @@ function DemoAnalyse() {
 
 function DemoTimeline() {
   const plans = [
-    { scene: 1, shot: 'PDE', model: 'Kling', dur: 3 },
-    { scene: 1, shot: 'GP', model: 'Runway', dur: 4 },
-    { scene: 2, shot: 'PL', model: 'Veo', dur: 5 },
-    { scene: 2, shot: 'PM', model: 'Kling', dur: 3 },
-    { scene: 3, shot: 'TL', model: 'Sora', dur: 4 },
-    { scene: 3, shot: 'GP', model: 'Runway', dur: 3 },
-    { scene: 4, shot: 'PM', model: 'Kling', dur: 3 },
-    { scene: 4, shot: 'GP', model: 'Runway', dur: 2 },
-    { scene: 5, shot: 'PL', model: 'Veo', dur: 5 },
-    { scene: 5, shot: 'GP', model: 'Sora', dur: 4 },
-    { scene: 6, shot: 'PDE', model: 'Kling', dur: 4 },
-    { scene: 6, shot: 'Insert', model: 'Runway', dur: 3 },
-    { scene: 6, shot: 'PL', model: 'Veo', dur: 5 },
+    { scene: 1, shot: 'PL', model: 'Kling', dur: 4.2, color: '#3B82F6', src: imgSc1P1.src, label: 'Fleuve au crépuscule' },
+    { scene: 1, shot: 'GP', model: 'Veo', dur: 3.1, color: '#10B981', src: imgSc1P2.src, label: 'Visage dans l\'ombre' },
+    { scene: 1, shot: 'Insert', model: 'Runway', dur: 2.8, color: '#8B5CF6', src: imgSc1P3.src, label: 'Photo ancienne' },
+    { scene: 2, shot: 'PL', model: 'Sora', dur: 5.0, color: '#EC4899', src: imgSc2P1.src, label: 'Pont suspendu' },
+    { scene: 2, shot: 'GP', model: 'Kling', dur: 3.5, color: '#3B82F6', src: imgSc2P2.src, label: 'Main tendue' },
+    { scene: 2, shot: 'PM', model: 'Hailuo', dur: 4.0, color: '#D946EF', src: imgSc2P3.src, label: 'Silhouettes' },
+    { scene: 3, shot: 'PM', model: 'Runway', dur: 3.8, color: '#8B5CF6', src: imgSc3P1.src, label: 'Couloir hôpital' },
+    { scene: 3, shot: 'GP', model: 'Veo', dur: 3.2, color: '#10B981', src: imgSc3P2.src, label: 'Fenêtre brumeuse' },
+    { scene: 4, shot: 'PL', model: 'Kling', dur: 5.5, color: '#3B82F6', src: imgSc4P1.src, label: 'Retrouvailles' },
+    { scene: 4, shot: 'Insert', model: 'Seedance', dur: 2.5, color: '#14B8A6', src: imgSc4P2.src, label: 'Caillou rivière' },
   ]
-  const colors = ['#f97316', '#22d3ee', '#a78bfa', '#34d399', '#f472b6', '#fbbf24']
+  const sceneColors = ['#f97316', '#22d3ee', '#a78bfa', '#34d399']
   const total = plans.reduce((s, p) => s + p.dur, 0)
-  let acc = 0
 
   return (
     <div className="bg-dark-900 rounded-xl border border-dark-700 overflow-hidden">
-      <div className="px-3 py-2 flex items-center gap-2 border-b border-dark-700">
-        <Camera size={14} className="text-slate-500" />
-        <span className="text-xs text-slate-400 font-medium">13 plans • {total}s • 4 modèles IA</span>
+      {/* Header */}
+      <div className="px-3 py-2 flex items-center justify-between border-b border-dark-700">
+        <div className="flex items-center gap-2">
+          <Camera size={14} className="text-slate-500" />
+          <span className="text-xs text-slate-400 font-medium">{plans.length} plans • {total.toFixed(0)}s • 5 modèles IA</span>
+        </div>
+        <span className="text-[10px] text-slate-600">Les Deux Rives — Démo</span>
       </div>
-      <div className="p-3">
-        <div className="relative h-14 bg-dark-800 rounded">
-          {plans.map((p, i) => {
-            const left = (acc / total) * 100
-            acc += p.dur
-            return (
-              <div key={i} className="absolute top-0 h-full border-r border-dark-700/50 flex flex-col justify-center px-1" style={{
-                left: `${left}%`, width: `${(p.dur / total) * 100}%`,
-                background: `${colors[(p.scene - 1) % colors.length]}25`,
-              }}>
-                <span className="text-[7px] text-slate-300 font-medium">P{i + 1}</span>
-                <span className="text-[6px] text-slate-500">{p.shot} · {p.model}</span>
+
+      {/* Scene lanes */}
+      <div className="px-3 pt-3 pb-1 flex items-center gap-1">
+        {[1, 2, 3, 4].map(s => {
+          const scenePlans = plans.filter(p => p.scene === s)
+          const sceneDur = scenePlans.reduce((a, p) => a + p.dur, 0)
+          return (
+            <div key={s} className="h-5 rounded flex items-center justify-center text-[8px] font-bold tracking-wider" style={{
+              width: `${(sceneDur / total) * 100}%`,
+              backgroundColor: `${sceneColors[(s - 1) % sceneColors.length]}20`,
+              color: sceneColors[(s - 1) % sceneColors.length],
+            }}>
+              SC{s}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Timeline with thumbnails */}
+      <div className="p-3 overflow-x-auto scrollbar-hide">
+        <div className="flex gap-1.5" style={{ minWidth: plans.length * 100 }}>
+          {plans.map((p, i) => (
+            <div key={i} className="flex-shrink-0 rounded-lg overflow-hidden border border-dark-700 hover:border-dark-500 transition-colors group" style={{ width: Math.max((p.dur / total) * 800, 90) }}>
+              {/* Thumbnail */}
+              <div className="relative aspect-video">
+                <img src={p.src} alt={p.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                {/* Plan badge */}
+                <div className="absolute top-1 left-1 px-1 py-0.5 bg-black/60 rounded text-[7px] font-bold text-white backdrop-blur-sm">
+                  P{i + 1}
+                </div>
+                {/* Model dot */}
+                <div className="absolute top-1 right-1 flex items-center gap-0.5 px-1 py-0.5 bg-black/60 rounded backdrop-blur-sm">
+                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: p.color }} />
+                  <span className="text-[6px] text-white">{p.model}</span>
+                </div>
+                {/* Duration */}
+                <div className="absolute bottom-1 right-1 text-[7px] text-white/80">{p.dur}s</div>
+                {/* Shot type */}
+                <div className="absolute bottom-1 left-1 text-[7px] text-white/70">{p.shot}</div>
               </div>
-            )
-          })}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Playback bar */}
+      <div className="px-3 pb-3">
+        <div className="h-1.5 bg-dark-800 rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-orange-500 to-cyan-500 rounded-full" style={{ width: '35%' }} />
+        </div>
+        <div className="flex items-center justify-between mt-1.5">
+          <span className="text-[9px] text-slate-500">0:13</span>
+          <span className="text-[9px] text-slate-500">0:{total.toFixed(0)}</span>
         </div>
       </div>
     </div>

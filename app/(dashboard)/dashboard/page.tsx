@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Plus, Film, Clapperboard, Clock, MoreHorizontal, Trash2, Download, Upload, X, Loader2, Play, Camera, Zap, TrendingUp } from 'lucide-react'
 import { ModelLegend } from '@/components/ui/model-badge'
 import { StoryboardSVG } from '@/components/ui/storyboard-svg'
+import demoThumb from '@/public/images/demo_sc1_p1_fleuve.png'
 import { Onboarding } from '@/components/ui/onboarding'
 import { createClient } from '@/lib/supabase/client'
 import type { Project } from '@/types/database'
@@ -241,17 +242,24 @@ function ProjectCard({ project, onClick, onDelete, onExport }: {
   const moves = ['pan right', 'dolly in', 'tracking', 'static', 'tilt up', 'crane']
   const modelColors = ['#3B82F6', '#8B5CF6', '#EC4899', '#10B981', '#14B8A6', '#6366F1', '#D946EF']
 
+  // Detect demo project
+  const isDemo = project.name.toLowerCase().includes('démo') || project.name.toLowerCase().includes('demo')
+
   return (
     <div className="card-interactive group cursor-pointer overflow-hidden" onClick={onClick}>
       {/* Visual preview header */}
       <div className="relative -mx-[1px] -mt-[1px]">
-        <StoryboardSVG
-          shotType={shots[hash % shots.length]}
-          cameraMove={moves[(hash * 7) % moves.length]}
-          width={400} height={110}
-          modelColor={modelColors[hash % modelColors.length]}
-          className="w-full"
-        />
+        {isDemo ? (
+          <img src={demoThumb.src} alt={project.name} className="w-full h-[110px] object-cover" />
+        ) : (
+          <StoryboardSVG
+            shotType={shots[hash % shots.length]}
+            cameraMove={moves[(hash * 7) % moves.length]}
+            width={400} height={110}
+            modelColor={modelColors[hash % modelColors.length]}
+            className="w-full"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-dark-900 via-dark-900/30 to-transparent" />
         <div className="absolute top-3 right-3"><span className={status.class}>{status.label}</span></div>
         <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity">
