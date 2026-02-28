@@ -199,7 +199,7 @@ function DemoAnalyse() {
   ]
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {stats.map((s) => (
           <div key={s.label} className="bg-dark-900 border border-dark-700 rounded-xl p-3 text-center">
             <s.icon size={18} className="text-orange-500/60 mx-auto mb-1" />
