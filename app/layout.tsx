@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://misen-ten.vercel.app'),
   title: 'MISEN — Studio IA de Production Cinématographique',
   description:
     'Transformez votre scénario en plan de production complet. 13 moteurs d\'analyse, 7 modèles IA, génération vidéo automatisée. De l\'écriture à l\'écran.',
