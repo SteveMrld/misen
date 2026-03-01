@@ -3,9 +3,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 
-// Only use images that actually look good
+// Background
 import heroBg from '@/public/images/hero_bg.png'
+
+// Demo scenes
 import demoSc1P1 from '@/public/images/demo_sc1_p1_fleuve.png'
 import demoSc1P2 from '@/public/images/demo_sc1_p2_visage.png'
 import demoSc1P3 from '@/public/images/demo_sc1_p3_photo.png'
@@ -15,12 +18,37 @@ import demoSc2P3 from '@/public/images/demo_sc2_p3_silhouettes.png'
 import demoSc3P1 from '@/public/images/demo_sc3_p1_hopital.png'
 import demoSc4P1 from '@/public/images/demo_sc4_p1_retrouvailles.png'
 
+// Custom pictos — Formats (Set A)
+import iconCourtMetrage from '@/public/images/icon_court_metrage.png'
+import iconPublicite from '@/public/images/icon_publicite.png'
+import iconDocumentaire from '@/public/images/icon_documentaire.png'
+import iconClipMusical from '@/public/images/icon_clip_musical.png'
+import iconBd from '@/public/images/icon_bd.png'
+import iconEducatif from '@/public/images/icon_educatif.png'
+
+// Custom pictos — Steps (Set B)
+import iconStepImaginez from '@/public/images/icon_step_imaginez.png'
+import iconStepAnalysez from '@/public/images/icon_step_analysez.png'
+import iconStepOrchestrez from '@/public/images/icon_step_orchestrez.png'
+import iconStepGenerez from '@/public/images/icon_step_generez.png'
+
+// Custom pictos — Engines (Set C)
+import iconEngIntentParser from '@/public/images/icon_eng_intent_parser.png'
+import iconEngScenarist from '@/public/images/icon_eng_scenarist.png'
+import iconEngStoryTracker from '@/public/images/icon_eng_story_tracker.png'
+import iconEngShotEvaluator from '@/public/images/icon_eng_shot_evaluator.png'
+import iconEngCrispifier from '@/public/images/icon_eng_crispifier.png'
+import iconEngHumanAlign from '@/public/images/icon_eng_human_align.png'
+import iconEngCamera from '@/public/images/icon_eng_camera.png'
+import iconEngAudioTracker from '@/public/images/icon_eng_audio_tracker.png'
+import iconEngCameraControl from '@/public/images/icon_eng_camera_control.png'
+import iconEngStyleGuard from '@/public/images/icon_eng_style_guard.png'
+import iconEngStyleGuard2 from '@/public/images/icon_eng_style_guard2.png'
+import iconEngColorHarmonizer from '@/public/images/icon_eng_color_harmonizer.png'
+import iconEngMotionFlow from '@/public/images/icon_eng_motion_flow.png'
+
 import {
-  Play, ArrowRight, Brain, Film, Zap, Check, ChevronDown,
-  Terminal, Users, Shield, Eye, DollarSign, Cpu, BookOpen,
-  Palette, MessageSquare, Ban, TrendingUp, Camera, Sparkles,
-  Wand2, Clapperboard, Megaphone, GraduationCap, PenTool,
-  Video, SlidersHorizontal, Layers
+  Play, ArrowRight, Brain, ChevronDown, Wand2, Check
 } from 'lucide-react'
 
 const MODELS = [
@@ -33,20 +61,36 @@ const MODELS = [
   { id: 'hailuo2.3', name: 'Hailuo 2.3', color: '#D946EF', tag: 'Cohérence' },
 ]
 
+const FORMATS = [
+  { label: 'Court-métrage', desc: 'Fiction, drame, comédie', icon: iconCourtMetrage },
+  { label: 'Publicité', desc: 'Spot 15s, 30s, 60s', icon: iconPublicite },
+  { label: 'Documentaire', desc: 'Narration, interviews', icon: iconDocumentaire },
+  { label: 'Clip musical', desc: 'Storytelling visuel', icon: iconClipMusical },
+  { label: 'Bande dessinée', desc: 'Cases, storyboard', icon: iconBd },
+  { label: 'Vidéo éducative', desc: 'Tutos, e-learning', icon: iconEducatif },
+]
+
+const STEPS = [
+  { step: '01', title: 'Imaginez', desc: "Décrivez votre idée — l'assistant IA vous aide à construire le scénario", icon: iconStepImaginez },
+  { step: '02', title: 'Analysez', desc: '13 moteurs décomposent chaque plan, personnage, émotion et cadrage', icon: iconStepAnalysez },
+  { step: '03', title: 'Orchestrez', desc: 'Storyboard, timeline, copilote IA — peaufinez chaque détail', icon: iconStepOrchestrez },
+  { step: '04', title: 'Générez', desc: 'Le meilleur modèle IA est sélectionné pour chaque plan', icon: iconStepGenerez },
+]
+
 const ENGINES = [
-  { name: 'Intent Parser', icon: Terminal },
-  { name: 'Grammar', icon: BookOpen },
-  { name: 'Character Bible', icon: Users },
-  { name: 'Contextual Prompt', icon: MessageSquare },
-  { name: 'Model Syntax', icon: Cpu },
-  { name: 'Negative Prompt', icon: Ban },
-  { name: 'Compliance', icon: Shield },
-  { name: 'Continuity', icon: Eye },
-  { name: 'Tension Curve', icon: TrendingUp },
-  { name: 'Cost Router', icon: DollarSign },
-  { name: 'Consistency', icon: Palette },
-  { name: 'Memory', icon: Brain },
-  { name: 'Scene Splitter', icon: Film },
+  { name: 'Intent Parser', icon: iconEngIntentParser },
+  { name: 'Scénariste', icon: iconEngScenarist },
+  { name: 'Story Tracker', icon: iconEngStoryTracker },
+  { name: 'Shot Evaluator', icon: iconEngShotEvaluator },
+  { name: 'Crispifier', icon: iconEngCrispifier },
+  { name: 'Human Align', icon: iconEngHumanAlign },
+  { name: 'Camera', icon: iconEngCamera },
+  { name: 'Audio Tracker', icon: iconEngAudioTracker },
+  { name: 'Camera Control', icon: iconEngCameraControl },
+  { name: 'Style Guard', icon: iconEngStyleGuard },
+  { name: 'Style Sentinel', icon: iconEngStyleGuard2 },
+  { name: 'Color Harmonizer', icon: iconEngColorHarmonizer },
+  { name: 'Motion Flow', icon: iconEngMotionFlow },
 ]
 
 export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
@@ -94,7 +138,6 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
 
       {/* ═══ HERO ═══ */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 relative">
-        {/* Background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <img src={heroBg.src} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
           <div className="absolute inset-0 bg-gradient-to-b from-dark-950/50 via-dark-950/80 to-dark-950" />
@@ -109,7 +152,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
           </div>
         </div>
 
-        {/* ═══ NEW HEADLINE ═══ */}
+        {/* Headline */}
         <h1 className="relative z-10 font-display text-5xl md:text-7xl text-center text-white mb-4 tracking-tight" style={{ fontWeight: 500, lineHeight: 1.1 }}>
           De l&apos;idée<br />
           <span className="bg-gradient-to-r from-orange-400 via-orange-500 to-amber-500 bg-clip-text text-transparent">
@@ -117,18 +160,19 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
           </span>
         </h1>
 
-        {/* ═══ SUBTITLE ═══ */}
+        {/* NEW Subtitle — la vraie promesse */}
         <p className="relative z-10 text-base md:text-lg text-slate-400 text-center max-w-2xl mb-10 leading-relaxed">
           Court-métrage, publicité, documentaire, clip, BD, vidéo éducative
-          — décrivez votre vision, MISEN écrit le scénario, analyse chaque plan
-          avec 13 moteurs et sélectionne le meilleur modèle IA parmi 7 pour chaque image.
-          <span className="text-slate-300"> Pas un seul outil — le bon outil, à chaque plan.</span>
+          — décrivez votre vision, MISEN écrit le scénario, analyse chaque plan avec 13 moteurs
+          et sélectionne le meilleur modèle IA parmi 7 pour chaque image.
+          <span className="block mt-2 text-slate-300 font-medium">
+            Pas un seul outil — le bon outil, à chaque plan.
+          </span>
         </p>
 
         {/* ═══ ACTION BOX ═══ */}
         <div className="relative z-10 w-full max-w-2xl">
           <div className="bg-dark-900/80 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-5 shadow-2xl shadow-black/40">
-            {/* Model selector */}
             <div className="flex items-center justify-between mb-4">
               <button
                 onClick={() => setShowModels(!showModels)}
@@ -145,7 +189,6 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
               </div>
             </div>
 
-            {/* Model dropdown */}
             {showModels && (
               <div className="mb-4 grid grid-cols-2 gap-1.5 p-2 bg-dark-800/50 rounded-xl border border-dark-700">
                 {MODELS.map((m, i) => (
@@ -162,7 +205,6 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
               </div>
             )}
 
-            {/* Script input */}
             <textarea
               value={scriptPreview}
               onChange={(e) => setScriptPreview(e.target.value)}
@@ -171,7 +213,6 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
               className="w-full bg-transparent text-sm text-slate-200 placeholder:text-slate-600 resize-none focus:outline-none leading-relaxed"
             />
 
-            {/* Bottom row */}
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.05]">
               <p className="text-[11px] text-slate-600">
                 Pas de scénario ? L&apos;assistant IA vous guide · Gratuit
@@ -186,10 +227,10 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
           </div>
         </div>
 
-        {/* ═══ STATS BAR ═══ */}
+        {/* ═══ STATS ═══ */}
         <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-3 mt-10 w-full max-w-2xl">
           {[
-            { value: '∞', label: 'Formats', sub: 'film · pub · docu · BD · clip' },
+            { value: '∞', label: 'Formats' },
             { value: '13', label: 'Moteurs IA' },
             { value: '7', label: 'Modèles vidéo' },
             { value: '<10s', label: 'Par analyse' },
@@ -202,7 +243,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
         </div>
       </div>
 
-      {/* ═══ USE CASES ═══ */}
+      {/* ═══ USE CASES — Custom Pictos ═══ */}
       <section className="px-6 py-16 max-w-5xl mx-auto w-full">
         <h2 className="font-display text-2xl text-white text-center mb-3 tracking-tight">
           Un outil, tous les formats
@@ -211,42 +252,30 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
           Que vous soyez réalisateur, marketeur, enseignant ou créateur — MISEN s&apos;adapte à votre vision
         </p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {[
-            { icon: Clapperboard, label: 'Court-métrage', desc: 'Fiction, drame, comédie', color: '#F97316' },
-            { icon: Megaphone, label: 'Publicité', desc: 'Spot 15s, 30s, 60s', color: '#EC4899' },
-            { icon: Film, label: 'Documentaire', desc: 'Narration, interviews', color: '#10B981' },
-            { icon: Video, label: 'Clip musical', desc: 'Storytelling visuel', color: '#8B5CF6' },
-            { icon: PenTool, label: 'Bande dessinée', desc: 'Cases, storyboard', color: '#3B82F6' },
-            { icon: GraduationCap, label: 'Vidéo éducative', desc: 'Tutos, e-learning', color: '#14B8A6' },
-          ].map((uc) => (
-            <div key={uc.label} className="flex items-start gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.12] transition-all group">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${uc.color}15` }}>
-                <uc.icon size={18} style={{ color: uc.color }} />
+          {FORMATS.map((f) => (
+            <div key={f.label} className="flex items-center gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.12] transition-all group">
+              <div className="w-12 h-12 flex-shrink-0 relative">
+                <Image src={f.icon} alt={f.label} fill className="object-contain" />
               </div>
               <div>
-                <p className="text-sm font-medium text-white">{uc.label}</p>
-                <p className="text-[11px] text-slate-500 mt-0.5">{uc.desc}</p>
+                <p className="text-sm font-medium text-white">{f.label}</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">{f.desc}</p>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ═══ HOW IT WORKS (icon-based, no broken images) ═══ */}
+      {/* ═══ HOW IT WORKS — Custom Pictos ═══ */}
       <section className="px-6 py-16 max-w-4xl mx-auto w-full">
         <h2 className="font-display text-2xl text-white text-center mb-10 tracking-tight">Comment ça marche</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[
-            { step: '01', icon: Wand2, title: 'Imaginez', desc: 'Décrivez votre idée — l\'assistant IA vous aide à construire le scénario', color: '#F97316' },
-            { step: '02', icon: Brain, title: 'Analysez', desc: '13 moteurs décomposent chaque plan, personnage, émotion et cadrage', color: '#F97316' },
-            { step: '03', icon: Layers, title: 'Orchestrez', desc: 'Storyboard, timeline, copilote IA — peaufinez chaque détail', color: '#06B6D4' },
-            { step: '04', icon: Zap, title: 'Générez', desc: '7 modèles vidéo créent vos plans avec le prompt optimal', color: '#06B6D4' },
-          ].map((s) => (
-            <div key={s.step} className="group text-center md:text-left">
-              <div className="w-14 h-14 mx-auto md:mx-0 rounded-2xl flex items-center justify-center mb-4 border border-white/[0.06] bg-white/[0.02] group-hover:bg-white/[0.04] transition-colors">
-                <s.icon size={24} style={{ color: s.color }} />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {STEPS.map((s) => (
+            <div key={s.step} className="group text-center">
+              <div className="w-20 h-20 mx-auto relative mb-4">
+                <Image src={s.icon} alt={s.title} fill className="object-contain" />
               </div>
-              <div className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-widest mb-2" style={{ color: s.color }}>
+              <div className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-orange-500 mb-2">
                 {s.step}
               </div>
               <h3 className="text-base font-semibold text-white mb-1.5">{s.title}</h3>
@@ -273,7 +302,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
             { src: demoSc1P3.src, label: 'Insert · Photo', model: 'Hailuo 2.3', color: '#D946EF' },
             { src: demoSc3P1.src, label: 'Intérieur · Hôpital', model: 'Kling 3.0', color: '#3B82F6' },
             { src: demoSc4P1.src, label: 'Plan moyen · Émotion', model: 'Veo 3.1', color: '#10B981' },
-            { src: demoSc2P3.src, label: 'Silhouettes · Contre-jour', model: 'Wan 2.5', color: '#6366F1' },
+            { src: demoSc2P3.src, label: 'Contre-jour', model: 'Wan 2.5', color: '#6366F1' },
           ].map((scene) => (
             <div key={scene.label} className="group relative rounded-xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all">
               <img src={scene.src} alt={scene.label} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -296,7 +325,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
           7 modèles IA orchestrés
         </h2>
         <p className="text-sm text-slate-500 text-center mb-8">
-          Chaque plan est automatiquement assigné au modèle optimal
+          MISEN met en compétition chaque modèle et sélectionne le meilleur pour chaque plan
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
@@ -320,7 +349,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
         </div>
       </section>
 
-      {/* ═══ 13 ENGINES ═══ */}
+      {/* ═══ 13 ENGINES — Custom Pictos ═══ */}
       <section className="px-6 py-16 max-w-5xl mx-auto w-full">
         <div className="text-center mb-8">
           <h2 className="font-display text-2xl text-white mb-3 tracking-tight">13 moteurs d&apos;analyse</h2>
@@ -332,8 +361,10 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
         {showEngines && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 animate-fade-in">
             {ENGINES.map((e) => (
-              <div key={e.name} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.1] transition-colors group">
-                <e.icon size={16} className="text-orange-500/60 group-hover:text-orange-400 transition-colors flex-shrink-0" />
+              <div key={e.name} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.1] transition-colors group">
+                <div className="w-6 h-6 flex-shrink-0 relative opacity-60 group-hover:opacity-100 transition-opacity">
+                  <Image src={e.icon} alt={e.name} fill className="object-contain" />
+                </div>
                 <span className="text-xs text-slate-400 group-hover:text-slate-200 transition-colors">{e.name}</span>
               </div>
             ))}
@@ -346,7 +377,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
         <h2 className="font-display text-2xl text-white text-center mb-10 tracking-tight">Tarifs simples</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { name: 'Free', price: '0€', desc: '3 projets · 5 générations/mois', features: ['13 moteurs d\'analyse', 'Assistant IA (3 requêtes)', 'Mode Simple', '7 modèles', 'Export JSON'] },
+            { name: 'Free', price: '0€', desc: '3 projets · 5 générations/mois', features: ["13 moteurs d'analyse", 'Assistant IA (3 requêtes)', 'Mode Simple', '7 modèles', 'Export JSON'] },
             { name: 'Pro', price: '29€', desc: '20 projets · 100 générations/mois', features: ['Tout Free +', 'Assistant IA (30 requêtes)', 'Mode Expert complet', 'Timeline & Copilote', 'Export JSON + MP4'], glow: true },
             { name: 'Studio', price: '79€', desc: 'Illimité · API · Support', features: ['Tout Pro +', 'Assistant IA illimité', 'Générations illimitées', 'API access', 'Support dédié'] },
           ].map((p) => (
