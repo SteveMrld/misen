@@ -206,7 +206,7 @@ function EmptyState({ onNew }: { onNew: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-20">
       <div className="mb-6 w-48 h-48 rounded-2xl overflow-hidden opacity-70">
-        <img src={emptyProjectsImg.src} alt="" className="w-full h-full object-cover" />
+        <img src={emptyProjectsImg.src} alt="Créez votre premier projet" className="w-full h-full object-cover" />
       </div>
       <h3 className="text-xl font-display text-slate-200 mb-2">Créez votre premier projet</h3>
       <p className="text-sm text-slate-400 text-center max-w-md mb-8">

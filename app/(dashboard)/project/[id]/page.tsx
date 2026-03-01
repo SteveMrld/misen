@@ -364,7 +364,7 @@ function SPC({ plan, index, analysisId, userKeys }: { plan: any; index: number; 
     <div className="card overflow-hidden group hover:border-dark-600 transition-all">
       <div className="flex gap-3 p-3">
         {/* Preview */}
-        <div className="flex-shrink-0 relative">
+        <div className="flex-shrink-0 relative hidden sm:block">
           {status === 'completed' && videoUrl ? (
             <div className="relative cursor-pointer" onClick={() => setShowVideo(!showVideo)}>
               <div className="w-[160px] h-[90px] bg-dark-800 rounded-lg overflow-hidden">

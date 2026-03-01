@@ -68,7 +68,7 @@ export default function DemoPage() {
       {/* ═══ SCENARIO SELECTOR ═══ */}
       <div className="px-6 py-4 border-b border-dark-800/50">
         <p className="text-[10px] text-slate-600 uppercase tracking-widest mb-2">Choisissez un projet</p>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           {DEMO_SCENARIOS.map((s, i) => (
             <button key={s.id} onClick={() => switchScenario(i)}
               className={`flex-1 px-3 py-3 rounded-xl border text-left transition-all ${

@@ -53,7 +53,9 @@ export default function LoginPage() {
     <div className="card p-8 bg-dark-850 border-dark-700 animate-fade-in">
       {/* Logo */}
       <div className="flex justify-center mb-8">
-        <Logo size="lg" />
+        <Link href="/">
+          <Logo size="lg" />
+        </Link>
       </div>
 
       {/* Title */}

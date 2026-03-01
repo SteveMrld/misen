@@ -125,9 +125,12 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
           </div>
           <span className="font-display text-xl text-white tracking-tight">MISEN</span>
         </div>
-        <div className="flex items-center gap-3">
-          <Link href="/demo" className="px-3 py-1.5 text-sm text-slate-400 hover:text-white transition-colors">
+        <div className="flex items-center gap-1 sm:gap-3">
+          <Link href="/demo" className="px-2 sm:px-3 py-1.5 text-sm text-slate-400 hover:text-white transition-colors">
             Démo
+          </Link>
+          <Link href="/pricing" className="px-2 sm:px-3 py-1.5 text-sm text-slate-400 hover:text-white transition-colors">
+            Tarifs
           </Link>
           {isLoggedIn ? (
             <Link href="/dashboard" className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-500 rounded-xl transition-colors">
@@ -500,6 +503,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
           </div>
           <div className="flex items-center gap-5 text-xs text-slate-600">
             <Link href="/demo" className="hover:text-slate-300 transition-colors">Démo</Link>
+            <Link href="/pricing" className="hover:text-slate-300 transition-colors">Tarifs</Link>
             <Link href="/login" className="hover:text-slate-300 transition-colors">Connexion</Link>
           </div>
         </div>
