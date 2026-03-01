@@ -117,11 +117,12 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
           </span>
         </h1>
 
-        {/* ═══ NEW SUBTITLE ═══ */}
+        {/* ═══ SUBTITLE ═══ */}
         <p className="relative z-10 text-base md:text-lg text-slate-400 text-center max-w-2xl mb-10 leading-relaxed">
           Court-métrage, publicité, documentaire, clip, BD, vidéo éducative
-          — décrivez votre vision, l&apos;IA écrit le scénario, 13 moteurs analysent chaque plan
-          et 7 modèles vidéo donnent vie à votre projet.
+          — décrivez votre vision, MISEN écrit le scénario, analyse chaque plan
+          avec 13 moteurs et sélectionne le meilleur modèle IA parmi 7 pour chaque image.
+          <span className="text-slate-300"> Pas un seul outil — le bon outil, à chaque plan.</span>
         </p>
 
         {/* ═══ ACTION BOX ═══ */}
