@@ -32,6 +32,7 @@ const DEMO_IMAGES = [
 import { CompareButton } from '@/components/ui/compare-panel'
 import { useKeyboardShortcuts, ShortcutOverlay } from '@/components/ui/keyboard-shortcuts'
 import { OverviewCockpit } from '@/components/ui/overview-cockpit'
+import { CharacterReferenceCard, getCharacterRefImages, injectCharacterRefsInPrompt } from '@/components/ui/character-reference'
 
 type Mode = 'simple' | 'expert'
 type Tab = 'script' | 'overview' | 'analyse' | 'timeline' | 'copilot' | 'media' | 'subtitles' | 'voiceover' | 'render'
@@ -258,7 +259,7 @@ export default function ProjectPage() {
                 </div>
                 <div className="divide-y divide-dark-700/50">
                   {(analysis.plans || []).slice(0, 30).map((plan: any, i: number) => (
-                    <SPC key={i} plan={plan} index={i} analysisId={analysisId} userKeys={userKeys} />
+                    <SPC key={i} plan={plan} index={i} analysisId={analysisId} userKeys={userKeys} projectId={projectId} />
                   ))}
                 </div>
               </div>
@@ -285,7 +286,7 @@ export default function ProjectPage() {
           </div>
           {tab === 'script' && <ScriptTab scriptText={scriptText} setScriptText={setScriptText} stylePreset={stylePreset} setStylePreset={setStylePreset} saving={saving} analyzing={analyzing} error={error} handleSave={handleSave} handleAnalyze={handleAnalyze} loadDemo={loadDemo} />}
           {tab === 'overview' && analysis && <OverviewCockpit analysis={analysis} projectName={project?.name} />}
-          {tab === 'analyse' && analysis && <AR analysis={analysis} analysisId={analysisId} userKeys={userKeys} />}
+          {tab === 'analyse' && analysis && <AR analysis={analysis} analysisId={analysisId} userKeys={userKeys} projectId={projectId} />}
           {tab === 'timeline' && analysis && <TL analysis={analysis} projectName={project?.name} />}
           {tab === 'copilot' && analysis && <CP projectId={projectId} projectName={project?.name} />}
           {tab === 'media' && analysis && <MB analysis={analysis} projectId={projectId} projectName={project?.name} />}
@@ -318,7 +319,7 @@ const MODEL_URLS: Record<string, { name: string; url: string; provider: string }
 const getModelStudio = (mid: string) => MODEL_URLS[mid.toLowerCase()] || MODEL_URLS['kling']
 
 // ═══ Simple Plan Card ═══
-function SPC({ plan, index, analysisId, userKeys }: { plan: any; index: number; analysisId?: string | null; userKeys: Set<string> }) {
+function SPC({ plan, index, analysisId, userKeys, projectId }: { plan: any; index: number; analysisId?: string | null; userKeys: Set<string>; projectId?: string }) {
   const { t, locale } = useI18n()
   const [copied, setCopied] = useState(false)
   const [status, setStatus] = useState<'idle'|'processing'|'polling'|'completed'|'failed'>('idle')
@@ -328,11 +329,21 @@ function SPC({ plan, index, analysisId, userKeys }: { plan: any; index: number; 
   const [showVideo, setShowVideo] = useState(false)
   const pollRef = useRef<NodeJS.Timeout | null>(null)
 
-  const prompt = plan?.finalPrompt || plan?.basePrompt || ''
+  const basePrompt = plan?.finalPrompt || plan?.basePrompt || ''
   const mid = (plan?.modelId || 'kling').toLowerCase()
   const mc = getModelColor(mid)
   const studio = getModelStudio(mid)
   const canGenerate = userKeys.has(studio.provider)
+
+  // Inject character reference images into prompt
+  const prompt = useMemo(() => {
+    if (!projectId) return basePrompt
+    const refImages = getCharacterRefImages(projectId)
+    if (Object.keys(refImages).length === 0) return basePrompt
+    const charNames = Object.keys(refImages)
+    const { prompt: enhanced } = injectCharacterRefsInPrompt(basePrompt, charNames, refImages, mid)
+    return enhanced
+  }, [basePrompt, projectId, mid])
 
   const copy = () => { navigator.clipboard.writeText(prompt).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) }).catch(() => {}) }
 
@@ -667,7 +678,7 @@ function VO({ projectId, projectName }: { projectId: string; projectName?: strin
 }
 
 // ═══ Analysis Results ═══
-function AR({ analysis, analysisId, userKeys }: { analysis: any; analysisId?: string | null; userKeys: Set<string> }) {
+function AR({ analysis, analysisId, userKeys, projectId }: { analysis: any; analysisId?: string | null; userKeys: Set<string>; projectId: string }) {
   const { t, locale } = useI18n()
   try {
     const scenes=analysis?.scenes||[]; const plans=analysis?.plans||[]; const tension=analysis?.tension; const chars=analysis?.characterBible||[]
@@ -756,8 +767,8 @@ function AR({ analysis, analysisId, userKeys }: { analysis: any; analysisId?: st
         </div>
       )}
 
-      {/* Characters */}
-      {chars.length>0 && <Sec icon={Users} title={locale === 'fr' ? 'Personnages' : 'Characters'} color="text-blue-400">{chars.map((c:any,i:number)=><div key={i} className="flex items-center gap-3 py-1.5"><span className="w-24 text-sm text-slate-200 font-medium truncate">{c?.name||(locale === 'fr' ? 'Inconnu' : 'Unknown')}</span><span className="text-xs text-slate-500 flex-1 truncate">{c?.apparence||c?.description||(locale === 'fr' ? 'apparence non décrite' : 'appearance not described')}</span></div>)}</Sec>}
+      {/* Characters with Reference Images */}
+      {chars.length>0 && <Sec icon={Users} title={locale === 'fr' ? 'Personnages' : 'Characters'} color="text-blue-400"><div className="space-y-3">{chars.map((c:any,i:number)=><CharacterReferenceCard key={i} character={{ name: c?.name || (locale === 'fr' ? 'Inconnu' : 'Unknown'), apparence: c?.apparence, description: c?.description, traits: c?.traits, arc: c?.arc }} projectId={projectId} />)}</div></Sec>}
 
       {/* Compliance */}
       <Sec icon={Shield} title={`Compliance — ${comp.level} (${comp.score}/100)`} color={comp.level==='OK'?'text-green-400':'text-yellow-400'}>

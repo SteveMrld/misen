@@ -264,6 +264,18 @@ export interface Dictionary {
       noAnalysis: string
       noAnalysisDesc: string
     }
+    characterRef: {
+      uploadImage: string
+      removeImage: string
+      referenceImage: string
+      injectedInPrompts: string
+      dragOrClick: string
+      maxSize: string
+      supportedFormats: string
+      imageUploaded: string
+      noImage: string
+      injectHint: string
+    }
     modeExpert: string
     analyze: string
     analyzing: string
