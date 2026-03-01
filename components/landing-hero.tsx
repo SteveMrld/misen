@@ -455,9 +455,9 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
         <h2 className="font-display text-2xl text-white text-center mb-10 tracking-tight">Tarifs simples</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { name: 'Free', price: '0€', desc: '3 projets · 5 générations/mois', features: ["13 moteurs d'analyse", 'Assistant IA (3 requêtes)', 'Mode Simple', '7 modèles', 'Export JSON'] },
-            { name: 'Pro', price: '29€', desc: '20 projets · 100 générations/mois', features: ['Tout Free +', 'Assistant IA (30 requêtes)', 'Mode Expert complet', 'Timeline & Copilote', 'Export JSON + MP4'], glow: true },
-            { name: 'Studio', price: '79€', desc: 'Illimité · API · Support', features: ['Tout Pro +', 'Assistant IA illimité', 'Générations illimitées', 'API access', 'Support dédié'] },
+            { name: 'Free', price: '0€', desc: '3 projets · Prompts illimités', features: ["13 moteurs d'analyse", 'Assistant IA (3 req/mois)', 'Prompts optimisés par plan', 'Mode Simple', 'Export JSON'] },
+            { name: 'Pro', price: '29€', desc: '20 projets · Mode Expert', features: ['Tout Free +', 'Assistant IA (30 req/mois)', 'Mode Expert complet', 'Timeline & Copilote IA', 'Génération intégrée (vos clés)'], glow: true },
+            { name: 'Studio', price: '79€', desc: 'Illimité · API · Support', features: ['Tout Pro +', 'Assistant IA illimité', 'Projets illimités', 'API access', 'Support dédié'] },
           ].map((p) => (
             <div key={p.name} className={`rounded-2xl p-6 border transition-all ${p.glow ? 'bg-orange-600/[0.06] border-orange-500/30 shadow-lg shadow-orange-600/5' : 'bg-white/[0.02] border-white/[0.06]'}`}>
               <span className={`text-xs font-bold tracking-wider ${p.glow ? 'text-orange-400' : 'text-slate-500'}`}>{p.name.toUpperCase()}</span>
@@ -478,6 +478,11 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
               </Link>
             </div>
           ))}
+        </div>
+        <div className="text-center mt-6">
+          <Link href="/pricing" className="text-sm text-orange-400 hover:text-orange-300 transition-colors inline-flex items-center gap-1">
+            Comparer les plans en détail <ArrowRight size={14} />
+          </Link>
         </div>
       </section>
 
