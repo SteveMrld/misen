@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { DEMO_SCENARIOS, DEMO_WALKTHROUGH, NARRATIONS, type DemoScenario } from '@/lib/demo/data'
 import Link from 'next/link'
+import { LanguageToggle } from '@/components/ui/language-toggle'
 
 const TAB_ICONS: Record<string, any> = {
   script: Film, analyse: Brain, timeline: Clock, copilot: Sparkles,
@@ -62,9 +63,12 @@ export default function DemoPage() {
           <span className="text-sm font-bold text-slate-50">MISEN</span>
           <span className="text-xs text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded">DÉMO</span>
         </div>
-        <Link href="/" className="p-2 rounded-lg hover:bg-white/5">
-          <X size={18} className="text-slate-400" />
-        </Link>
+        <div className="flex items-center gap-2">
+          <LanguageToggle />
+          <Link href="/" className="p-2 rounded-lg hover:bg-white/5">
+            <X size={18} className="text-slate-400" />
+          </Link>
+        </div>
       </div>
 
       {/* ═══ SCENARIO SELECTOR ═══ */}

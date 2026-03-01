@@ -85,6 +85,7 @@ export default function RegisterPage() {
 
   return (
     <div className="card p-8 bg-dark-850 border-dark-700 animate-fade-in">
+      <LanguageToggle className="absolute top-4 right-4" />
       {/* Logo */}
       <div className="flex justify-center mb-8">
         <Link href="/">

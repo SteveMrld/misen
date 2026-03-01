@@ -241,8 +241,19 @@ export interface Dictionary {
       subtitles: string
       voiceover: string
       overview: string
+      render: string
     }
     modeSimple: string
+    shortcuts: {
+      shortcuts: string
+      close: string
+      mode: string
+      save: string
+    }
+    render: {
+      pending: string
+      generating: string
+    }
     cockpit: {
       title: string
       totalShots: string
@@ -263,6 +274,9 @@ export interface Dictionary {
       avgDuration: string
       noAnalysis: string
       noAnalysisDesc: string
+      characters: string
+      avg: string
+      noFlags: string
     }
     characterRef: {
       uploadImage: string

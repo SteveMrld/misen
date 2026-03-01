@@ -333,8 +333,19 @@ export const en: Dictionary = {
       subtitles: 'Subtitles',
       voiceover: 'Voice-over',
       overview: 'Overview',
+      render: 'Render',
     },
     modeSimple: 'Simple',
+    shortcuts: {
+      shortcuts: 'Shortcuts',
+      close: 'Close',
+      mode: 'Mode',
+      save: 'Save',
+    },
+    render: {
+      pending: 'Pending generation',
+      generating: 'Generating...',
+    },
     cockpit: {
       title: 'Project Cockpit',
       totalShots: 'Shots',
@@ -355,6 +366,9 @@ export const en: Dictionary = {
       avgDuration: 'Estimated Duration',
       noAnalysis: 'No analysis available',
       noAnalysisDesc: 'Run an analysis from the Script tab to view the project cockpit.',
+      characters: 'Characters',
+      avg: 'Avg',
+      noFlags: 'No flags',
     },
     characterRef: {
       uploadImage: 'Add reference image',

@@ -14,7 +14,7 @@ interface OverviewCockpitProps {
 }
 
 export function OverviewCockpit({ analysis, projectName }: OverviewCockpitProps) {
-  const { t, locale } = useI18n()
+  const { t } = useI18n()
 
   const scenes = analysis?.scenes || []
   const plans = analysis?.plans || []
@@ -75,7 +75,7 @@ export function OverviewCockpit({ analysis, projectName }: OverviewCockpitProps)
         <KPI icon={DollarSign} label={t.project.cockpit.totalBudget} value={`$${costTotal.toFixed(2)}`} color="text-green-400" />
         <KPI icon={Shield} label={t.project.cockpit.continuityScore} value={`${continuity.score}%`} color={continuity.score >= 80 ? 'text-green-400' : 'text-yellow-400'} />
         <KPI icon={Clock} label={t.project.cockpit.avgDuration} value={fmtDur(totalDuration)} color="text-cyan-400" />
-        <KPI icon={Users} label={locale === 'fr' ? 'Personnages' : 'Characters'} value={chars.length} color="text-purple-400" />
+        <KPI icon={Users} label={t.project.cockpit.characters} value={chars.length} color="text-purple-400" />
       </div>
 
       {/* ═══ Row: Pie Chart + Tension Curve ═══ */}
@@ -115,7 +115,7 @@ export function OverviewCockpit({ analysis, projectName }: OverviewCockpitProps)
             {tension && (
               <div className="flex items-center gap-3 text-[11px] text-slate-500">
                 <span>Arc: <span className="text-slate-300">{tension.arc || 'standard'}</span></span>
-                <span>{locale === 'fr' ? 'Moy' : 'Avg'}: <span className="text-slate-300">{tension.mean?.toFixed(0) || 0}</span></span>
+                <span>{t.project.cockpit.avg}: <span className="text-slate-300">{tension.mean?.toFixed(0) || 0}</span></span>
               </div>
             )}
           </div>
@@ -226,7 +226,7 @@ export function OverviewCockpit({ analysis, projectName }: OverviewCockpitProps)
           ) : (
             <div className="flex items-center gap-2 py-3">
               <CheckCircle size={14} className="text-green-400" />
-              <span className="text-xs text-green-400">{locale === 'fr' ? 'Aucun flag' : 'No flags'}</span>
+              <span className="text-xs text-green-400">{t.project.cockpit.noFlags}</span>
             </div>
           )}
         </div>

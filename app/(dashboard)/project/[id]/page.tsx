@@ -136,10 +136,10 @@ export default function ProjectPage() {
   }
 
   useKeyboardShortcuts([
-    { key: '?', label: 'Raccourcis', action: () => setShowShortcuts(s => !s) },
-    { key: 'Escape', label: 'Fermer', action: () => showShortcuts ? setShowShortcuts(false) : router.push('/dashboard') },
-    { key: 'e', label: 'Mode', action: () => setMode(m => m === 'simple' ? 'expert' : 'simple') },
-    { key: 's', ctrl: true, label: 'Sauver', action: handleSave },
+    { key: '?', label: t.project.shortcuts.shortcuts, action: () => setShowShortcuts(s => !s) },
+    { key: 'Escape', label: t.project.shortcuts.close, action: () => showShortcuts ? setShowShortcuts(false) : router.push('/dashboard') },
+    { key: 'e', label: t.project.shortcuts.mode, action: () => setMode(m => m === 'simple' ? 'expert' : 'simple') },
+    { key: 's', ctrl: true, label: t.project.shortcuts.save, action: handleSave },
     { key: 'Enter', ctrl: true, label: t.project.analyze, action: handleAnalyze },
     ...tabKeys.map((t, i) => ({ key: String(i + 1), label: t, action: () => { setMode('expert'); setTab(t) } })),
   ])
@@ -155,7 +155,7 @@ export default function ProjectPage() {
     { id: 'media', label: t.project.tabs.media, icon: Image, disabled: !analysis },
     { id: 'subtitles', label: t.project.tabs.subtitles, icon: Subtitles, disabled: !analysis },
     { id: 'voiceover', label: t.project.tabs.voiceover, icon: Mic, disabled: !analysis },
-    { id: 'render', label: 'Rendu', icon: Play, disabled: !analysis },
+    { id: 'render', label: t.project.tabs.render, icon: Play, disabled: !analysis },
   ]
 
   return (
@@ -859,6 +859,7 @@ function PC({ plan, index, analysisId, userKeys }: { plan: any; index: number; a
 
 // ═══ Render Panel — Assembly Player V8 ═══
 function RenderPanel({ analysis, analysisId, projectName }: { analysis: any; analysisId: string | null; projectName?: string }) {
+  const { t } = useI18n()
   const [generations, setGenerations] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [currentClip, setCurrentClip] = useState(0)
@@ -943,7 +944,7 @@ function RenderPanel({ analysis, analysisId, projectName }: { analysis: any; ana
       <div className="flex items-center justify-between bg-dark-900 rounded-xl border border-dark-700 px-4 py-3">
         <div className="flex items-center gap-3">
           <Film size={16} className="text-orange-500" />
-          <span className="text-sm font-medium text-slate-200">{projectName || 'Rendu'}</span>
+          <span className="text-sm font-medium text-slate-200">{projectName || t.project.tabs.render}</span>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs text-slate-400">
@@ -996,7 +997,7 @@ function RenderPanel({ analysis, analysisId, projectName }: { analysis: any; ana
                 modelColor={getModelColor((current?.modelId || '').toLowerCase())}
               />
               <p className="text-xs text-slate-600 mt-3">
-                {current?.status === 'pending' ? 'En attente de génération' : 'Génération en cours...'}
+                {current?.status === 'pending' ? t.project.render.pending : t.project.render.generating}
               </p>
             </div>
           )}
