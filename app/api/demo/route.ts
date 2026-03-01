@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { DEMO_SCRIPT, DEMO_PROJECT_NAME } from '@/lib/demo/data';
+import { DEMO_SCENARIOS } from '@/lib/demo/data';
+const DEMO_SCRIPT = DEMO_SCENARIOS[0].script;
+const DEMO_PROJECT_NAME = DEMO_SCENARIOS[0].title + ' — Démo';
 import { runPipeline } from '@/lib/engines/pipeline';
 
 export async function POST() {
