@@ -80,25 +80,8 @@ export default function DashboardPage() {
     URL.revokeObjectURL(url)
   }
 
-  const handleDemo = async () => {
-    try {
-      const { DEMO_SCENARIOS } = await import('@/lib/demo/data')
-      for (const sc of DEMO_SCENARIOS) {
-        const res = await fetch('/api/projects', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: `${sc.title} — Démo MISEN` }),
-        })
-        if (res.ok) {
-          const proj = await res.json()
-          await fetch(`/api/projects/${proj.id}`, {
-            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ script_text: sc.script }),
-          })
-        }
-      }
-      router.refresh()
-      window.location.reload()
-    } catch {}
+  const handleDemo = () => {
+    router.push('/demo')
   }
 
   const handleImport = async () => {
