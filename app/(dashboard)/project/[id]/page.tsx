@@ -53,6 +53,7 @@ export default function ProjectPage() {
   const [tab, setTab] = useState<Tab>('script')
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [showExportMenu, setShowExportMenu] = useState(false)
+  const [userKeys, setUserKeys] = useState<Set<string>>(new Set())
 
   // Keyboard shortcuts — defined after handlers
   const tabKeys: Tab[] = ['script', 'analyse', 'timeline', 'copilot', 'media', 'subtitles', 'voiceover', 'render']
@@ -65,6 +66,23 @@ export default function ProjectPage() {
       .catch(() => router.push('/dashboard'))
       .finally(() => setLoading(false))
   }, [projectId, router])
+
+  // Load user API keys to know which models can generate directly
+  useEffect(() => {
+    fetch('/api/keys')
+      .then(res => res.ok ? res.json() : [])
+      .then((keys: any[]) => {
+        const providers = new Set<string>()
+        keys.forEach((k: any) => {
+          if (k.provider === 'kling') providers.add('kling')
+          if (k.provider === 'runway') providers.add('runway')
+          if (k.provider === 'openai') providers.add('sora') // Sora uses OpenAI key
+          if (k.provider === 'google') providers.add('veo')
+        })
+        setUserKeys(providers)
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (!projectId) return
@@ -236,7 +254,7 @@ export default function ProjectPage() {
                 </div>
                 <div className="divide-y divide-dark-700/50">
                   {(analysis.plans || []).slice(0, 30).map((plan: any, i: number) => (
-                    <SPC key={i} plan={plan} index={i} analysisId={analysisId} />
+                    <SPC key={i} plan={plan} index={i} analysisId={analysisId} userKeys={userKeys} />
                   ))}
                 </div>
               </div>
@@ -262,7 +280,7 @@ export default function ProjectPage() {
             ))}
           </div>
           {tab === 'script' && <ScriptTab scriptText={scriptText} setScriptText={setScriptText} stylePreset={stylePreset} setStylePreset={setStylePreset} saving={saving} analyzing={analyzing} error={error} handleSave={handleSave} handleAnalyze={handleAnalyze} loadDemo={loadDemo} />}
-          {tab === 'analyse' && analysis && <AR analysis={analysis} analysisId={analysisId} />}
+          {tab === 'analyse' && analysis && <AR analysis={analysis} analysisId={analysisId} userKeys={userKeys} />}
           {tab === 'timeline' && analysis && <TL analysis={analysis} projectName={project?.name} />}
           {tab === 'copilot' && analysis && <CP projectId={projectId} projectName={project?.name} />}
           {tab === 'media' && analysis && <MB analysis={analysis} projectId={projectId} projectName={project?.name} />}
@@ -276,41 +294,100 @@ export default function ProjectPage() {
 }
 
 // ═══ Model studio URLs ═══
-const MODEL_URLS: Record<string, { name: string; url: string }> = {
-  kling: { name: 'Kling', url: 'https://klingai.com' },
-  'kling 3.0': { name: 'Kling', url: 'https://klingai.com' },
-  runway: { name: 'Runway', url: 'https://app.runwayml.com' },
-  'runway gen-4': { name: 'Runway', url: 'https://app.runwayml.com' },
-  'runway gen-4.5': { name: 'Runway', url: 'https://app.runwayml.com' },
-  sora: { name: 'Sora', url: 'https://sora.com' },
-  'sora 2': { name: 'Sora', url: 'https://sora.com' },
-  veo: { name: 'Veo', url: 'https://deepmind.google/technologies/veo/' },
-  'veo 3.1': { name: 'Veo', url: 'https://deepmind.google/technologies/veo/' },
-  hailuo: { name: 'Hailuo', url: 'https://hailuoai.video' },
-  'hailuo 2.3': { name: 'Hailuo', url: 'https://hailuoai.video' },
-  seedance: { name: 'Seedance', url: 'https://seedance.ai' },
-  'seedance 2.0': { name: 'Seedance', url: 'https://seedance.ai' },
-  'wan 2.5': { name: 'Wan', url: 'https://wan.video' },
+const MODEL_URLS: Record<string, { name: string; url: string; provider: string }> = {
+  kling: { name: 'Kling', url: 'https://klingai.com', provider: 'kling' },
+  'kling 3.0': { name: 'Kling', url: 'https://klingai.com', provider: 'kling' },
+  runway: { name: 'Runway', url: 'https://app.runwayml.com', provider: 'runway' },
+  'runway gen-4': { name: 'Runway', url: 'https://app.runwayml.com', provider: 'runway' },
+  'runway gen-4.5': { name: 'Runway', url: 'https://app.runwayml.com', provider: 'runway' },
+  sora: { name: 'Sora', url: 'https://sora.com', provider: 'sora' },
+  'sora 2': { name: 'Sora', url: 'https://sora.com', provider: 'sora' },
+  veo: { name: 'Veo', url: 'https://deepmind.google/technologies/veo/', provider: 'veo' },
+  'veo 3.1': { name: 'Veo', url: 'https://deepmind.google/technologies/veo/', provider: 'veo' },
+  hailuo: { name: 'Hailuo', url: 'https://hailuoai.video', provider: 'hailuo' },
+  'hailuo 2.3': { name: 'Hailuo', url: 'https://hailuoai.video', provider: 'hailuo' },
+  seedance: { name: 'Seedance', url: 'https://seedance.ai', provider: 'seedance' },
+  'seedance 2.0': { name: 'Seedance', url: 'https://seedance.ai', provider: 'seedance' },
+  'wan 2.5': { name: 'Wan', url: 'https://wan.video', provider: 'wan' },
 }
 const getModelStudio = (mid: string) => MODEL_URLS[mid.toLowerCase()] || MODEL_URLS['kling']
 
 // ═══ Simple Plan Card ═══
-function SPC({ plan, index, analysisId }: { plan: any; index: number; analysisId?: string | null }) {
+function SPC({ plan, index, analysisId, userKeys }: { plan: any; index: number; analysisId?: string | null; userKeys: Set<string> }) {
   const [copied, setCopied] = useState(false)
+  const [status, setStatus] = useState<'idle'|'processing'|'polling'|'completed'|'failed'>('idle')
+  const [progress, setProgress] = useState(0)
+  const [videoUrl, setVideoUrl] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [showVideo, setShowVideo] = useState(false)
+  const pollRef = useRef<NodeJS.Timeout | null>(null)
 
   const prompt = plan?.finalPrompt || plan?.basePrompt || ''
   const mid = (plan?.modelId || 'kling').toLowerCase()
   const mc = getModelColor(mid)
   const studio = getModelStudio(mid)
+  const canGenerate = userKeys.has(studio.provider)
 
   const copy = () => { navigator.clipboard.writeText(prompt).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) }).catch(() => {}) }
+
+  const generate = async () => {
+    if (!analysisId) return
+    setStatus('processing'); setProgress(0); setError(null)
+    try {
+      const r = await fetch('/api/generate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ analysisId, planIndex: index, sceneIndex: plan?.sceneIndex || 0, modelId: plan?.modelId, prompt, negativePrompt: plan?.negativePrompt, duration: plan?.estimatedDuration || 5, aspectRatio: '16:9' }),
+      })
+      const data = await r.json()
+      if (!r.ok) { setStatus('failed'); setError(data.error || 'Erreur'); return }
+      setStatus('polling')
+      let tick = 0
+      pollRef.current = setInterval(async () => {
+        tick++; setProgress(prev => Math.min(prev + 2 + Math.random() * 3, 92))
+        try {
+          const sr = await fetch(`/api/generate/status?jobId=${data.jobId || data.generationId}`)
+          if (!sr.ok) return
+          const sd = await sr.json()
+          if (sd.status === 'completed') { clearInterval(pollRef.current!); setProgress(100); setVideoUrl(sd.resultUrl || sd.thumbnailUrl); setStatus('completed') }
+          else if (sd.status === 'failed') { clearInterval(pollRef.current!); setStatus('failed'); setError(sd.errorMessage || 'Échec') }
+          if (sd.progress) setProgress(sd.progress)
+        } catch {}
+        if (tick > 150) { clearInterval(pollRef.current!); setStatus('failed'); setError('Timeout') }
+      }, 2000)
+    } catch (e: any) { setStatus('failed'); setError(e.message) }
+  }
+
+  useEffect(() => { return () => { if (pollRef.current) clearInterval(pollRef.current) } }, [])
+  const isGenerating = status === 'processing' || status === 'polling'
 
   return (
     <div className="card overflow-hidden group hover:border-dark-600 transition-all">
       <div className="flex gap-3 p-3">
         {/* Preview */}
         <div className="flex-shrink-0 relative">
-          <StoryboardSVG shotType={plan?.shotType} cameraMove={plan?.cameraMove} width={160} height={90} modelColor={mc} />
+          {status === 'completed' && videoUrl ? (
+            <div className="relative cursor-pointer" onClick={() => setShowVideo(!showVideo)}>
+              <div className="w-[160px] h-[90px] bg-dark-800 rounded-lg overflow-hidden">
+                <video src={videoUrl} className="w-full h-full object-cover" muted preload="metadata" />
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg hover:bg-black/10 transition-colors">
+                <Play size={20} fill="white" className="text-white drop-shadow-lg" />
+              </div>
+              <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
+                <Check size={9} className="text-white" />
+              </div>
+            </div>
+          ) : (
+            <div className="relative">
+              <StoryboardSVG shotType={plan?.shotType} cameraMove={plan?.cameraMove} width={160} height={90} modelColor={mc} />
+              {isGenerating && (
+                <div className="absolute inset-0 bg-dark-950/60 rounded-lg flex items-center justify-center">
+                  <Loader2 size={20} className="text-orange-400 animate-spin mx-auto" />
+                  <span className="text-[9px] text-orange-400 ml-1">{Math.round(progress)}%</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         {/* Info */}
         <div className="flex-1 min-w-0">
@@ -325,10 +402,27 @@ function SPC({ plan, index, analysisId }: { plan: any; index: number; analysisId
               <button onClick={copy} className="px-2 py-1 bg-orange-600/10 hover:bg-orange-600/20 text-orange-400 text-[10px] rounded flex items-center gap-1 transition-colors">
                 {copied ? <><Check size={10} /> Copié !</> : <><Copy size={10} /> Prompt</>}
               </button>
-              <a href={studio.url} target="_blank" rel="noopener noreferrer"
-                className="px-2 py-1 bg-dark-700 hover:bg-dark-600 text-slate-300 text-[10px] rounded flex items-center gap-1 transition-colors">
-                <ExternalLink size={9} /> {studio.name}
-              </a>
+              {canGenerate && status === 'idle' && (
+                <button onClick={generate} className="px-2.5 py-1 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-medium rounded flex items-center gap-1 transition-colors">
+                  <Zap size={10} /> Générer
+                </button>
+              )}
+              {canGenerate && status === 'failed' && (
+                <button onClick={generate} className="px-2 py-1 bg-red-500/10 text-red-400 text-[10px] rounded flex items-center gap-1 hover:bg-red-500/20">
+                  <AlertTriangle size={10} /> Réessayer
+                </button>
+              )}
+              {canGenerate && status === 'completed' && (
+                <span className="px-2 py-0.5 bg-green-500/10 text-green-400 text-[10px] rounded flex items-center gap-1">
+                  <Check size={10} /> Prêt
+                </span>
+              )}
+              {!canGenerate && (
+                <a href={studio.url} target="_blank" rel="noopener noreferrer"
+                  className="px-2 py-1 bg-dark-700 hover:bg-dark-600 text-slate-300 text-[10px] rounded flex items-center gap-1 transition-colors">
+                  <ExternalLink size={9} /> {studio.name}
+                </a>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2 mb-1">
@@ -337,8 +431,19 @@ function SPC({ plan, index, analysisId }: { plan: any; index: number; analysisId
             <CompareButton plan={plan} />
           </div>
           <p className="text-[11px] text-slate-400 leading-relaxed font-mono line-clamp-2">{prompt || '—'}</p>
+          {isGenerating && (
+            <div className="mt-2 h-1 bg-dark-700 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-orange-600 to-yellow-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
+            </div>
+          )}
+          {status === 'failed' && error && <p className="text-[10px] text-red-400/80 mt-1">{error}</p>}
         </div>
       </div>
+      {showVideo && videoUrl && (
+        <div className="border-t border-dark-700 bg-black">
+          <video src={videoUrl} controls autoPlay className="w-full aspect-video" />
+        </div>
+      )}
     </div>
   )
 }
@@ -552,7 +657,7 @@ function VO({ projectId, projectName }: { projectId: string; projectName?: strin
 }
 
 // ═══ Analysis Results ═══
-function AR({ analysis, analysisId }: { analysis: any; analysisId?: string | null }) {
+function AR({ analysis, analysisId, userKeys }: { analysis: any; analysisId?: string | null; userKeys: Set<string> }) {
   try {
     const scenes=analysis?.scenes||[]; const plans=analysis?.plans||[]; const tension=analysis?.tension; const chars=analysis?.characterBible||[]
     const comp=analysis?.compliance||{level:'OK',score:100,flags:[]}; const cont=analysis?.continuity||{score:100,alerts:[]}; const cost=analysis?.costTotal||0
@@ -652,7 +757,7 @@ function AR({ analysis, analysisId }: { analysis: any; analysisId?: string | nul
       {cont.alerts?.length>0 && <Sec icon={AlertTriangle} title={`Continuité — ${cont.score}/100`} color="text-yellow-400">{cont.alerts.map((a:any,i:number)=><div key={i} className="flex items-center gap-2 py-0.5"><span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${a?.severity==='critical'?'bg-red-600/20 text-red-300':a?.severity==='high'?'bg-red-500/20 text-red-400':'bg-yellow-500/20 text-yellow-400'}`}>{(a?.severity||'medium').toUpperCase()}</span><span className="text-xs text-slate-400">{a?.type}</span></div>)}</Sec>}
 
       {/* Plans */}
-      {plans.length>0 && <Sec icon={Camera} title={`Plans (${plans.length})`} color="text-orange-400" open={false}><div className="space-y-2 max-h-96 overflow-y-auto">{plans.slice(0,30).map((p:any,i:number)=><PC key={i} plan={p} index={i} analysisId={analysisId} />)}</div></Sec>}
+      {plans.length>0 && <Sec icon={Camera} title={`Plans (${plans.length})`} color="text-orange-400" open={false}><div className="space-y-2 max-h-96 overflow-y-auto">{plans.slice(0,30).map((p:any,i:number)=><PC key={i} plan={p} index={i} analysisId={analysisId} userKeys={userKeys} />)}</div></Sec>}
     </div>)
   } catch { return <p className="text-red-400 text-sm text-center p-6">Erreur d&apos;affichage</p> }
 }
@@ -668,9 +773,12 @@ function Sec({ icon: I, title, color, children, open: so = true }: { icon: any; 
     {o && <div className="px-4 pb-3">{children}</div>}
   </div>)
 }
-function PC({ plan, index, analysisId }: { plan: any; index: number; analysisId?: string | null }) {
+function PC({ plan, index, analysisId, userKeys }: { plan: any; index: number; analysisId?: string | null; userKeys: Set<string> }) {
   const [copied, setCopied] = useState(false)
   const prompt = plan?.finalPrompt || plan?.basePrompt || ''; const mid=(plan?.modelId||'kling').toLowerCase(); const mc=getModelColor(mid)
+  const studio = getModelStudio(mid); const canGenerate = userKeys.has(studio.provider)
+  const [status, setStatus] = useState<string>('idle')
+  const gen = async () => { if(!analysisId||!canGenerate)return;setStatus('processing'); try{const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({analysisId,planIndex:index,sceneIndex:plan?.sceneIndex||0,modelId:plan?.modelId,prompt,negativePrompt:plan?.negativePrompt})});setStatus(r.ok?'completed':'failed')}catch{setStatus('failed')} }
   return (<div className="card overflow-hidden hover:border-dark-600 transition-all">
     <div className="flex gap-3">
       {/* SVG Preview */}
@@ -687,7 +795,11 @@ function PC({ plan, index, analysisId }: { plan: any; index: number; analysisId?
           </div>
           <div className="flex items-center gap-1.5">
             <button onClick={()=>{navigator.clipboard.writeText(prompt);setCopied(true);setTimeout(()=>setCopied(false),2000)}} className="px-2 py-0.5 bg-orange-600/10 hover:bg-orange-600/20 text-orange-400 text-[10px] rounded flex items-center gap-1">{copied?<><Check size={10} /> Copié !</>:<><Copy size={10} /> Prompt</>}</button>
-            {(()=>{ const s = getModelStudio(mid); return <a href={s.url} target="_blank" rel="noopener noreferrer" className="px-2 py-0.5 bg-dark-700 hover:bg-dark-600 text-slate-300 text-[10px] rounded flex items-center gap-1"><ExternalLink size={9} /> {s.name}</a> })()}
+            {canGenerate && status==='idle' && <button onClick={gen} className="px-2 py-0.5 bg-orange-600 hover:bg-orange-500 text-white text-[10px] rounded flex items-center gap-1"><Zap size={10} /> Générer</button>}
+            {canGenerate && status==='processing' && <Loader2 size={12} className="text-yellow-400 animate-spin" />}
+            {canGenerate && status==='completed' && <Check size={12} className="text-green-400" />}
+            {canGenerate && status==='failed' && <button onClick={gen} className="px-2 py-0.5 bg-red-500/10 text-red-400 text-[10px] rounded flex items-center gap-1"><AlertTriangle size={10} /> Réessayer</button>}
+            {!canGenerate && <a href={studio.url} target="_blank" rel="noopener noreferrer" className="px-2 py-0.5 bg-dark-700 hover:bg-dark-600 text-slate-300 text-[10px] rounded flex items-center gap-1"><ExternalLink size={9} /> {studio.name}</a>}
           </div>
         </div>
         <div className="flex items-center gap-2 mb-1 text-[10px]">
