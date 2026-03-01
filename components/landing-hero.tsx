@@ -8,15 +8,25 @@ import Image from 'next/image'
 // Background
 import heroBg from '@/public/images/hero_bg.png'
 
-// Demo scenes
-import demoSc1P1 from '@/public/images/demo_sc1_p1_fleuve.png'
-import demoSc1P2 from '@/public/images/demo_sc1_p2_visage.png'
-import demoSc1P3 from '@/public/images/demo_sc1_p3_photo.png'
-import demoSc2P1 from '@/public/images/demo_sc2_p1_pont.png'
-import demoSc2P2 from '@/public/images/demo_sc2_p2_main.png'
-import demoSc2P3 from '@/public/images/demo_sc2_p3_silhouettes.png'
-import demoSc3P1 from '@/public/images/demo_sc3_p1_hopital.png'
-import demoSc4P1 from '@/public/images/demo_sc4_p1_retrouvailles.png'
+// Scenario 1 — Le Poids des cendres (court-métrage)
+import sc1Fleuve from '@/public/images/sc1_fleuve.png'
+import sc1Portrait from '@/public/images/sc1_portrait.png'
+import sc1Pont from '@/public/images/sc1_pont.png'
+import sc1Couloir from '@/public/images/sc1_couloir.png'
+
+// Scenario 2 — Odyssée (pub parfum)
+import sc2Desert from '@/public/images/sc2_desert.png'
+import sc2Sable from '@/public/images/sc2_sable.png'
+import sc2Flacon from '@/public/images/sc2_flacon.png'
+import sc2Visage from '@/public/images/sc2_visage.png'
+import sc2Desert2 from '@/public/images/sc2_desert2.png'
+import sc2Falaise from '@/public/images/sc2_falaise.png'
+
+// Scenario 3 — Pixel (vidéo éducative)
+import sc3Oeil from '@/public/images/sc3_oeil.png'
+import sc3Ville from '@/public/images/sc3_ville.png'
+import sc3Code from '@/public/images/sc3_homme_ecran.png'
+import sc3Silhouette from '@/public/images/sc3_silhouette.png'
 
 // Custom pictos — Formats (Set A)
 import iconCourtMetrage from '@/public/images/icon_court_metrage.png'
@@ -285,38 +295,106 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
         </div>
       </section>
 
-      {/* ═══ VISUAL SHOWCASE ═══ */}
+      {/* ═══ VISUAL SHOWCASE — 3 SCENARIOS ═══ */}
       <section className="px-6 py-16 max-w-5xl mx-auto w-full">
         <h2 className="font-display text-2xl text-white text-center mb-3 tracking-tight">
           Des résultats cinématiques
         </h2>
         <p className="text-sm text-slate-500 text-center mb-8">
-          Chaque plan est assigné au modèle IA optimal pour un rendu professionnel
+          Chaque plan est assigné au modèle IA optimal — voici 3 projets générés par MISEN
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { src: demoSc1P1.src, label: 'Plan large · Fleuve', model: 'Kling 3.0', color: '#3B82F6' },
-            { src: demoSc1P2.src, label: 'Gros plan · Portrait', model: 'Veo 3.1', color: '#10B981' },
-            { src: demoSc2P1.src, label: 'Plan large · Pont', model: 'Sora 2', color: '#EC4899' },
-            { src: demoSc2P2.src, label: 'Insert · Main', model: 'Runway Gen-4.5', color: '#8B5CF6' },
-            { src: demoSc1P3.src, label: 'Insert · Photo', model: 'Hailuo 2.3', color: '#D946EF' },
-            { src: demoSc3P1.src, label: 'Intérieur · Hôpital', model: 'Kling 3.0', color: '#3B82F6' },
-            { src: demoSc4P1.src, label: 'Plan moyen · Émotion', model: 'Veo 3.1', color: '#10B981' },
-            { src: demoSc2P3.src, label: 'Contre-jour', model: 'Wan 2.5', color: '#6366F1' },
-          ].map((scene) => (
-            <div key={scene.label} className="group relative rounded-xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all">
-              <img src={scene.src} alt={scene.label} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-500" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-3">
-                <p className="text-[11px] text-white font-medium">{scene.label}</p>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: scene.color }} />
-                  <span className="text-[9px] text-slate-400">{scene.model}</span>
-                </div>
+
+        {/* Scenario tabs */}
+        {(() => {
+          const scenarios = [
+            {
+              id: 'cendres',
+              title: 'Le Poids des cendres',
+              genre: 'Court-métrage · Drame',
+              shots: [
+                { src: sc1Fleuve.src, label: 'Plan large · Fleuve', model: 'Kling 3.0', color: '#3B82F6' },
+                { src: sc1Portrait.src, label: 'Gros plan · Portrait', model: 'Veo 3.1', color: '#10B981' },
+                { src: sc1Pont.src, label: 'Plan large · Pont', model: 'Sora 2', color: '#EC4899' },
+                { src: sc1Couloir.src, label: 'Intérieur · Couloir', model: 'Kling 3.0', color: '#3B82F6' },
+              ],
+            },
+            {
+              id: 'odyssee',
+              title: 'Odyssée',
+              genre: 'Publicité · Parfum luxe',
+              shots: [
+                { src: sc2Desert.src, label: 'Désert · Silhouette', model: 'Kling 3.0', color: '#3B82F6' },
+                { src: sc2Sable.src, label: 'Insert · Sable doré', model: 'Runway Gen-4.5', color: '#8B5CF6' },
+                { src: sc2Visage.src, label: 'Gros plan · Visage', model: 'Veo 3.1', color: '#10B981' },
+                { src: sc2Falaise.src, label: 'Falaise · Étoiles', model: 'Wan 2.5', color: '#6366F1' },
+              ],
+            },
+            {
+              id: 'pixel',
+              title: 'Pixel',
+              genre: 'Vidéo éducative · IA',
+              shots: [
+                { src: sc3Oeil.src, label: 'Macro · Œil', model: 'Veo 3.1', color: '#10B981' },
+                { src: sc3Ville.src, label: 'Aérien · Ville', model: 'Kling 3.0', color: '#3B82F6' },
+                { src: sc3Code.src, label: 'Plan moyen · Écran', model: 'Runway Gen-4.5', color: '#8B5CF6' },
+                { src: sc3Silhouette.src, label: 'Contre-jour · Data', model: 'Sora 2', color: '#EC4899' },
+              ],
+            },
+          ]
+
+          return (
+            <div>
+              {/* Tab buttons */}
+              <div className="flex justify-center gap-2 mb-6">
+                {scenarios.map((s, i) => (
+                  <button
+                    key={s.id}
+                    onClick={() => {
+                      const el = document.getElementById(`scenario-${s.id}`)
+                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+                    }}
+                    className="px-4 py-2 rounded-lg text-xs font-medium border border-white/[0.08] hover:border-orange-500/50 hover:text-orange-400 text-slate-400 transition-all"
+                  >
+                    <span className="text-white/80">{s.title}</span>
+                    <span className="ml-1.5 text-slate-600">·</span>
+                    <span className="ml-1.5">{s.genre.split('·')[0].trim()}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Scenarios */}
+              <div className="space-y-10">
+                {scenarios.map((s) => (
+                  <div key={s.id} id={`scenario-${s.id}`}>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+                      <div className="text-center">
+                        <p className="text-xs font-medium text-orange-400 tracking-wider uppercase">{s.genre}</p>
+                        <p className="text-sm text-white/70 font-display mt-0.5">« {s.title} »</p>
+                      </div>
+                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {s.shots.map((shot) => (
+                        <div key={shot.label} className="group relative rounded-xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all">
+                          <img src={shot.src} alt={shot.label} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                          <div className="absolute bottom-0 left-0 right-0 p-3">
+                            <p className="text-[11px] text-white font-medium">{shot.label}</p>
+                            <div className="flex items-center gap-1.5 mt-1">
+                              <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: shot.color }} />
+                              <span className="text-[9px] text-slate-400">{shot.model}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
-        </div>
+          )
+        })()}
       </section>
 
       {/* ═══ MODELS ═══ */}
