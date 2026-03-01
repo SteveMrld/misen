@@ -240,8 +240,30 @@ export interface Dictionary {
       media: string
       subtitles: string
       voiceover: string
+      overview: string
     }
     modeSimple: string
+    cockpit: {
+      title: string
+      totalShots: string
+      totalScenes: string
+      totalBudget: string
+      continuityScore: string
+      modelDistribution: string
+      tensionCurve: string
+      continuityAlerts: string
+      exportStatus: string
+      noAlerts: string
+      alertType: string
+      alertSeverity: string
+      ready: string
+      notReady: string
+      formats: string
+      complianceStatus: string
+      avgDuration: string
+      noAnalysis: string
+      noAnalysisDesc: string
+    }
     modeExpert: string
     analyze: string
     analyzing: string

@@ -31,9 +31,10 @@ const DEMO_IMAGES = [
 ]
 import { CompareButton } from '@/components/ui/compare-panel'
 import { useKeyboardShortcuts, ShortcutOverlay } from '@/components/ui/keyboard-shortcuts'
+import { OverviewCockpit } from '@/components/ui/overview-cockpit'
 
 type Mode = 'simple' | 'expert'
-type Tab = 'script' | 'analyse' | 'timeline' | 'copilot' | 'media' | 'subtitles' | 'voiceover' | 'render'
+type Tab = 'script' | 'overview' | 'analyse' | 'timeline' | 'copilot' | 'media' | 'subtitles' | 'voiceover' | 'render'
 
 function fmt(s: number) { return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` }
 
@@ -58,7 +59,7 @@ export default function ProjectPage() {
   const [userKeys, setUserKeys] = useState<Set<string>>(new Set())
 
   // Keyboard shortcuts — defined after handlers
-  const tabKeys: Tab[] = ['script', 'analyse', 'timeline', 'copilot', 'media', 'subtitles', 'voiceover', 'render']
+  const tabKeys: Tab[] = ['script', 'overview', 'analyse', 'timeline', 'copilot', 'media', 'subtitles', 'voiceover', 'render']
 
   useEffect(() => {
     if (!projectId) return
@@ -106,7 +107,7 @@ export default function ProjectPage() {
     try {
       const res = await fetch(`/api/projects/${projectId}/analyze`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ style_preset: stylePreset }) })
       const data = await res.json()
-      if (res.ok && data.result) { setAnalysis(data.result); setAnalysisId(data.analysis_id); if (mode === 'expert') setTab('analyse') }
+      if (res.ok && data.result) { setAnalysis(data.result); setAnalysisId(data.analysis_id); if (mode === 'expert') setTab('overview') }
       else setError(data.error || t.common.error)
     } catch { setError(t.common.error) } finally { setAnalyzing(false) }
   }
@@ -133,6 +134,7 @@ export default function ProjectPage() {
 
   const tabs: { id: Tab; label: string; icon: any; disabled?: boolean }[] = [
     { id: 'script', label: t.project.tabs.script, icon: Film },
+    { id: 'overview', label: t.project.tabs.overview, icon: Eye, disabled: !analysis },
     { id: 'analyse', label: t.project.tabs.analysis, icon: Brain, disabled: !analysis },
     { id: 'timeline', label: t.project.tabs.timeline, icon: Clock, disabled: !analysis },
     { id: 'copilot', label: t.project.tabs.copilot, icon: Sparkles, disabled: !analysis },
@@ -282,6 +284,7 @@ export default function ProjectPage() {
             ))}
           </div>
           {tab === 'script' && <ScriptTab scriptText={scriptText} setScriptText={setScriptText} stylePreset={stylePreset} setStylePreset={setStylePreset} saving={saving} analyzing={analyzing} error={error} handleSave={handleSave} handleAnalyze={handleAnalyze} loadDemo={loadDemo} />}
+          {tab === 'overview' && analysis && <OverviewCockpit analysis={analysis} projectName={project?.name} />}
           {tab === 'analyse' && analysis && <AR analysis={analysis} analysisId={analysisId} userKeys={userKeys} />}
           {tab === 'timeline' && analysis && <TL analysis={analysis} projectName={project?.name} />}
           {tab === 'copilot' && analysis && <CP projectId={projectId} projectName={project?.name} />}
