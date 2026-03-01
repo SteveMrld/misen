@@ -6,7 +6,7 @@ import {
   ArrowLeft, Play, Loader2, Save, Brain, AlertTriangle, ChevronDown, ChevronRight,
   Film, Eye, DollarSign, Shield, Users, TrendingUp, Camera, Zap, Copy, Check,
   Subtitles, Mic, Clock, Download, Volume2, Pause, SkipForward, SkipBack,
-  Sparkles, Image, Search, RefreshCw, Wand2, SlidersHorizontal, Keyboard
+  Sparkles, Image, Search, RefreshCw, Wand2, SlidersHorizontal, Keyboard, ExternalLink
 } from 'lucide-react'
 import { StoryboardSVG } from '@/components/ui/storyboard-svg'
 import { ModelBadge, getModelColor, ModelLegend } from '@/components/ui/model-badge'
@@ -226,10 +226,10 @@ export default function ProjectPage() {
                   <div className="flex items-center gap-2"><Camera size={16} className="text-orange-500" /><span className="text-sm font-medium text-slate-200">Plans & Prompts</span></div>
                   <div className="flex items-center gap-2">
                     <button onClick={() => {
-                      // Trigger generate on all plan cards via custom event
-                      window.dispatchEvent(new CustomEvent('misen:generate-all'))
+                      const allPrompts = (analysis.plans || []).map((p: any, i: number) => `[P${i+1}] ${p.modelId || 'kling'}\n${p.finalPrompt || p.basePrompt || ''}`).join('\n\n---\n\n')
+                      navigator.clipboard.writeText(allPrompts)
                     }} className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-lg shadow-orange-600/20">
-                      <Zap size={12} /> Tout générer
+                      <Copy size={12} /> Copier tous les prompts
                     </button>
                     <button onClick={() => setMode('expert')} className="text-xs text-orange-400 hover:text-orange-300 flex items-center gap-1"><SlidersHorizontal size={12} /> Mode Expert →</button>
                   </div>
@@ -275,120 +275,42 @@ export default function ProjectPage() {
   )
 }
 
+// ═══ Model studio URLs ═══
+const MODEL_URLS: Record<string, { name: string; url: string }> = {
+  kling: { name: 'Kling', url: 'https://klingai.com' },
+  'kling 3.0': { name: 'Kling', url: 'https://klingai.com' },
+  runway: { name: 'Runway', url: 'https://app.runwayml.com' },
+  'runway gen-4': { name: 'Runway', url: 'https://app.runwayml.com' },
+  'runway gen-4.5': { name: 'Runway', url: 'https://app.runwayml.com' },
+  sora: { name: 'Sora', url: 'https://sora.com' },
+  'sora 2': { name: 'Sora', url: 'https://sora.com' },
+  veo: { name: 'Veo', url: 'https://deepmind.google/technologies/veo/' },
+  'veo 3.1': { name: 'Veo', url: 'https://deepmind.google/technologies/veo/' },
+  hailuo: { name: 'Hailuo', url: 'https://hailuoai.video' },
+  'hailuo 2.3': { name: 'Hailuo', url: 'https://hailuoai.video' },
+  seedance: { name: 'Seedance', url: 'https://seedance.ai' },
+  'seedance 2.0': { name: 'Seedance', url: 'https://seedance.ai' },
+  'wan 2.5': { name: 'Wan', url: 'https://wan.video' },
+}
+const getModelStudio = (mid: string) => MODEL_URLS[mid.toLowerCase()] || MODEL_URLS['kling']
+
 // ═══ Simple Plan Card ═══
 function SPC({ plan, index, analysisId }: { plan: any; index: number; analysisId?: string | null }) {
   const [copied, setCopied] = useState(false)
-  const [status, setStatus] = useState<'idle'|'processing'|'polling'|'completed'|'failed'>('idle')
-  const [progress, setProgress] = useState(0)
-  const [videoUrl, setVideoUrl] = useState<string | null>(null)
-  const [jobId, setJobId] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [showVideo, setShowVideo] = useState(false)
-  const pollRef = useRef<NodeJS.Timeout | null>(null)
 
   const prompt = plan?.finalPrompt || plan?.basePrompt || ''
   const mid = (plan?.modelId || 'kling').toLowerCase()
   const mc = getModelColor(mid)
+  const studio = getModelStudio(mid)
 
   const copy = () => { navigator.clipboard.writeText(prompt).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) }).catch(() => {}) }
-
-  // Generate video
-  const generate = async () => {
-    if (!analysisId) return
-    setStatus('processing'); setProgress(0); setError(null)
-    try {
-      const r = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          analysisId,
-          planIndex: index,
-          sceneIndex: plan?.sceneIndex || 0,
-          modelId: plan?.modelId,
-          prompt,
-          negativePrompt: plan?.negativePrompt,
-          duration: plan?.estimatedDuration || 5,
-          aspectRatio: '16:9',
-        }),
-      })
-      const data = await r.json()
-      if (!r.ok) { setStatus('failed'); setError(data.error || 'Erreur'); return }
-      setJobId(data.jobId || data.generationId)
-      setStatus('polling')
-      // Start polling
-      startPolling(data.jobId || data.generationId)
-    } catch (e: any) {
-      setStatus('failed'); setError(e.message)
-    }
-  }
-
-  // Poll for status
-  const startPolling = (id: string) => {
-    let tick = 0
-    pollRef.current = setInterval(async () => {
-      tick++
-      // Simulate progress while waiting
-      setProgress(prev => Math.min(prev + 2 + Math.random() * 3, 92))
-      try {
-        const r = await fetch(`/api/generate/status?jobId=${id}`)
-        if (!r.ok) return
-        const data = await r.json()
-        if (data.status === 'completed') {
-          clearInterval(pollRef.current!)
-          setProgress(100)
-          setVideoUrl(data.resultUrl || data.thumbnailUrl)
-          setStatus('completed')
-        } else if (data.status === 'failed') {
-          clearInterval(pollRef.current!)
-          setStatus('failed')
-          setError(data.errorMessage || 'Échec de la génération')
-        }
-        if (data.progress) setProgress(data.progress)
-      } catch {}
-      // Timeout after 5 minutes
-      if (tick > 150) {
-        clearInterval(pollRef.current!)
-        setStatus('failed')
-        setError('Timeout — la génération prend trop de temps')
-      }
-    }, 2000)
-  }
-
-  // Cleanup polling on unmount
-  useEffect(() => { return () => { if (pollRef.current) clearInterval(pollRef.current) } }, [])
-
-  const isGenerating = status === 'processing' || status === 'polling'
 
   return (
     <div className="card overflow-hidden group hover:border-dark-600 transition-all">
       <div className="flex gap-3 p-3">
-        {/* Preview: SVG storyboard or video thumbnail */}
+        {/* Preview */}
         <div className="flex-shrink-0 relative">
-          {status === 'completed' && videoUrl ? (
-            <div className="relative cursor-pointer" onClick={() => setShowVideo(!showVideo)}>
-              <div className="w-[160px] h-[90px] bg-dark-800 rounded-lg overflow-hidden">
-                <video src={videoUrl} className="w-full h-full object-cover" muted preload="metadata" />
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg hover:bg-black/10 transition-colors">
-                <Play size={20} fill="white" className="text-white drop-shadow-lg" />
-              </div>
-              <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
-                <Check size={9} className="text-white" />
-              </div>
-            </div>
-          ) : (
-            <div className="relative">
-              <StoryboardSVG shotType={plan?.shotType} cameraMove={plan?.cameraMove} width={160} height={90} modelColor={mc} />
-              {isGenerating && (
-                <div className="absolute inset-0 bg-dark-950/60 rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <Loader2 size={20} className="text-orange-400 animate-spin mx-auto" />
-                    <span className="text-[9px] text-orange-400 mt-1 block">{Math.round(progress)}%</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+          <StoryboardSVG shotType={plan?.shotType} cameraMove={plan?.cameraMove} width={160} height={90} modelColor={mc} />
         </div>
         {/* Info */}
         <div className="flex-1 min-w-0">
@@ -400,27 +322,13 @@ function SPC({ plan, index, analysisId }: { plan: any; index: number; analysisId
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] text-slate-600">${(plan?.estimatedCost||0).toFixed(3)}</span>
-              <button onClick={copy} className="p-1 rounded hover:bg-white/5">{copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} className="text-slate-500" />}</button>
-              {status === 'idle' && (
-                <button onClick={generate} className="px-2.5 py-1 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-medium rounded flex items-center gap-1 transition-colors">
-                  <Zap size={10} /> Générer
-                </button>
-              )}
-              {isGenerating && (
-                <span className="px-2 py-0.5 bg-yellow-500/10 text-yellow-400 text-[10px] rounded flex items-center gap-1">
-                  <Loader2 size={10} className="animate-spin" /> {Math.round(progress)}%
-                </span>
-              )}
-              {status === 'completed' && (
-                <span className="px-2 py-0.5 bg-green-500/10 text-green-400 text-[10px] rounded flex items-center gap-1">
-                  <Check size={10} /> Prêt
-                </span>
-              )}
-              {status === 'failed' && (
-                <button onClick={generate} className="px-2 py-0.5 bg-red-500/10 text-red-400 text-[10px] rounded flex items-center gap-1 hover:bg-red-500/20">
-                  <AlertTriangle size={10} /> Réessayer
-                </button>
-              )}
+              <button onClick={copy} className="px-2 py-1 bg-orange-600/10 hover:bg-orange-600/20 text-orange-400 text-[10px] rounded flex items-center gap-1 transition-colors">
+                {copied ? <><Check size={10} /> Copié !</> : <><Copy size={10} /> Prompt</>}
+              </button>
+              <a href={studio.url} target="_blank" rel="noopener noreferrer"
+                className="px-2 py-1 bg-dark-700 hover:bg-dark-600 text-slate-300 text-[10px] rounded flex items-center gap-1 transition-colors">
+                <ExternalLink size={9} /> {studio.name}
+              </a>
             </div>
           </div>
           <div className="flex items-center gap-2 mb-1">
@@ -429,24 +337,8 @@ function SPC({ plan, index, analysisId }: { plan: any; index: number; analysisId
             <CompareButton plan={plan} />
           </div>
           <p className="text-[11px] text-slate-400 leading-relaxed font-mono line-clamp-2">{prompt || '—'}</p>
-          {/* Progress bar */}
-          {isGenerating && (
-            <div className="mt-2 h-1 bg-dark-700 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-orange-600 to-yellow-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
-            </div>
-          )}
-          {/* Error message */}
-          {status === 'failed' && error && (
-            <p className="text-[10px] text-red-400/80 mt-1">{error}</p>
-          )}
         </div>
       </div>
-      {/* Expanded video player */}
-      {showVideo && videoUrl && (
-        <div className="border-t border-dark-700 bg-black">
-          <video src={videoUrl} controls autoPlay className="w-full aspect-video" />
-        </div>
-      )}
     </div>
   )
 }
@@ -777,9 +669,8 @@ function Sec({ icon: I, title, color, children, open: so = true }: { icon: any; 
   </div>)
 }
 function PC({ plan, index, analysisId }: { plan: any; index: number; analysisId?: string | null }) {
-  const [status, setStatus] = useState<string>('idle'); const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState(false)
   const prompt = plan?.finalPrompt || plan?.basePrompt || ''; const mid=(plan?.modelId||'kling').toLowerCase(); const mc=getModelColor(mid)
-  const gen = async () => { if(!analysisId)return;setStatus('processing'); try{const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({analysisId,planIndex:index,sceneIndex:plan?.sceneIndex||0,modelId:plan?.modelId,prompt,negativePrompt:plan?.negativePrompt})});setStatus(r.ok?'completed':'failed')}catch{setStatus('failed')} }
   return (<div className="card overflow-hidden hover:border-dark-600 transition-all">
     <div className="flex gap-3">
       {/* SVG Preview */}
@@ -795,11 +686,8 @@ function PC({ plan, index, analysisId }: { plan: any; index: number; analysisId?
             <ModelBadge modelId={mid} size="xs" />
           </div>
           <div className="flex items-center gap-1.5">
-            <button onClick={()=>{navigator.clipboard.writeText(prompt);setCopied(true);setTimeout(()=>setCopied(false),2000)}} className="p-1 rounded hover:bg-white/5">{copied?<Check size={11} className="text-green-400" />:<Copy size={11} className="text-slate-500" />}</button>
-            {status==='idle'&&<button onClick={gen} className="px-2 py-0.5 bg-orange-600 hover:bg-orange-500 text-white text-[10px] rounded flex items-center gap-1"><Zap size={10} /> Générer</button>}
-            {status==='processing'&&<Loader2 size={12} className="text-yellow-400 animate-spin" />}
-            {status==='completed'&&<Check size={12} className="text-green-400" />}
-            {status==='failed'&&<AlertTriangle size={12} className="text-red-400" />}
+            <button onClick={()=>{navigator.clipboard.writeText(prompt);setCopied(true);setTimeout(()=>setCopied(false),2000)}} className="px-2 py-0.5 bg-orange-600/10 hover:bg-orange-600/20 text-orange-400 text-[10px] rounded flex items-center gap-1">{copied?<><Check size={10} /> Copié !</>:<><Copy size={10} /> Prompt</>}</button>
+            {(()=>{ const s = getModelStudio(mid); return <a href={s.url} target="_blank" rel="noopener noreferrer" className="px-2 py-0.5 bg-dark-700 hover:bg-dark-600 text-slate-300 text-[10px] rounded flex items-center gap-1"><ExternalLink size={9} /> {s.name}</a> })()}
           </div>
         </div>
         <div className="flex items-center gap-2 mb-1 text-[10px]">
