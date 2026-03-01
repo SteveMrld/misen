@@ -242,6 +242,7 @@ export interface Dictionary {
       voiceover: string
       overview: string
       render: string
+      storyboard: string
     }
     modeSimple: string
     shortcuts: {
@@ -253,6 +254,22 @@ export interface Dictionary {
     render: {
       pending: string
       generating: string
+    }
+    storyboard: {
+      title: string
+      subtitle: string
+      noAnalysis: string
+      noAnalysisDesc: string
+      generateAll: string
+      allGenerated: string
+      generating: string
+      generate: string
+      regenerate: string
+      framesGenerated: string
+      framesReady: string
+      estimated: string
+      noKeyTitle: string
+      noKeyDesc: string
     }
     cockpit: {
       title: string

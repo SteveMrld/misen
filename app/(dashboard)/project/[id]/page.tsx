@@ -34,9 +34,10 @@ import { useKeyboardShortcuts, ShortcutOverlay } from '@/components/ui/keyboard-
 import { OverviewCockpit } from '@/components/ui/overview-cockpit'
 import { CharacterReferenceCard, getCharacterRefImages, injectCharacterRefsInPrompt } from '@/components/ui/character-reference'
 import { TemplateSelector } from '@/components/ui/template-selector'
+import { VisualStoryboard } from '@/components/ui/visual-storyboard'
 
 type Mode = 'simple' | 'expert'
-type Tab = 'script' | 'overview' | 'analyse' | 'timeline' | 'copilot' | 'media' | 'subtitles' | 'voiceover' | 'render'
+type Tab = 'script' | 'overview' | 'analyse' | 'storyboard' | 'timeline' | 'copilot' | 'media' | 'subtitles' | 'voiceover' | 'render'
 
 function fmt(s: number) { return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` }
 
@@ -61,7 +62,7 @@ export default function ProjectPage() {
   const [userKeys, setUserKeys] = useState<Set<string>>(new Set())
 
   // Keyboard shortcuts — defined after handlers
-  const tabKeys: Tab[] = ['script', 'overview', 'analyse', 'timeline', 'copilot', 'media', 'subtitles', 'voiceover', 'render']
+  const tabKeys: Tab[] = ['script', 'overview', 'analyse', 'storyboard', 'timeline', 'copilot', 'media', 'subtitles', 'voiceover', 'render']
 
   useEffect(() => {
     if (!projectId) return
@@ -150,9 +151,10 @@ export default function ProjectPage() {
     { id: 'script', label: t.project.tabs.script, icon: Film },
     { id: 'overview', label: t.project.tabs.overview, icon: Eye, disabled: !analysis },
     { id: 'analyse', label: t.project.tabs.analysis, icon: Brain, disabled: !analysis },
+    { id: 'storyboard', label: t.project.tabs.storyboard, icon: Image, disabled: !analysis },
     { id: 'timeline', label: t.project.tabs.timeline, icon: Clock, disabled: !analysis },
     { id: 'copilot', label: t.project.tabs.copilot, icon: Sparkles, disabled: !analysis },
-    { id: 'media', label: t.project.tabs.media, icon: Image, disabled: !analysis },
+    { id: 'media', label: t.project.tabs.media, icon: Camera, disabled: !analysis },
     { id: 'subtitles', label: t.project.tabs.subtitles, icon: Subtitles, disabled: !analysis },
     { id: 'voiceover', label: t.project.tabs.voiceover, icon: Mic, disabled: !analysis },
     { id: 'render', label: t.project.tabs.render, icon: Play, disabled: !analysis },
@@ -303,6 +305,7 @@ export default function ProjectPage() {
           {tab === 'script' && <ScriptTab scriptText={scriptText} setScriptText={setScriptText} stylePreset={stylePreset} setStylePreset={setStylePreset} saving={saving} analyzing={analyzing} error={error} handleSave={handleSave} handleAnalyze={handleAnalyze} loadDemo={loadDemo} loadTemplate={loadTemplate} />}
           {tab === 'overview' && analysis && <OverviewCockpit analysis={analysis} projectName={project?.name} />}
           {tab === 'analyse' && analysis && <AR analysis={analysis} analysisId={analysisId} userKeys={userKeys} projectId={projectId} />}
+          {tab === 'storyboard' && analysis && <VisualStoryboard analysis={analysis} projectId={projectId} projectName={project?.name} />}
           {tab === 'timeline' && analysis && <TL analysis={analysis} projectName={project?.name} />}
           {tab === 'copilot' && analysis && <CP projectId={projectId} projectName={project?.name} />}
           {tab === 'media' && analysis && <MB analysis={analysis} projectId={projectId} projectName={project?.name} />}

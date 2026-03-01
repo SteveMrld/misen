@@ -334,6 +334,7 @@ export const fr: Dictionary = {
       voiceover: 'Voix off',
       overview: 'Vue d\'ensemble',
       render: 'Rendu',
+      storyboard: 'Storyboard',
     },
     modeSimple: 'Simple',
     shortcuts: {
@@ -345,6 +346,22 @@ export const fr: Dictionary = {
     render: {
       pending: 'En attente de génération',
       generating: 'Génération en cours...',
+    },
+    storyboard: {
+      title: 'Storyboard Visuel IA',
+      subtitle: 'Vignettes cinématographiques générées par DALL-E 3 pour chaque plan',
+      noAnalysis: 'Aucune analyse disponible',
+      noAnalysisDesc: 'Lancez une analyse depuis l\'onglet Script pour générer le storyboard visuel.',
+      generateAll: 'Générer tout',
+      allGenerated: 'Tout généré',
+      generating: 'Génération IA...',
+      generate: 'Générer cette vignette',
+      regenerate: 'Régénérer',
+      framesGenerated: 'vignettes générées',
+      framesReady: 'vignettes prêtes — Exportez via le menu Export',
+      estimated: 'estimé',
+      noKeyTitle: 'Clé OpenAI requise',
+      noKeyDesc: 'Configurez votre clé API OpenAI dans Paramètres → Clés API pour générer les vignettes du storyboard.',
     },
     cockpit: {
       title: 'Cockpit Projet',
