@@ -33,6 +33,7 @@ import { CompareButton } from '@/components/ui/compare-panel'
 import { useKeyboardShortcuts, ShortcutOverlay } from '@/components/ui/keyboard-shortcuts'
 import { OverviewCockpit } from '@/components/ui/overview-cockpit'
 import { CharacterReferenceCard, getCharacterRefImages, injectCharacterRefsInPrompt } from '@/components/ui/character-reference'
+import { TemplateSelector } from '@/components/ui/template-selector'
 
 type Mode = 'simple' | 'expert'
 type Tab = 'script' | 'overview' | 'analyse' | 'timeline' | 'copilot' | 'media' | 'subtitles' | 'voiceover' | 'render'
@@ -119,6 +120,18 @@ export default function ProjectPage() {
       setScriptText(DEMO_SCENARIO.script); setStylePreset(DEMO_SCENARIO.style_preset)
       await fetch(`/api/projects/${projectId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ script_text: DEMO_SCENARIO.script, name: DEMO_SCENARIO.name }) })
       setProject((p: any) => ({ ...p, name: DEMO_SCENARIO.name }))
+    } catch {}
+  }
+
+  const loadTemplate = async (script: string, name: string, stylePreset: string, templateAnalysis?: any) => {
+    setScriptText(script)
+    setStylePreset(stylePreset)
+    if (templateAnalysis) {
+      setAnalysis(templateAnalysis)
+    }
+    try {
+      await fetch(`/api/projects/${projectId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ script_text: script, name }) })
+      setProject((p: any) => ({ ...p, name }))
     } catch {}
   }
 
@@ -211,6 +224,9 @@ export default function ProjectPage() {
             existingScript={scriptText.trim() || undefined}
           />
 
+          {/* Template Selector */}
+          <TemplateSelector onUseTemplate={loadTemplate} />
+
           <div className="bg-dark-900 rounded-2xl border border-dark-700 overflow-hidden">
             <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-dark-700">
               <div className="flex items-center gap-2">
@@ -284,7 +300,7 @@ export default function ProjectPage() {
               </button>
             ))}
           </div>
-          {tab === 'script' && <ScriptTab scriptText={scriptText} setScriptText={setScriptText} stylePreset={stylePreset} setStylePreset={setStylePreset} saving={saving} analyzing={analyzing} error={error} handleSave={handleSave} handleAnalyze={handleAnalyze} loadDemo={loadDemo} />}
+          {tab === 'script' && <ScriptTab scriptText={scriptText} setScriptText={setScriptText} stylePreset={stylePreset} setStylePreset={setStylePreset} saving={saving} analyzing={analyzing} error={error} handleSave={handleSave} handleAnalyze={handleAnalyze} loadDemo={loadDemo} loadTemplate={loadTemplate} />}
           {tab === 'overview' && analysis && <OverviewCockpit analysis={analysis} projectName={project?.name} />}
           {tab === 'analyse' && analysis && <AR analysis={analysis} analysisId={analysisId} userKeys={userKeys} projectId={projectId} />}
           {tab === 'timeline' && analysis && <TL analysis={analysis} projectName={project?.name} />}
@@ -466,7 +482,7 @@ function SPC({ plan, index, analysisId, userKeys, projectId }: { plan: any; inde
 }
 
 // ═══ Script Tab ═══
-function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, saving, analyzing, error, handleSave, handleAnalyze, loadDemo }: any) {
+function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, saving, analyzing, error, handleSave, handleAnalyze, loadDemo, loadTemplate }: any) {
   const { t, locale } = useI18n()
   return (
     <div className="space-y-4">
@@ -475,6 +491,9 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
         onUseScript={(script: string) => setScriptText(script)}
         existingScript={scriptText.trim() || undefined}
       />
+
+      {/* Template Selector */}
+      <TemplateSelector onUseTemplate={loadTemplate} />
 
       <div className="bg-dark-900 rounded-xl border border-dark-700">
         <div className="flex items-center justify-between px-4 py-3 border-b border-dark-700">

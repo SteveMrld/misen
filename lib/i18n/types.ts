@@ -276,6 +276,22 @@ export interface Dictionary {
       noImage: string
       injectHint: string
     }
+    templates: {
+      title: string
+      subtitle: string
+      useTemplate: string
+      preview: string
+      scenes: string
+      shots: string
+      categories: {
+        luxury: string
+        shortFilm: string
+        musicVideo: string
+        educational: string
+        gameTrailer: string
+        corporate: string
+      }
+    }
     modeExpert: string
     analyze: string
     analyzing: string
