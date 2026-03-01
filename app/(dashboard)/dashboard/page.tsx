@@ -6,7 +6,9 @@ import { useRouter } from 'next/navigation'
 import { Plus, Film, Clapperboard, Clock, MoreHorizontal, Trash2, Download, Upload, X, Loader2, Play, Camera, Zap, TrendingUp, DollarSign } from 'lucide-react'
 import { ModelLegend } from '@/components/ui/model-badge'
 import { StoryboardSVG } from '@/components/ui/storyboard-svg'
-import demoThumb from '@/public/images/demo_sc1_p1_fleuve.png'
+import demoThumbCendres from '@/public/images/sc1_fleuve.png'
+import demoThumbOdyssee from '@/public/images/sc2_desert.png'
+import demoThumbPixel from '@/public/images/sc3_oeil.png'
 import { Onboarding } from '@/components/ui/onboarding'
 import { createClient } from '@/lib/supabase/client'
 import type { Project } from '@/types/database'
@@ -80,19 +82,22 @@ export default function DashboardPage() {
 
   const handleDemo = async () => {
     try {
-      const res = await fetch('/api/projects', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'Les deux rives — Démo MISEN' }),
-      })
-      if (res.ok) {
-        const proj = await res.json()
-        const { DEMO_SCENARIO } = await import('@/lib/data/demo-scenario')
-        await fetch(`/api/projects/${proj.id}`, {
-          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ script_text: DEMO_SCENARIO.script }),
+      const { DEMO_SCENARIOS } = await import('@/lib/demo/data')
+      for (const sc of DEMO_SCENARIOS) {
+        const res = await fetch('/api/projects', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: `${sc.title} — Démo MISEN` }),
         })
-        router.push(`/project/${proj.id}`)
+        if (res.ok) {
+          const proj = await res.json()
+          await fetch(`/api/projects/${proj.id}`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ script_text: sc.script }),
+          })
+        }
       }
+      router.refresh()
+      window.location.reload()
     } catch {}
   }
 
@@ -247,13 +252,16 @@ function ProjectCard({ project, onClick, onDelete, onExport }: {
 
   // Detect demo project
   const isDemo = project.name.toLowerCase().includes('démo') || project.name.toLowerCase().includes('demo')
+  const demoThumb = project.name.includes('Odyssée') ? demoThumbOdyssee.src
+    : project.name.includes('Pixel') ? demoThumbPixel.src
+    : demoThumbCendres.src
 
   return (
     <div className="card-interactive group cursor-pointer overflow-hidden" onClick={onClick}>
       {/* Visual preview header */}
       <div className="relative -mx-[1px] -mt-[1px]">
         {isDemo ? (
-          <img src={demoThumb.src} alt={project.name} className="w-full h-[110px] object-cover" />
+          <img src={demoThumb} alt={project.name} className="w-full h-[110px] object-cover" />
         ) : (
           <StoryboardSVG
             shotType={shots[hash % shots.length]}
