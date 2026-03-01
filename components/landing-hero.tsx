@@ -9,24 +9,24 @@ import Image from 'next/image'
 import heroBg from '@/public/images/hero_bg.png'
 
 // Scenario 1 — Le Poids des cendres (court-métrage)
-import sc1Fleuve from '@/public/images/sc1_fleuve.png'
-import sc1Portrait from '@/public/images/sc1_portrait.png'
-import sc1Pont from '@/public/images/sc1_pont.png'
-import sc1Couloir from '@/public/images/sc1_couloir.png'
+import sc1Fleuve from '@/public/images/sc1_fleuve.jpg'
+import sc1Portrait from '@/public/images/sc1_portrait.jpg'
+import sc1Pont from '@/public/images/sc1_pont.jpg'
+import sc1Couloir from '@/public/images/sc1_couloir.jpg'
 
 // Scenario 2 — Odyssée (pub parfum)
-import sc2Desert from '@/public/images/sc2_desert.png'
-import sc2Sable from '@/public/images/sc2_sable.png'
-import sc2Flacon from '@/public/images/sc2_flacon.png'
-import sc2Visage from '@/public/images/sc2_visage.png'
-import sc2Desert2 from '@/public/images/sc2_desert2.png'
-import sc2Falaise from '@/public/images/sc2_falaise.png'
+import sc2Desert from '@/public/images/sc2_desert.jpg'
+import sc2Sable from '@/public/images/sc2_sable.jpg'
+import sc2Flacon from '@/public/images/sc2_flacon.jpg'
+import sc2Visage from '@/public/images/sc2_visage.jpg'
+import sc2Desert2 from '@/public/images/sc2_desert2.jpg'
+import sc2Falaise from '@/public/images/sc2_falaise.jpg'
 
 // Scenario 3 — Pixel (vidéo éducative)
-import sc3Oeil from '@/public/images/sc3_oeil.png'
-import sc3Ville from '@/public/images/sc3_ville.png'
-import sc3Code from '@/public/images/sc3_homme_ecran.png'
-import sc3Silhouette from '@/public/images/sc3_silhouette.png'
+import sc3Oeil from '@/public/images/sc3_oeil.jpg'
+import sc3Ville from '@/public/images/sc3_ville.jpg'
+import sc3Code from '@/public/images/sc3_homme_ecran.jpg'
+import sc3Silhouette from '@/public/images/sc3_silhouette.jpg'
 
 // Custom pictos — Formats (Set A)
 import iconCourtMetrage from '@/public/images/icon_court_metrage.png'

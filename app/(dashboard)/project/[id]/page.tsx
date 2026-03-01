@@ -13,16 +13,16 @@ import { ModelBadge, getModelColor, ModelLegend } from '@/components/ui/model-ba
 import { ScreenplayAssistant } from '@/components/ui/screenplay-assistant'
 
 // Demo images for Render panel
-import imgSc1P1 from '@/public/images/demo_sc1_p1_fleuve.png'
-import imgSc1P2 from '@/public/images/demo_sc1_p2_visage.png'
-import imgSc1P3 from '@/public/images/demo_sc1_p3_photo.png'
-import imgSc2P1 from '@/public/images/demo_sc2_p1_pont.png'
-import imgSc2P2 from '@/public/images/demo_sc2_p2_main.png'
-import imgSc2P3 from '@/public/images/demo_sc2_p3_silhouettes.png'
-import imgSc3P1 from '@/public/images/demo_sc3_p1_hopital.png'
-import imgSc3P2 from '@/public/images/demo_sc3_p2_fenetre.png'
-import imgSc4P1 from '@/public/images/demo_sc4_p1_retrouvailles.png'
-import imgSc4P2 from '@/public/images/demo_sc4_p2_caillou.png'
+import imgSc1P1 from '@/public/images/sc1_fleuve.jpg'
+import imgSc1P2 from '@/public/images/sc1_portrait.jpg'
+import imgSc1P3 from '@/public/images/sc2_sable.jpg'
+import imgSc2P1 from '@/public/images/sc1_pont.jpg'
+import imgSc2P2 from '@/public/images/sc2_desert.jpg'
+import imgSc2P3 from '@/public/images/sc3_silhouette.jpg'
+import imgSc3P1 from '@/public/images/sc1_couloir.jpg'
+import imgSc3P2 from '@/public/images/sc2_flacon.jpg'
+import imgSc4P1 from '@/public/images/sc2_visage.jpg'
+import imgSc4P2 from '@/public/images/sc3_oeil.jpg'
 
 const DEMO_IMAGES = [
   imgSc1P1, imgSc1P2, imgSc1P3, imgSc2P1, imgSc2P2,

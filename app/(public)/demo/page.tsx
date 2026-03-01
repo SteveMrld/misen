@@ -353,15 +353,26 @@ function DemoResult({ scenario }: { scenario: DemoScenario }) {
   const [playing, setPlaying] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const [currentPlan, setCurrentPlan] = useState(0)
-  const [prevPlan, setPrevPlan] = useState(-1)
-  const [transitioning, setTransitioning] = useState(false)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const [nextPlan, setNextPlan] = useState(-1)
+  const [fadePhase, setFadePhase] = useState<'stable' | 'crossfading'>('stable')
+  const [imagesLoaded, setImagesLoaded] = useState(false)
+  const rafRef = useRef<number | null>(null)
+  const lastTimeRef = useRef<number>(0)
 
   const plans = scenario.plans
   const totalDur = plans.reduce((s, p) => s + p.dur, 0)
+  const CROSSFADE_MS = 1500
 
+  // Preload all images on mount / scenario change
   useEffect(() => {
-    setPlaying(false); setElapsed(0); setCurrentPlan(0); setPrevPlan(-1)
+    setPlaying(false); setElapsed(0); setCurrentPlan(0); setNextPlan(-1); setFadePhase('stable'); setImagesLoaded(false)
+    let loaded = 0
+    plans.forEach(p => {
+      const img = new window.Image()
+      img.onload = () => { loaded++; if (loaded >= plans.length) setImagesLoaded(true) }
+      img.onerror = () => { loaded++; if (loaded >= plans.length) setImagesLoaded(true) }
+      img.src = p.src
+    })
   }, [scenario.id])
 
   const getPlanAtTime = (t: number) => {
@@ -370,76 +381,163 @@ function DemoResult({ scenario }: { scenario: DemoScenario }) {
     return plans.length - 1
   }
 
+  // requestAnimationFrame loop for smooth playback
   useEffect(() => {
-    if (!playing) { if (intervalRef.current) clearInterval(intervalRef.current); return }
-    intervalRef.current = setInterval(() => {
+    if (!playing) {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      lastTimeRef.current = 0
+      return
+    }
+    const tick = (timestamp: number) => {
+      if (!lastTimeRef.current) lastTimeRef.current = timestamp
+      const delta = (timestamp - lastTimeRef.current) / 1000
+      lastTimeRef.current = timestamp
+
       setElapsed(prev => {
-        const next = prev + 0.1
+        const next = prev + delta
         if (next >= totalDur) {
-          setPrevPlan(plans.length - 1); setCurrentPlan(0)
-          setTransitioning(true); setTimeout(() => { setTransitioning(false); setPrevPlan(-1) }, 1200)
-          return 0
+          setPlaying(false)
+          return totalDur
         }
+        // Detect plan change
+        const curPlan = getPlanAtTime(prev)
         const newPlan = getPlanAtTime(next)
-        if (newPlan !== getPlanAtTime(prev)) {
-          setPrevPlan(getPlanAtTime(prev)); setCurrentPlan(newPlan)
-          setTransitioning(true); setTimeout(() => { setTransitioning(false); setPrevPlan(-1) }, 1200)
+        if (newPlan !== curPlan) {
+          setNextPlan(newPlan)
+          setFadePhase('crossfading')
+          setTimeout(() => {
+            setCurrentPlan(newPlan)
+            setNextPlan(-1)
+            setFadePhase('stable')
+          }, CROSSFADE_MS)
         }
         return next
       })
-    }, 100)
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
+      rafRef.current = requestAnimationFrame(tick)
+    }
+    rafRef.current = requestAnimationFrame(tick)
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
   }, [playing, totalDur])
 
   const current = plans[currentPlan]
-  const prev = prevPlan >= 0 ? plans[prevPlan] : null
+  const incoming = nextPlan >= 0 ? plans[nextPlan] : null
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
   const planStartTime = plans.slice(0, currentPlan).reduce((s, p) => s + p.dur, 0)
   const planElapsed = elapsed - planStartTime
+  const planProgress = Math.min(planElapsed / current.dur, 1)
   const subVisible = current.sub && planElapsed > 0.5 && planElapsed < current.dur - 0.3
+
+  // Ken Burns transform based on direction + progress
+  const getKenBurns = (direction: string, progress: number) => {
+    const p = progress
+    switch (direction) {
+      case 'right': return `scale(${1.02 + p * 0.06}) translateX(${-1 + p * 2}%)`
+      case 'left': return `scale(${1.02 + p * 0.06}) translateX(${1 - p * 2}%)`
+      case 'in': return `scale(${1.0 + p * 0.1})`
+      case 'out': return `scale(${1.1 - p * 0.08})`
+      default: return `scale(${1.02 + p * 0.04})`
+    }
+  }
+
+  const jumpTo = (planIdx: number) => {
+    let acc = 0; for (let j = 0; j < planIdx; j++) acc += plans[j].dur
+    setElapsed(acc); setCurrentPlan(planIdx); setNextPlan(-1); setFadePhase('stable')
+    lastTimeRef.current = 0
+  }
 
   return (
     <div className="bg-black rounded-xl overflow-hidden shadow-2xl shadow-black/80 border border-white/[0.06]">
-      <div className="relative aspect-[2.39/1] bg-black overflow-hidden cursor-pointer" onClick={() => { setPlaying(!playing); if (elapsed >= totalDur) setElapsed(0) }}>
-        {prev && transitioning && (
-          <img src={prev.src} alt="" className="absolute inset-0 w-full h-full object-cover transition-opacity duration-[1200ms] opacity-0" />
-        )}
-        <img src={current.src} alt={current.label} key={`${scenario.id}-${currentPlan}`}
-          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-[1200ms] opacity-100"
+      {/* Cinema viewport */}
+      <div className="relative aspect-[2.39/1] bg-black overflow-hidden cursor-pointer select-none"
+        onClick={() => { if (elapsed >= totalDur) { setElapsed(0); setCurrentPlan(0); lastTimeRef.current = 0 }; setPlaying(!playing) }}>
+
+        {/* Layer A — current image */}
+        <img
+          src={current.src}
+          alt={current.label}
+          className="absolute inset-0 w-full h-full object-cover"
           style={{
-            animation: playing ? `kb-${current.direction} ${current.dur * 1.5}s ease-in-out forwards` : 'none',
-            transformOrigin: current.direction === 'right' ? 'left center' : current.direction === 'left' ? 'right center' : 'center center',
-          }} />
-        <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.5)]" />
-        <div className={`absolute bottom-6 left-0 right-0 text-center transition-opacity duration-500 ${subVisible ? 'opacity-100' : 'opacity-0'}`}>
-          <span className="bg-black/70 backdrop-blur-sm px-5 py-2 rounded-md text-white text-sm md:text-base font-medium tracking-wide shadow-lg">{current.sub}</span>
+            willChange: 'transform, opacity',
+            transform: playing || elapsed > 0 ? getKenBurns(current.direction, planProgress) : 'scale(1.02)',
+            transition: 'transform 0.3s ease-out',
+            opacity: fadePhase === 'crossfading' ? 0 : 1,
+            transitionProperty: 'opacity, transform',
+            transitionDuration: fadePhase === 'crossfading' ? `${CROSSFADE_MS}ms` : '0.3s',
+            transitionTimingFunction: 'ease-in-out',
+          }}
+        />
+
+        {/* Layer B — incoming image (crossfade) */}
+        {incoming && (
+          <img
+            src={incoming.src}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{
+              willChange: 'transform, opacity',
+              transform: getKenBurns(incoming.direction, 0),
+              opacity: fadePhase === 'crossfading' ? 1 : 0,
+              transition: `opacity ${CROSSFADE_MS}ms ease-in-out`,
+            }}
+          />
+        )}
+
+        {/* Cinematic vignette */}
+        <div className="absolute inset-0 shadow-[inset_0_0_120px_rgba(0,0,0,0.6)]" style={{ pointerEvents: 'none' }} />
+
+        {/* Letterbox bars for cinema feel */}
+        <div className="absolute top-0 left-0 right-0 h-[3%] bg-black" style={{ pointerEvents: 'none' }} />
+        <div className="absolute bottom-0 left-0 right-0 h-[3%] bg-black" style={{ pointerEvents: 'none' }} />
+
+        {/* Film grain overlay */}
+        <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay" style={{
+          pointerEvents: 'none',
+          backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")',
+          backgroundSize: '128px 128px',
+        }} />
+
+        {/* Subtitle */}
+        <div className={`absolute bottom-[8%] left-0 right-0 text-center transition-opacity duration-700 ease-in-out ${subVisible ? 'opacity-100' : 'opacity-0'}`} style={{ pointerEvents: 'none' }}>
+          <span className="bg-black/60 backdrop-blur-sm px-6 py-2.5 rounded text-white text-sm md:text-base font-medium tracking-wide shadow-2xl"
+            style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
+            {current.sub}
+          </span>
         </div>
+
+        {/* Play overlay (initial) */}
         {!playing && elapsed === 0 && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 backdrop-blur-[2px]">
-            <p className="text-white/60 text-xs tracking-[0.3em] uppercase mb-4">{scenario.title}</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40">
+            {!imagesLoaded && <div className="absolute top-4 right-4 w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />}
+            <p className="text-white/60 text-xs tracking-[0.3em] uppercase mb-4 font-light">{scenario.title}</p>
             <button className="w-20 h-20 rounded-full bg-orange-600/90 hover:bg-orange-500 flex items-center justify-center shadow-2xl shadow-orange-600/30 transition-all hover:scale-110 group">
               <Play size={32} fill="white" className="text-white ml-1 group-hover:scale-110 transition-transform" />
             </button>
-            <p className="text-white/40 text-[10px] tracking-widest uppercase mt-4">Un film MISEN</p>
+            <p className="text-white/30 text-[10px] tracking-widest uppercase mt-4">Un film MISEN</p>
           </div>
         )}
+
+        {/* Pause indicator */}
         {!playing && elapsed > 0 && elapsed < totalDur && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-14 h-14 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
-              <Pause size={24} className="text-white/80" />
+            <div className="w-14 h-14 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center animate-pulse">
+              <Pause size={22} className="text-white/70" />
             </div>
           </div>
         )}
-        {!playing && elapsed >= totalDur - 0.2 && elapsed > 0 && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-[2px]">
-            <p className="text-white/80 text-lg font-display tracking-wider">FIN</p>
-            <p className="text-white/40 text-xs mt-2">{scenario.title} — Un film MISEN</p>
-            <button onClick={(e) => { e.stopPropagation(); setElapsed(0); setCurrentPlan(0); setPlaying(true) }}
-              className="mt-4 px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium rounded-lg flex items-center gap-1.5">
+
+        {/* End screen */}
+        {!playing && elapsed >= totalDur - 0.05 && elapsed > 0 && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-[3px]">
+            <p className="text-white/80 text-xl font-display tracking-[0.2em]">FIN</p>
+            <p className="text-white/30 text-xs mt-2 tracking-wide">{scenario.title} — Un film MISEN</p>
+            <button onClick={(e) => { e.stopPropagation(); setElapsed(0); setCurrentPlan(0); setNextPlan(-1); setFadePhase('stable'); lastTimeRef.current = 0; setPlaying(true) }}
+              className="mt-5 px-5 py-2 bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors">
               <Play size={12} fill="white" /> Rejouer
             </button>
           </div>
         )}
+
+        {/* Plan info (hover) */}
         {playing && (
           <div className="absolute top-3 left-3 flex items-center gap-2 opacity-0 hover:opacity-100 transition-opacity duration-300">
             <div className="px-2 py-1 bg-black/50 backdrop-blur-sm rounded text-[9px] text-white/70 font-medium">{current.label} · {current.shot}</div>
@@ -451,47 +549,35 @@ function DemoResult({ scenario }: { scenario: DemoScenario }) {
         )}
       </div>
 
+      {/* Progress bar */}
       <div className="relative h-1 bg-dark-900 cursor-pointer group" onClick={(e) => {
         const rect = e.currentTarget.getBoundingClientRect()
         const newTime = ((e.clientX - rect.left) / rect.width) * totalDur
-        setElapsed(newTime)
         const newPlan = getPlanAtTime(newTime)
-        if (newPlan !== currentPlan) {
-          setPrevPlan(currentPlan); setCurrentPlan(newPlan)
-          setTransitioning(true); setTimeout(() => { setTransitioning(false); setPrevPlan(-1) }, 800)
-        }
+        setElapsed(newTime); setCurrentPlan(newPlan); setNextPlan(-1); setFadePhase('stable'); lastTimeRef.current = 0
       }}>
-        <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-orange-600 to-orange-400 transition-all duration-100 group-hover:h-1.5" style={{ width: `${(elapsed / totalDur) * 100}%` }} />
+        {/* Scene markers */}
+        {(() => { let acc = 0; return plans.slice(0, -1).map((p, i) => { acc += p.dur; return <div key={i} className="absolute top-0 h-full w-px bg-white/10" style={{ left: `${(acc / totalDur) * 100}%` }} /> }) })()}
+        <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-orange-600 to-orange-400 group-hover:h-1.5 group-hover:-top-0.5 transition-all" style={{ width: `${(elapsed / totalDur) * 100}%` }} />
       </div>
 
+      {/* Controls */}
       <div className="bg-dark-950 px-4 py-2.5 flex items-center gap-3">
-        <button onClick={() => { setPlaying(!playing); if (elapsed >= totalDur) { setElapsed(0); setCurrentPlan(0) } }}
+        <button onClick={() => { if (elapsed >= totalDur) { setElapsed(0); setCurrentPlan(0); lastTimeRef.current = 0 }; setPlaying(!playing) }}
           className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
           {playing ? <Pause size={12} className="text-white" /> : <Play size={12} fill="white" className="text-white ml-0.5" />}
         </button>
         <span className="text-[11px] text-slate-500 tabular-nums min-w-[70px]">{fmt(elapsed)} / {fmt(totalDur)}</span>
-        <div className="flex-1 flex items-center justify-center gap-1">
-          {plans.map((p, i) => (
-            <button key={i} onClick={() => {
-              let acc = 0; for (let j = 0; j < i; j++) acc += plans[j].dur
-              setElapsed(acc); setPrevPlan(currentPlan); setCurrentPlan(i)
-              setTransitioning(true); setTimeout(() => { setTransitioning(false); setPrevPlan(-1) }, 800)
-            }}
-              className={`w-1.5 h-1.5 rounded-full transition-all ${i === currentPlan ? 'bg-orange-500 scale-150' : i < currentPlan ? 'bg-orange-500/40' : 'bg-white/10'}`}
-              title={p.label} />
+        <div className="flex-1 flex items-center justify-center gap-1.5">
+          {plans.map((_, i) => (
+            <button key={i} onClick={() => { jumpTo(i); setPlaying(true) }}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${i === currentPlan ? 'bg-orange-500 scale-125' : i < currentPlan ? 'bg-orange-500/40' : 'bg-white/10'}`} />
           ))}
         </div>
         <button className="px-2.5 py-1 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-medium rounded transition-colors flex items-center gap-1">
           <ArrowRight size={10} /> Export 4K
         </button>
       </div>
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes kb-right { from { transform: scale(1.05) translateX(-1%); } to { transform: scale(1.08) translateX(1%); } }
-        @keyframes kb-left { from { transform: scale(1.05) translateX(1%); } to { transform: scale(1.08) translateX(-1%); } }
-        @keyframes kb-in { from { transform: scale(1.0); } to { transform: scale(1.12); } }
-        @keyframes kb-out { from { transform: scale(1.12); } to { transform: scale(1.0); } }
-      `}} />
     </div>
   )
 }
