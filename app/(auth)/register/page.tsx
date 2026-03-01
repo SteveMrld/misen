@@ -165,6 +165,14 @@ export default function RegisterPage() {
           </div>
         </div>
 
+        {/* Legal */}
+        <p className="text-[11px] text-slate-500 text-center">
+          En créant un compte, vous acceptez nos{' '}
+          <a href="/legal/cgu" className="text-orange-400 hover:text-orange-300 underline underline-offset-2">CGU</a>,{' '}
+          <a href="/legal/cgv" className="text-orange-400 hover:text-orange-300 underline underline-offset-2">CGV</a> et notre{' '}
+          <a href="/legal/privacy" className="text-orange-400 hover:text-orange-300 underline underline-offset-2">Politique de confidentialité</a>.
+        </p>
+
         {/* Submit */}
         <button
           type="submit"

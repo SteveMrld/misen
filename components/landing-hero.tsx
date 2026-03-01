@@ -505,6 +505,10 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
             <Link href="/demo" className="hover:text-slate-300 transition-colors">Démo</Link>
             <Link href="/pricing" className="hover:text-slate-300 transition-colors">Tarifs</Link>
             <Link href="/login" className="hover:text-slate-300 transition-colors">Connexion</Link>
+            <Link href="/legal/cgu" className="hover:text-slate-300 transition-colors">CGU</Link>
+            <Link href="/legal/cgv" className="hover:text-slate-300 transition-colors">CGV</Link>
+            <Link href="/legal/privacy" className="hover:text-slate-300 transition-colors">Confidentialité</Link>
+            <Link href="/legal/mentions" className="hover:text-slate-300 transition-colors">Mentions légales</Link>
           </div>
         </div>
       </footer>
