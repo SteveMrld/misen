@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Film, Brain, Zap, Camera, Sparkles, ArrowRight, ArrowLeft, X, Play, Rocket } from 'lucide-react'
+import { Film, Brain, Zap, Camera, Sparkles, ArrowRight, ArrowLeft, X, Play, Rocket, Copy, ExternalLink, Palette } from 'lucide-react'
 
 interface OnboardingProps {
   userName?: string | null
@@ -15,22 +15,34 @@ const STEPS = [
     id: 'welcome',
     icon: Sparkles,
     title: 'Bienvenue dans MISEN',
-    subtitle: 'Votre studio IA de production cinématographique',
+    subtitle: 'Le premier studio IA qui pense comme un réalisateur',
     content: [
-      { icon: Film, label: 'Collez votre scénario', desc: 'Texte libre, Fountain ou copier-coller' },
-      { icon: Brain, label: '13 moteurs analysent', desc: 'Cadrage, prompts, continuité, tension…' },
-      { icon: Camera, label: '7 modèles IA assignés', desc: 'Kling, Runway, Sora, Veo et plus' },
-      { icon: Zap, label: 'Générez vos vidéos', desc: 'Prompts optimisés par plan' },
+      { icon: Film, label: 'Écrivez votre scénario', desc: "Texte libre, format Fountain, ou dictez à l'assistant IA" },
+      { icon: Brain, label: '13 moteurs analysent', desc: 'Cadrage, prompts, tension narrative, continuité, compliance…' },
+      { icon: Palette, label: 'Le meilleur modèle IA par plan', desc: 'Kling, Runway, Sora, Veo — assignés automatiquement' },
+      { icon: Copy, label: 'Prompts prêts à l\'emploi', desc: 'Copiez le prompt optimisé, collez dans le studio IA' },
+    ],
+  },
+  {
+    id: 'workflow',
+    icon: Zap,
+    title: 'Comment ça marche',
+    subtitle: "4 étapes, de l'idée à l'écran",
+    content: [
+      { icon: Film, label: '1. Collez votre texte', desc: "Scénario, brief, idée brute — MISEN s'adapte" },
+      { icon: Brain, label: '2. Analysez en un clic', desc: 'Scènes, plans, modèles IA, coûts — tout est calculé' },
+      { icon: Copy, label: '3. Récupérez vos prompts', desc: 'Chaque plan a son prompt optimisé pour le bon modèle' },
+      { icon: ExternalLink, label: '4. Générez vos vidéos', desc: 'Collez dans Kling, Runway ou Sora — ou générez directement avec votre clé API' },
     ],
   },
   {
     id: 'modes',
     icon: Camera,
     title: 'Deux modes de travail',
-    subtitle: 'Adaptez l\'interface à votre niveau',
+    subtitle: "Adaptez l'interface à votre niveau",
     content: [
-      { icon: Sparkles, label: 'Mode Simple', desc: 'Collez, analysez, exportez. Idéal pour démarrer.' },
-      { icon: Brain, label: 'Mode Expert', desc: 'Timeline, copilote IA, sous-titres, voix off, banque média.' },
+      { icon: Sparkles, label: 'Mode Simple', desc: "Scénario → Analyse → Plans & Prompts. L'essentiel en 3 clics." },
+      { icon: Brain, label: 'Mode Expert', desc: 'Timeline, copilote IA, sous-titres, voix off, banque média, raccourcis clavier.' },
     ],
   },
   {
@@ -47,7 +59,6 @@ export function Onboarding({ userName, onComplete, onDemo, onNewProject }: Onboa
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    // Small delay for smooth entrance
     const t = setTimeout(() => setVisible(true), 100)
     return () => clearTimeout(t)
   }, [])
@@ -108,7 +119,7 @@ export function Onboarding({ userName, onComplete, onDemo, onNewProject }: Onboa
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-50">
-                {step === 0 && userName ? `${current.title}, ${userName.split(' ')[0]} !` : current.title}
+                {step === 0 && userName ? `${current.title}, ${userName.split(' ')[0]}\u00A0!` : current.title}
               </h2>
               <p className="text-sm text-slate-400">{current.subtitle}</p>
             </div>
@@ -144,8 +155,8 @@ export function Onboarding({ userName, onComplete, onDemo, onNewProject }: Onboa
                   <Play size={18} className="text-orange-400" />
                 </div>
                 <div className="text-left flex-1">
-                  <p className="text-sm font-medium text-slate-200 group-hover:text-orange-400 transition-colors">Explorer la démo</p>
-                  <p className="text-xs text-slate-500">Scénario pré-rempli, résultats instantanés</p>
+                  <p className="text-sm font-medium text-slate-200 group-hover:text-orange-400 transition-colors">Explorer les 3 démos</p>
+                  <p className="text-xs text-slate-500">Court-métrage, publicité, vidéo éducative — tout est prêt</p>
                 </div>
                 <ArrowRight size={16} className="text-slate-600 group-hover:text-orange-400 transition-colors" />
               </button>
@@ -160,6 +171,10 @@ export function Onboarding({ userName, onComplete, onDemo, onNewProject }: Onboa
                 </div>
                 <ArrowRight size={16} className="text-orange-600 group-hover:text-orange-400 transition-colors" />
               </button>
+
+              <p className="text-center text-[10px] text-slate-600 mt-2">
+                Aucune clé API requise pour démarrer
+              </p>
             </div>
           )}
         </div>
