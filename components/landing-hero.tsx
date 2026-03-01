@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useI18n } from '@/lib/i18n'
+import { LanguageToggle } from '@/components/ui/language-toggle'
 
 // Background
 import heroBg from '@/public/images/hero_bg.png'
@@ -105,6 +107,7 @@ const ENGINES = [
 
 export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
   const router = useRouter()
+  const { t } = useI18n()
   const [selectedModel, setSelectedModel] = useState(0)
   const [showModels, setShowModels] = useState(false)
   const [showEngines, setShowEngines] = useState(false)
@@ -127,22 +130,26 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
         </div>
         <div className="flex items-center gap-1 sm:gap-3">
           <Link href="/demo" className="px-2 sm:px-3 py-1.5 text-sm text-slate-400 hover:text-white transition-colors">
-            Démo
+            {t.nav.demo}
           </Link>
           <Link href="/pricing" className="px-2 sm:px-3 py-1.5 text-sm text-slate-400 hover:text-white transition-colors">
-            Tarifs
+            {t.nav.pricing}
           </Link>
+          <Link href="/contact" className="hidden sm:block px-2 sm:px-3 py-1.5 text-sm text-slate-400 hover:text-white transition-colors">
+            {t.nav.contact}
+          </Link>
+          <LanguageToggle />
           {isLoggedIn ? (
             <Link href="/dashboard" className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-500 rounded-xl transition-colors">
-              Mon dashboard
+              {t.common.dashboard}
             </Link>
           ) : (
             <>
               <Link href="/login" className="px-3 py-1.5 text-sm text-slate-400 hover:text-white transition-colors">
-                Connexion
+                {t.nav.login}
               </Link>
               <Link href="/register" className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-500 rounded-xl transition-colors">
-                Commencer
+                {t.common.getStarted}
               </Link>
             </>
           )}
@@ -234,7 +241,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
                 onClick={handleGo}
                 className="flex items-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-500 text-white text-sm font-semibold rounded-xl transition-all shadow-lg shadow-orange-600/20 hover:shadow-orange-500/30"
               >
-                <Play size={14} fill="white" /> {isLoggedIn ? 'Dashboard' : 'Commencer'}
+                <Play size={14} fill="white" /> {isLoggedIn ? t.common.dashboard : t.common.getStarted}
               </button>
             </div>
           </div>
@@ -477,7 +484,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
                 ))}
               </div>
               <Link href="/register" className={`block text-center py-2.5 rounded-xl text-sm font-medium transition-colors ${p.glow ? 'bg-orange-600 hover:bg-orange-500 text-white' : 'bg-white/[0.05] hover:bg-white/[0.08] text-slate-300'}`}>
-                {p.glow ? 'Commencer' : 'Essayer'}
+                {p.glow ? t.common.getStarted : t.common.tryDemo}
               </Link>
             </div>
           ))}
@@ -504,7 +511,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
           <div className="flex items-center gap-5 text-xs text-slate-600">
             <Link href="/demo" className="hover:text-slate-300 transition-colors">Démo</Link>
             <Link href="/pricing" className="hover:text-slate-300 transition-colors">Tarifs</Link>
-            <Link href="/login" className="hover:text-slate-300 transition-colors">Connexion</Link>
+            <Link href="/login" className="hover:text-slate-300 transition-colors">{t.common.login}</Link>
             <Link href="/legal/cgu" className="hover:text-slate-300 transition-colors">CGU</Link>
             <Link href="/legal/cgv" className="hover:text-slate-300 transition-colors">CGV</Link>
             <Link href="/legal/privacy" className="hover:text-slate-300 transition-colors">Confidentialité</Link>

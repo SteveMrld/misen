@@ -5,10 +5,13 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Logo } from '@/components/ui/logo'
+import { useI18n } from '@/lib/i18n'
+import { LanguageToggle } from '@/components/ui/language-toggle'
 import { Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { t } = useI18n()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -16,9 +19,11 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!termsAccepted) return
     setLoading(true)
     setError(null)
 
@@ -89,10 +94,10 @@ export default function RegisterPage() {
 
       {/* Title */}
       <h1 className="text-h3 text-center text-slate-50 mb-2">
-        Créer un compte
+        {t.register.title}
       </h1>
       <p className="text-body-sm text-slate-400 text-center mb-8">
-        Lancez votre premier projet de production
+        {t.register.subtitle}
       </p>
 
       {/* Error */}
@@ -151,7 +156,7 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Min. 6 caractères"
               required
-              minLength={6}
+              minLength={8}
               className="input pr-10"
               autoComplete="new-password"
             />
@@ -165,27 +170,37 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Legal */}
-        <p className="text-[11px] text-slate-500 text-center">
-          En créant un compte, vous acceptez nos{' '}
-          <a href="/legal/cgu" className="text-orange-400 hover:text-orange-300 underline underline-offset-2">CGU</a>,{' '}
-          <a href="/legal/cgv" className="text-orange-400 hover:text-orange-300 underline underline-offset-2">CGV</a> et notre{' '}
-          <a href="/legal/privacy" className="text-orange-400 hover:text-orange-300 underline underline-offset-2">Politique de confidentialité</a>.
-        </p>
+        {/* Legal — checkbox consentement actif */}
+        <div className="flex items-start gap-2">
+          <input
+            id="terms"
+            type="checkbox"
+            checked={termsAccepted}
+            onChange={(e) => setTermsAccepted(e.target.checked)}
+            required
+            className="mt-0.5 w-4 h-4 rounded border-dark-600 bg-dark-800 text-orange-500 focus:ring-orange-500/50 accent-orange-500"
+          />
+          <label htmlFor="terms" className="text-[11px] text-slate-500">
+            {t.register.termsPrefix}{' '}
+            <a href="/legal/cgu" className="text-orange-400 hover:text-orange-300 underline underline-offset-2">{t.register.termsLink}</a>,{' '}
+            <a href="/legal/cgv" className="text-orange-400 hover:text-orange-300 underline underline-offset-2">{t.register.cgvLink}</a> {t.common.and}{' '}
+            <a href="/legal/privacy" className="text-orange-400 hover:text-orange-300 underline underline-offset-2">{t.register.privacyLink}</a>.
+          </label>
+        </div>
 
         {/* Submit */}
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !termsAccepted}
           className="btn-primary btn-md w-full"
         >
           {loading ? (
             <>
               <Loader2 size={18} className="animate-spin mr-2" />
-              Création...
+              {t.common.loading}
             </>
           ) : (
-            "S'inscrire"
+            t.register.submit
           )}
         </button>
       </form>

@@ -12,16 +12,21 @@ import demoThumbPixel from '@/public/images/sc3_oeil.jpg'
 import { Onboarding } from '@/components/ui/onboarding'
 import { createClient } from '@/lib/supabase/client'
 import type { Project } from '@/types/database'
+import { useI18n } from '@/lib/i18n'
 
 const statusLabels: Record<string, { label: string; class: string }> = {
-  draft: { label: 'Brouillon', class: 'badge-default' },
-  analyzing: { label: 'En analyse', class: 'badge-orange' },
+  draft: { label: 'Draft', class: 'badge-default' },
+  analyzing: { label: 'Analyzing', class: 'badge-orange' },
   production: { label: 'Production', class: 'badge-orange' },
-  complete: { label: 'Terminé', class: 'badge-success' },
+  complete: { label: 'Complete', class: 'badge-success' },
 }
+
+// Status labels moved inside component for i18n
 
 export default function DashboardPage() {
   const router = useRouter()
+  const { t, locale } = useI18n()
+
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [showNewModal, setShowNewModal] = useState(false)
@@ -59,7 +64,7 @@ export default function DashboardPage() {
   useEffect(() => { fetchProjects() }, [fetchProjects])
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Supprimer le projet "${name}" ? Cette action est irréversible.`)) return
+    if (!confirm(locale === "fr" ? `Supprimer le projet "${name}" ? Cette action est irréversible.` : `Delete project "${name}"? This cannot be undone.`)) return
     try {
       await fetch(`/api/projects/${id}`, { method: 'DELETE' })
       setProjects(prev => prev.filter(p => p.id !== id))
@@ -104,10 +109,10 @@ export default function DashboardPage() {
           await fetchProjects()
         } else {
           const err = await res.json()
-          alert(err.error || 'Erreur import')
+          alert(err.error || (locale === 'fr' ? 'Erreur import' : 'Import error'))
         }
       } catch {
-        alert('Fichier JSON invalide')
+        alert(locale === 'fr' ? 'Fichier JSON invalide' : 'Invalid JSON file')
       } finally {
         setImporting(false)
       }
@@ -128,23 +133,23 @@ export default function DashboardPage() {
       )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-display font-bold text-slate-50">Mes projets</h1>
+          <h1 className="text-2xl font-display font-bold text-slate-50">{t.dashboard.title}</h1>
           <p className="text-sm text-slate-400 mt-1">
             {projects.length} projet{projects.length > 1 ? 's' : ''}
           </p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <button onClick={handleDemo} disabled={importing} className="px-3 py-2 text-sm text-orange-400 border border-orange-500/30 hover:bg-orange-500/10 rounded-lg flex items-center gap-2 transition-colors">
-            <Play size={16} /> Démo
+            <Play size={16} /> {t.common.demo}
           </button>
           <button onClick={() => router.push('/settings?tab=usage')} className="px-3 py-2 text-sm text-slate-300 border border-dark-600 hover:bg-dark-800 rounded-lg flex items-center gap-2 transition-colors">
-            <DollarSign size={16} /> Coûts
+            <DollarSign size={16} /> {locale === 'fr' ? 'Coûts' : 'Costs'}
           </button>
           <button onClick={handleImport} disabled={importing} className="px-3 py-2 text-sm text-slate-300 border border-dark-600 hover:bg-dark-800 rounded-lg flex items-center gap-2 transition-colors">
             {importing ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} Importer
           </button>
           <button onClick={() => setShowNewModal(true)} className="btn-primary px-4 py-2 text-sm flex items-center gap-2">
-            <Plus size={16} /> Nouveau
+            <Plus size={16} /> {t.dashboard.newProject}
           </button>
         </div>
       </div>
@@ -153,10 +158,10 @@ export default function DashboardPage() {
       {projects.length > 0 && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
           {[
-            { icon: Film, label: 'Projets', value: projects.length, color: 'text-orange-400' },
-            { icon: Camera, label: 'Scènes', value: projects.reduce((s, p) => s + (p.scenes_count || 0), 0), color: 'text-blue-400' },
-            { icon: Zap, label: 'En production', value: projects.filter(p => p.status === 'production' || p.status === 'analyzing').length, color: 'text-yellow-400' },
-            { icon: TrendingUp, label: 'Terminés', value: projects.filter(p => p.status === 'complete').length, color: 'text-green-400' },
+            { icon: Film, label: t.dashboard.stats.totalProjects, value: projects.length, color: 'text-orange-400' },
+            { icon: Camera, label: t.dashboard.projectCard.scenes, value: projects.reduce((s, p) => s + (p.scenes_count || 0), 0), color: 'text-blue-400' },
+            { icon: Zap, label: locale === 'fr' ? 'En production' : 'In production', value: projects.filter(p => p.status === 'production' || p.status === 'analyzing').length, color: 'text-yellow-400' },
+            { icon: TrendingUp, label: t.dashboard.stats.totalShots, value: projects.filter(p => p.status === 'complete').length, color: 'text-green-400' },
           ].map(({ icon: Icon, label, value, color }) => (
             <div key={label} className="bg-dark-900 border border-dark-700 rounded-xl px-4 py-3 flex items-center gap-3">
               <Icon size={18} className={color} />
@@ -203,18 +208,18 @@ export default function DashboardPage() {
 }
 
 function EmptyState({ onNew }: { onNew: () => void }) {
+  const { t, locale } = useI18n()
   return (
     <div className="flex flex-col items-center justify-center py-20">
       <div className="mb-6 w-48 h-48 rounded-2xl overflow-hidden opacity-70">
-        <img src={emptyProjectsImg.src} alt="Créez votre premier projet" className="w-full h-full object-cover" />
+        <img src={emptyProjectsImg.src} alt={t.dashboard.createFirst} className="w-full h-full object-cover" />
       </div>
-      <h3 className="text-xl font-display text-slate-200 mb-2">Créez votre premier projet</h3>
+      <h3 className="text-xl font-display text-slate-200 mb-2">{t.dashboard.createFirst}</h3>
       <p className="text-sm text-slate-400 text-center max-w-md mb-8">
-        Importez un scénario et laissez MISEN orchestrer votre production
-        avec 13 moteurs d&apos;analyse et 7 modèles IA.
+        {t.dashboard.noProjectsDesc}
       </p>
       <button onClick={onNew} className="btn-primary px-5 py-2.5 rounded-xl flex items-center gap-2 text-sm font-medium">
-        <Plus size={16} /> Nouveau projet
+        <Plus size={16} /> {t.dashboard.newProject}
       </button>
       <ModelLegend className="mt-10 opacity-60" />
     </div>
@@ -224,6 +229,7 @@ function EmptyState({ onNew }: { onNew: () => void }) {
 function ProjectCard({ project, onClick, onDelete, onExport }: {
   project: Project; onClick: () => void; onDelete: () => void; onExport: () => void
 }) {
+  const { t, locale } = useI18n()
   const status = statusLabels[project.status] || statusLabels.draft
   const [showMenu, setShowMenu] = useState(false)
 
@@ -265,10 +271,10 @@ function ProjectCard({ project, onClick, onDelete, onExport }: {
             {showMenu && (
               <div className="absolute left-0 top-8 w-40 bg-dark-800 border border-dark-700 rounded-lg shadow-xl z-10 py-1" onClick={(e) => e.stopPropagation()}>
                 <button onClick={() => { onExport(); setShowMenu(false) }} className="flex items-center gap-2 w-full px-3 py-2 text-xs text-slate-300 hover:bg-dark-700">
-                  <Download size={13} /> Exporter JSON
+                  <Download size={13} /> {locale === 'fr' ? 'Exporter JSON' : 'Export JSON'}
                 </button>
                 <button onClick={() => { onDelete(); setShowMenu(false) }} className="flex items-center gap-2 w-full px-3 py-2 text-xs text-red-400 hover:bg-dark-700">
-                  <Trash2 size={13} /> Supprimer
+                  <Trash2 size={13} /> {locale === 'fr' ? 'Supprimer' : 'Delete'}
                 </button>
               </div>
             )}
@@ -281,8 +287,8 @@ function ProjectCard({ project, onClick, onDelete, onExport }: {
           {project.name}
         </h3>
         <div className="flex items-center justify-between mt-3">
-          <span className="text-[11px] text-slate-500 flex items-center gap-1"><Camera size={11} /> {project.scenes_count} scène{project.scenes_count > 1 ? 's' : ''}</span>
-          <span className="text-[11px] text-slate-600">{new Date(project.updated_at).toLocaleDateString('fr-FR')}</span>
+          <span className="text-[11px] text-slate-500 flex items-center gap-1"><Camera size={11} /> {project.scenes_count} {locale === 'fr' ? `scène${project.scenes_count > 1 ? 's' : ''}` : `scene${project.scenes_count > 1 ? 's' : ''}`}</span>
+          <span className="text-[11px] text-slate-600">{new Date(project.updated_at).toLocaleDateString(locale === 'fr' ? 'fr-FR' : 'en-US')}</span>
         </div>
       </div>
     </div>
@@ -292,6 +298,7 @@ function ProjectCard({ project, onClick, onDelete, onExport }: {
 function NewProjectModal({ onClose, onCreated }: {
   onClose: () => void; onCreated: (project: Project) => void
 }) {
+  const { t, locale } = useI18n()
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [creating, setCreating] = useState(false)
@@ -321,35 +328,35 @@ function NewProjectModal({ onClose, onCreated }: {
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={onClose}>
       <div className="bg-dark-900 border border-dark-700 rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 w-full sm:max-w-md max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-h4 text-slate-100">Nouveau projet</h2>
+          <h2 className="text-h4 text-slate-100">{t.dashboard.newProject}</h2>
           <button onClick={onClose} className="btn-ghost p-1.5 rounded-md">
             <X size={18} className="text-slate-400" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-body-sm text-slate-300 mb-1.5">Nom du projet</label>
+            <label className="block text-body-sm text-slate-300 mb-1.5">{locale === 'fr' ? 'Nom du projet' : 'Project name'}</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ex: Mon court-métrage"
+              placeholder={locale === "fr" ? "Ex: Mon court-métrage" : "Ex: My short film"}
               className="w-full px-3 py-2.5 bg-dark-800 border border-dark-700 rounded-lg text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20"
               autoFocus
             />
           </div>
           <div>
-            <label className="block text-body-sm text-slate-300 mb-1.5">Description (optionnel)</label>
+            <label className="block text-body-sm text-slate-300 mb-1.5">{locale === "fr" ? "Description (optionnel)" : "Description (optional)"}</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Décrivez votre projet..."
+              placeholder={locale === "fr" ? "Décrivez votre projet..." : "Describe your project..."}
               rows={3}
               className="w-full px-3 py-2.5 bg-dark-800 border border-dark-700 rounded-lg text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20 resize-none"
             />
           </div>
           <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-ghost btn-md">Annuler</button>
+            <button type="button" onClick={onClose} className="btn-ghost btn-md">{t.common.cancel}</button>
             <button type="submit" disabled={!name.trim() || creating} className="btn-primary btn-md disabled:opacity-50">
               {creating ? <Loader2 size={18} className="mr-2 animate-spin" /> : <Plus size={18} className="mr-2" />}
               Créer

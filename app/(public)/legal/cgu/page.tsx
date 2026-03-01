@@ -1,76 +1,78 @@
 'use client'
-
+import { useI18n } from '@/lib/i18n'
 import { LegalLayout } from '@/components/ui/legal-layout'
 
 export default function CGUPage() {
+  const { locale } = useI18n()
+  const isFr = locale === 'fr'
+
   return (
-    <LegalLayout title="Conditions Générales d'Utilisation" lastUpdated="1er mars 2026">
+    <LegalLayout
+      title={isFr ? "Conditions Générales d'Utilisation" : "Terms of Use"}
+      lastUpdated={isFr ? "Dernière mise à jour : 1er mars 2026" : "Last updated: March 1, 2026"}
+    >
       <section>
-        <h2 className="text-lg font-semibold text-white mb-3">Article 1 — Objet</h2>
-        <p>Les présentes Conditions Générales d&apos;Utilisation (ci-après « CGU ») ont pour objet de définir les modalités et conditions d&apos;utilisation de la plateforme MISEN (accessible à l&apos;adresse misen-ten.vercel.app), ci-après « la Plateforme », éditée par Steve Moradel.</p>
-        <p className="mt-2">MISEN est un studio de production cinématographique assisté par intelligence artificielle. La Plateforme permet l&apos;analyse de scénarios, la génération de prompts optimisés pour des modèles de génération vidéo IA, et l&apos;organisation de projets de production.</p>
+        <h2 className="text-lg font-semibold text-white mb-3">{isFr ? 'Article 1 — Objet' : 'Article 1 — Purpose'}</h2>
+        <p>{isFr
+          ? "Les présentes Conditions Générales d'Utilisation (« CGU ») définissent les modalités d'utilisation de la plateforme MISEN (misen-ten.vercel.app), éditée par Steve Moradel."
+          : "These Terms of Use define the conditions for using the MISEN platform (misen-ten.vercel.app), published by Steve Moradel."}</p>
+        <p className="mt-2">{isFr
+          ? "MISEN est un studio de production cinématographique assisté par intelligence artificielle permettant l'analyse de scénarios, la génération de prompts optimisés et l'organisation de projets de production."
+          : "MISEN is an AI-assisted cinematographic production studio enabling script analysis, optimized prompt generation, and production project management."}</p>
       </section>
-
       <section>
-        <h2 className="text-lg font-semibold text-white mb-3">Article 2 — Acceptation des CGU</h2>
-        <p>L&apos;accès et l&apos;utilisation de la Plateforme impliquent l&apos;acceptation pleine et entière des présentes CGU. En créant un compte, l&apos;Utilisateur reconnaît avoir lu et accepté les présentes CGU.</p>
+        <h2 className="text-lg font-semibold text-white mb-3">{isFr ? 'Article 2 — Acceptation' : 'Article 2 — Acceptance'}</h2>
+        <p>{isFr
+          ? "L'accès et l'utilisation de la Plateforme impliquent l'acceptation pleine et entière des présentes CGU. En créant un compte, l'Utilisateur reconnaît avoir lu et accepté les présentes CGU."
+          : "Access and use of the Platform implies full acceptance of these Terms. By creating an account, the User acknowledges having read and accepted these Terms."}</p>
       </section>
-
       <section>
-        <h2 className="text-lg font-semibold text-white mb-3">Article 3 — Inscription et compte utilisateur</h2>
-        <p>L&apos;utilisation de certaines fonctionnalités requiert la création d&apos;un compte. L&apos;Utilisateur s&apos;engage à fournir des informations exactes et à maintenir la confidentialité de ses identifiants. Toute activité réalisée depuis son compte est sous sa responsabilité.</p>
-        <p className="mt-2">L&apos;Utilisateur peut supprimer son compte à tout moment depuis les paramètres de la Plateforme ou en contactant l&apos;éditeur.</p>
+        <h2 className="text-lg font-semibold text-white mb-3">{isFr ? 'Article 3 — Services' : 'Article 3 — Services'}</h2>
+        <p>{isFr
+          ? "MISEN propose : l'analyse de scénarios par 13 moteurs IA spécialisés, la génération de prompts optimisés pour chaque modèle vidéo IA, un assistant scénariste IA, des outils de pré-production (timeline, storyboard, copilote), et l'export en 6 formats."
+          : "MISEN offers: script analysis by 13 specialized AI engines, optimized prompt generation for each AI video model, an AI screenwriting assistant, pre-production tools (timeline, storyboard, copilot), and export in 6 formats."}</p>
       </section>
-
       <section>
-        <h2 className="text-lg font-semibold text-white mb-3">Article 4 — Description des services</h2>
-        <p>La Plateforme offre les services suivants :</p>
-        <p className="mt-2"><strong className="text-white">Analyse de scénario :</strong> traitement automatisé par 13 moteurs d&apos;analyse (cadrage, tension narrative, continuité, compliance, etc.).</p>
-        <p className="mt-2"><strong className="text-white">Génération de prompts :</strong> création de prompts optimisés pour chaque plan, adaptés au modèle IA assigné (Kling, Runway, Sora, Veo, etc.).</p>
-        <p className="mt-2"><strong className="text-white">Assistant scénariste IA :</strong> aide à l&apos;écriture et à la structuration de scénarios.</p>
-        <p className="mt-2"><strong className="text-white">Génération vidéo (optionnelle) :</strong> si l&apos;Utilisateur configure ses propres clés API, la Plateforme peut envoyer les prompts aux services tiers de génération vidéo.</p>
+        <h2 className="text-lg font-semibold text-white mb-3">{isFr ? 'Article 4 — Compte utilisateur' : 'Article 4 — User Account'}</h2>
+        <p>{isFr
+          ? "L'inscription nécessite une adresse email valide et un mot de passe d'au moins 8 caractères. L'Utilisateur est responsable de la confidentialité de ses identifiants. L'Utilisateur peut supprimer son compte à tout moment depuis les paramètres."
+          : "Registration requires a valid email address and a password of at least 8 characters. The User is responsible for keeping their credentials confidential. The User may delete their account at any time from the settings."}</p>
       </section>
-
       <section>
-        <h2 className="text-lg font-semibold text-white mb-3">Article 5 — Propriété intellectuelle</h2>
-        <p>Les scénarios, textes et contenus créés par l&apos;Utilisateur restent sa propriété exclusive. MISEN ne revendique aucun droit sur les contenus soumis par les Utilisateurs.</p>
-        <p className="mt-2">La Plateforme, son code source, son design, ses moteurs d&apos;analyse et ses algorithmes sont la propriété exclusive de l&apos;éditeur et sont protégés par les lois relatives à la propriété intellectuelle.</p>
+        <h2 className="text-lg font-semibold text-white mb-3">{isFr ? 'Article 5 — Propriété intellectuelle' : 'Article 5 — Intellectual Property'}</h2>
+        <p>{isFr
+          ? "L'Utilisateur conserve la propriété de ses scénarios et contenus. Les prompts générés par MISEN sont librement utilisables. Le code source, les moteurs d'analyse et la marque MISEN restent la propriété de Steve Moradel / Jabrilia Éditions."
+          : "Users retain ownership of their scripts and content. Prompts generated by MISEN are freely usable. Source code, analysis engines, and the MISEN brand remain the property of Steve Moradel / Jabrilia Éditions."}</p>
       </section>
-
       <section>
-        <h2 className="text-lg font-semibold text-white mb-3">Article 6 — Clés API tierces</h2>
-        <p>L&apos;Utilisateur peut fournir ses propres clés API (Kling, Runway, OpenAI, Google, etc.) pour activer la génération vidéo intégrée. Les clés sont stockées de manière sécurisée et ne sont jamais partagées avec des tiers.</p>
-        <p className="mt-2">L&apos;Utilisateur est seul responsable de l&apos;utilisation et du coût associé à ses clés API. MISEN n&apos;est pas responsable des frais facturés par les services tiers.</p>
+        <h2 className="text-lg font-semibold text-white mb-3">{isFr ? 'Article 6 — Responsabilité' : 'Article 6 — Liability'}</h2>
+        <p>{isFr
+          ? "MISEN fournit un service d'aide à la production cinématographique. Les résultats d'analyse et les prompts générés sont fournis à titre indicatif. L'Éditeur ne saurait être tenu responsable de l'utilisation faite des prompts ou des vidéos générées par des modèles tiers."
+          : "MISEN provides a cinematographic production assistance service. Analysis results and generated prompts are provided for informational purposes. The Publisher cannot be held responsible for the use made of prompts or videos generated by third-party models."}</p>
       </section>
-
       <section>
-        <h2 className="text-lg font-semibold text-white mb-3">Article 7 — Utilisation acceptable</h2>
-        <p>L&apos;Utilisateur s&apos;engage à ne pas utiliser la Plateforme pour :</p>
-        <p className="mt-2">— Créer du contenu illicite, diffamatoire, discriminatoire ou portant atteinte aux droits de tiers.</p>
-        <p>— Tenter de contourner les mesures de sécurité ou d&apos;accéder à des fonctionnalités non autorisées.</p>
-        <p>— Utiliser la Plateforme à des fins de spam, de scraping ou de surcharge intentionnelle.</p>
-        <p>— Revendre l&apos;accès à la Plateforme sans autorisation.</p>
+        <h2 className="text-lg font-semibold text-white mb-3">{isFr ? 'Article 7 — Données personnelles' : 'Article 7 — Personal Data'}</h2>
+        <p>{isFr
+          ? "Le traitement des données personnelles est détaillé dans notre Politique de Confidentialité. L'Utilisateur dispose d'un droit d'accès, de rectification, de suppression et de portabilité de ses données."
+          : "Personal data processing is detailed in our Privacy Policy. Users have the right to access, rectify, delete, and export their data."}</p>
       </section>
-
       <section>
-        <h2 className="text-lg font-semibold text-white mb-3">Article 8 — Limitation de responsabilité</h2>
-        <p>MISEN est fourni « en l&apos;état ». L&apos;éditeur ne garantit pas l&apos;absence d&apos;interruptions ou d&apos;erreurs. Les résultats d&apos;analyse et les prompts générés sont des suggestions et ne constituent pas des conseils professionnels.</p>
-        <p className="mt-2">L&apos;éditeur ne saurait être tenu responsable des dommages directs ou indirects résultant de l&apos;utilisation de la Plateforme ou des vidéos générées via les services tiers.</p>
+        <h2 className="text-lg font-semibold text-white mb-3">{isFr ? 'Article 8 — Modification des CGU' : 'Article 8 — Modification'}</h2>
+        <p>{isFr
+          ? "L'Éditeur se réserve le droit de modifier les présentes CGU. Les Utilisateurs seront informés de toute modification substantielle."
+          : "The Publisher reserves the right to modify these Terms. Users will be informed of any substantial changes."}</p>
       </section>
-
       <section>
-        <h2 className="text-lg font-semibold text-white mb-3">Article 9 — Modification des CGU</h2>
-        <p>L&apos;éditeur se réserve le droit de modifier les présentes CGU à tout moment. Les modifications prennent effet dès leur publication sur la Plateforme. L&apos;Utilisateur sera informé par notification en cas de modification substantielle.</p>
+        <h2 className="text-lg font-semibold text-white mb-3">{isFr ? 'Article 9 — Droit applicable' : 'Article 9 — Governing Law'}</h2>
+        <p>{isFr
+          ? "Les présentes CGU sont régies par le droit français. Tout litige sera soumis à la juridiction des tribunaux compétents de Paris."
+          : "These Terms are governed by French law. Any dispute shall be submitted to the jurisdiction of the competent courts of Paris."}</p>
       </section>
-
       <section>
-        <h2 className="text-lg font-semibold text-white mb-3">Article 10 — Droit applicable</h2>
-        <p>Les présentes CGU sont régies par le droit français. En cas de litige, les tribunaux de Paris seront seuls compétents.</p>
-      </section>
-
-      <section>
-        <h2 className="text-lg font-semibold text-white mb-3">Contact</h2>
-        <p>Pour toute question relative aux présentes CGU, veuillez contacter : <span className="text-orange-400">contact@jabrilia.com</span></p>
+        <h2 className="text-lg font-semibold text-white mb-3">{isFr ? 'Article 10 — Contact' : 'Article 10 — Contact'}</h2>
+        <p>{isFr
+          ? "Pour toute question relative aux présentes CGU : contact@jabrilia.com"
+          : "For any questions regarding these Terms: contact@jabrilia.com"}</p>
       </section>
     </LegalLayout>
   )

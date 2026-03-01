@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { User, Key, Save, Loader2, Check, Trash2, Eye, EyeOff, CreditCard, Zap, Crown, Sparkles, BarChart3 } from 'lucide-react'
+import { User, Key, Save, Loader2, Check, Trash2, Eye, EyeOff, CreditCard, Zap, Crown, Sparkles, BarChart3, Download } from 'lucide-react'
 import { CostsDashboard } from '@/components/ui/costs-dashboard'
+import { useI18n } from '@/lib/i18n'
 
 const AI_PROVIDERS = [
   { id: 'anthropic', name: '🧠 Claude (Assistant scénariste)', placeholder: 'sk-ant-...' },
@@ -38,6 +39,7 @@ const PLANS = [
 
 export default function SettingsPage() {
   const searchParams = useSearchParams()
+  const { t, locale } = useI18n()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const initialTab = (searchParams.get('tab') as any) || 'profile'
@@ -104,7 +106,7 @@ export default function SettingsPage() {
   }
 
   const handleDeleteKey = async (provider: string) => {
-    if (!confirm('Supprimer cette clé API ?')) return
+    if (!confirm(t.settings.apikeys.confirmDelete)) return
     try {
       await fetch('/api/api-keys', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ provider }) })
       setKeys(prev => ({ ...prev, [provider]: { masked: '', hasKey: false } }))
@@ -145,50 +147,91 @@ export default function SettingsPage() {
   return (
     <div className="max-w-4xl">
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-slate-50">Réglages</h1>
-        <p className="text-sm text-slate-400 mt-1">Configurez votre studio MISEN</p>
+        <h1 className="text-xl font-bold text-slate-50">{t.settings.title}</h1>
+        <p className="text-sm text-slate-400 mt-1">{t.common.tagline}</p>
       </div>
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 bg-dark-900 rounded-lg p-1 w-fit overflow-x-auto scrollbar-hide">
         {[
-          { id: 'profile' as const, label: 'Profil', icon: User },
-          { id: 'apikeys' as const, label: 'Clés API', icon: Key },
-          { id: 'billing' as const, label: 'Plan & Facturation', icon: CreditCard },
-          { id: 'usage' as const, label: 'Coûts & Crédits', icon: BarChart3 },
-        ].map(t => (
+          { id: 'profile' as const, label: t.settings.tabs.profile, icon: User },
+          { id: 'apikeys' as const, label: t.settings.tabs.apikeys, icon: Key },
+          { id: 'billing' as const, label: t.settings.tabs.billing, icon: CreditCard },
+          { id: 'usage' as const, label: t.settings.tabs.usage, icon: BarChart3 },
+        ].map(tb => (
           <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
+            key={tb.id}
+            onClick={() => setTab(tb.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
-              tab === t.id ? 'bg-orange-600 text-white' : 'text-slate-400 hover:text-slate-200'
+              tab === tb.id ? 'bg-orange-600 text-white' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <t.icon size={16} /> {t.label}
+            <tb.icon size={16} /> {tb.label}
           </button>
         ))}
       </div>
 
       {/* ─── PROFIL ─── */}
       {tab === 'profile' && (
-        <div className="bg-dark-800 rounded-xl p-6 border border-dark-700">
-          <h3 className="text-sm font-medium text-slate-100 mb-4">Informations du compte</h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs text-slate-300 font-medium mb-1.5">Email</label>
-              <input type="email" defaultValue={user?.email || ''} className="w-full h-10 px-4 bg-dark-900 border border-dark-600 rounded-lg text-slate-100 opacity-60" disabled />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-300 font-medium mb-1.5">Plan actuel</label>
-              <div className="flex items-center gap-2">
-                <span className="px-3 py-1 bg-orange-500/10 text-orange-400 rounded-md text-sm font-medium capitalize">{currentPlan}</span>
-                {sub?.generations_used !== undefined && (
-                  <span className="text-xs text-slate-500">
-                    {sub.generations_used} génération{sub.generations_used > 1 ? 's' : ''} utilisée{sub.generations_used > 1 ? 's' : ''}
-                  </span>
-                )}
+        <div className="space-y-4">
+          <div className="bg-dark-800 rounded-xl p-6 border border-dark-700">
+            <h3 className="text-sm font-medium text-slate-100 mb-4">{t.settings.profile.title}</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs text-slate-300 font-medium mb-1.5">{t.settings.profile.email}</label>
+                <input type="email" defaultValue={user?.email || ''} className="w-full h-10 px-4 bg-dark-900 border border-dark-600 rounded-lg text-slate-100 opacity-60" disabled />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-300 font-medium mb-1.5">{t.settings.billing.currentPlan}</label>
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 bg-orange-500/10 text-orange-400 rounded-md text-sm font-medium capitalize">{currentPlan}</span>
+                  {sub?.generations_used !== undefined && (
+                    <span className="text-xs text-slate-500">
+                      {sub.generations_used} {locale === 'fr' ? `génération${sub.generations_used > 1 ? 's' : ''} utilisée${sub.generations_used > 1 ? 's' : ''}` : `generation${sub.generations_used > 1 ? 's' : ''} used`}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
+          </div>
+
+          {/* Export data (RGPD) */}
+          <div className="bg-dark-800 rounded-xl p-6 border border-dark-700">
+            <h3 className="text-sm font-medium text-slate-100 mb-1">{t.settings.profile.exportData}</h3>
+            <p className="text-xs text-slate-400 mb-4">{t.settings.profile.exportDataDesc}</p>
+            <a
+              href="/api/account/export"
+              download
+              className="inline-flex items-center gap-2 px-4 py-2 bg-dark-700 hover:bg-dark-600 border border-dark-600 text-slate-300 text-sm font-medium rounded-lg transition-colors"
+            >
+              <Download size={14} />
+              {t.settings.profile.exportDataButton}
+            </a>
+          </div>
+
+          {/* Delete account */}
+          <div className="bg-dark-800 rounded-xl p-6 border border-red-500/20">
+            <h3 className="text-sm font-medium text-red-400 mb-1">{t.settings.profile.deleteAccount}</h3>
+            <p className="text-xs text-slate-400 mb-4">{t.settings.profile.deleteAccountDesc}</p>
+            <button
+              onClick={async () => {
+                const confirmation = prompt(t.settings.profile.deleteAccountConfirm)
+                if (confirmation !== (t.settings.profile.deleteAccountConfirm.includes('DELETE') ? 'DELETE' : 'SUPPRIMER')) return
+                const res = await fetch('/api/account/delete', { method: 'DELETE' })
+                if (res.ok) {
+                  const { createClient: cc } = await import('@/lib/supabase/client')
+                  const sb = cc()
+                  await sb.auth.signOut()
+                  window.location.href = '/'
+                } else {
+                  alert(t.common.error)
+                }
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 text-sm font-medium rounded-lg transition-colors"
+            >
+              <Trash2 size={14} />
+              {t.settings.profile.deleteAccount}
+            </button>
           </div>
         </div>
       )}
@@ -196,8 +239,8 @@ export default function SettingsPage() {
       {/* ─── CLÉS API ─── */}
       {tab === 'apikeys' && (
         <div className="bg-dark-800 rounded-xl p-6 border border-dark-700">
-          <h3 className="text-sm font-medium text-slate-100 mb-1">Modèles IA</h3>
-          <p className="text-xs text-slate-400 mb-4">Connectez vos comptes pour générer des vidéos</p>
+          <h3 className="text-sm font-medium text-slate-100 mb-1">{t.settings.apikeys.title}</h3>
+          <p className="text-xs text-slate-400 mb-4">{t.settings.apikeys.desc}</p>
 
           <div className="space-y-3">
             {AI_PROVIDERS.map((provider) => {
@@ -242,7 +285,7 @@ export default function SettingsPage() {
                         className="h-9 px-3 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors"
                       >
                         {isSaving ? <Loader2 size={14} className="animate-spin" /> : isSaved ? <Check size={14} /> : <Save size={14} />}
-                        {isSaved ? 'OK' : 'Sauver'}
+                        {isSaved ? 'OK' : t.common.save}
                       </button>
                     </div>
                   )}
@@ -250,7 +293,7 @@ export default function SettingsPage() {
               )
             })}
           </div>
-          <p className="text-xs text-slate-500 mt-4">Les clés sont stockées de manière sécurisée et ne sont jamais partagées.</p>
+          <p className="text-xs text-slate-500 mt-4">{t.settings.apikeys.noKeysDesc}</p>
         </div>
       )}
 
@@ -267,7 +310,7 @@ export default function SettingsPage() {
                 }`}>
                   {plan.popular && (
                     <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-orange-600 text-white text-[10px] font-bold rounded-full uppercase">
-                      Populaire
+                      {t.pricing.popular}
                     </div>
                   )}
                   <div className="flex items-center gap-2 mb-3">
@@ -275,7 +318,7 @@ export default function SettingsPage() {
                     <span className="text-sm font-bold text-slate-100">{plan.name}</span>
                   </div>
                   <div className="mb-4">
-                    <span className="text-2xl font-bold text-slate-50">{plan.price === 0 ? 'Gratuit' : `${plan.price}€`}</span>
+                    <span className="text-2xl font-bold text-slate-50">{plan.price === 0 ? t.common.free : `${plan.price}€`}</span>
                     {plan.price > 0 && <span className="text-xs text-slate-500">/mois</span>}
                   </div>
                   <ul className="space-y-1.5 mb-4">
@@ -288,7 +331,7 @@ export default function SettingsPage() {
                   </ul>
                   {isCurrent ? (
                     <div className="w-full py-2 text-center text-xs font-medium text-orange-400 bg-orange-500/10 rounded-lg">
-                      Plan actuel
+                      {t.settings.billing.currentPlan}
                     </div>
                   ) : plan.price > 0 ? (
                     <button
@@ -297,7 +340,7 @@ export default function SettingsPage() {
                       className="w-full py-2 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white text-xs font-medium rounded-lg transition-colors flex items-center justify-center gap-1.5"
                     >
                       {checkoutLoading === plan.id ? <Loader2 size={14} className="animate-spin" /> : null}
-                      Passer à {plan.name}
+                      {t.settings.billing.changePlan} {plan.name}
                     </button>
                   ) : null}
                 </div>
@@ -307,10 +350,10 @@ export default function SettingsPage() {
 
           {currentPlan !== 'free' && (
             <div className="bg-dark-800 rounded-xl p-5 border border-dark-700">
-              <h3 className="text-sm font-medium text-slate-100 mb-2">Gérer l&apos;abonnement</h3>
-              <p className="text-xs text-slate-400 mb-3">Modifiez votre plan, mettez à jour votre moyen de paiement ou annulez.</p>
+              <h3 className="text-sm font-medium text-slate-100 mb-2">{t.settings.billing.manageBilling}</h3>
+              <p className="text-xs text-slate-400 mb-3">{t.settings.billing.features}</p>
               <button onClick={handlePortal} className="px-4 py-2 bg-dark-700 hover:bg-dark-600 text-slate-200 text-xs font-medium rounded-lg transition-colors">
-                Ouvrir le portail Stripe
+                Stripe Portal
               </button>
             </div>
           )}
@@ -318,7 +361,7 @@ export default function SettingsPage() {
           {sub && (
             <div className="mt-4 p-4 bg-dark-900 rounded-lg border border-dark-700">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">Générations ce mois</span>
+                <span className="text-slate-400">{t.settings.usage.analysesUsed}</span>
                 <span className="text-slate-200 font-medium">
                   {sub.generations_used || 0} / {sub.planDetails?.generations === -1 ? '∞' : sub.planDetails?.generations || 5}
                 </span>

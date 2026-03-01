@@ -11,6 +11,7 @@ import {
 import { StoryboardSVG } from '@/components/ui/storyboard-svg'
 import { ModelBadge, getModelColor, ModelLegend } from '@/components/ui/model-badge'
 import { ScreenplayAssistant } from '@/components/ui/screenplay-assistant'
+import { useI18n } from '@/lib/i18n'
 
 // Demo images for Render panel
 import imgSc1P1 from '@/public/images/sc1_fleuve.jpg'
@@ -37,6 +38,7 @@ type Tab = 'script' | 'analyse' | 'timeline' | 'copilot' | 'media' | 'subtitles'
 function fmt(s: number) { return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` }
 
 export default function ProjectPage() {
+  const { t, locale } = useI18n()
   const params = useParams()
   const router = useRouter()
   const projectId = params?.id as string
@@ -98,15 +100,15 @@ export default function ProjectPage() {
   }
 
   const handleAnalyze = async () => {
-    if (!scriptText.trim()) { setError('Collez un scénario'); return }
+    if (!scriptText.trim()) { setError(t.project.scriptPlaceholder); return }
     setError(''); setAnalyzing(true)
     await fetch(`/api/projects/${projectId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ script_text: scriptText }) })
     try {
       const res = await fetch(`/api/projects/${projectId}/analyze`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ style_preset: stylePreset }) })
       const data = await res.json()
       if (res.ok && data.result) { setAnalysis(data.result); setAnalysisId(data.analysis_id); if (mode === 'expert') setTab('analyse') }
-      else setError(data.error || 'Erreur')
-    } catch { setError('Erreur réseau') } finally { setAnalyzing(false) }
+      else setError(data.error || t.common.error)
+    } catch { setError(t.common.error) } finally { setAnalyzing(false) }
   }
 
   const loadDemo = async () => {
@@ -123,20 +125,20 @@ export default function ProjectPage() {
     { key: 'Escape', label: 'Fermer', action: () => showShortcuts ? setShowShortcuts(false) : router.push('/dashboard') },
     { key: 'e', label: 'Mode', action: () => setMode(m => m === 'simple' ? 'expert' : 'simple') },
     { key: 's', ctrl: true, label: 'Sauver', action: handleSave },
-    { key: 'Enter', ctrl: true, label: 'Analyser', action: handleAnalyze },
+    { key: 'Enter', ctrl: true, label: t.project.analyze, action: handleAnalyze },
     ...tabKeys.map((t, i) => ({ key: String(i + 1), label: t, action: () => { setMode('expert'); setTab(t) } })),
   ])
 
   if (loading) return <div className="flex items-center justify-center py-24"><Loader2 size={32} className="text-orange-500 animate-spin" /></div>
 
   const tabs: { id: Tab; label: string; icon: any; disabled?: boolean }[] = [
-    { id: 'script', label: 'Script', icon: Film },
-    { id: 'analyse', label: 'Analyse', icon: Brain, disabled: !analysis },
-    { id: 'timeline', label: 'Timeline', icon: Clock, disabled: !analysis },
-    { id: 'copilot', label: 'Copilote IA', icon: Sparkles, disabled: !analysis },
-    { id: 'media', label: 'Médias', icon: Image, disabled: !analysis },
-    { id: 'subtitles', label: 'Sous-titres', icon: Subtitles, disabled: !analysis },
-    { id: 'voiceover', label: 'Voix off', icon: Mic, disabled: !analysis },
+    { id: 'script', label: t.project.tabs.script, icon: Film },
+    { id: 'analyse', label: t.project.tabs.analysis, icon: Brain, disabled: !analysis },
+    { id: 'timeline', label: t.project.tabs.timeline, icon: Clock, disabled: !analysis },
+    { id: 'copilot', label: t.project.tabs.copilot, icon: Sparkles, disabled: !analysis },
+    { id: 'media', label: t.project.tabs.media, icon: Image, disabled: !analysis },
+    { id: 'subtitles', label: t.project.tabs.subtitles, icon: Subtitles, disabled: !analysis },
+    { id: 'voiceover', label: t.project.tabs.voiceover, icon: Mic, disabled: !analysis },
     { id: 'render', label: 'Rendu', icon: Play, disabled: !analysis },
   ]
 
@@ -148,8 +150,8 @@ export default function ProjectPage() {
         <div className="flex items-center gap-3">
           <button onClick={() => router.push('/dashboard')} className="p-2 rounded-lg hover:bg-white/5"><ArrowLeft size={20} className="text-slate-400" /></button>
           <div>
-            <h1 className="text-lg font-bold text-slate-50">{project?.name || 'Projet'}</h1>
-            {analysis && <p className="text-xs text-slate-500">{analysis.scenes?.length || 0} scènes • {analysis.plans?.length || 0} plans • ${(analysis.costTotal || 0).toFixed(2)}</p>}
+            <h1 className="text-lg font-bold text-slate-50">{project?.name || t.common.dashboard}</h1>
+            {analysis && <p className="text-xs text-slate-500">{analysis.scenes?.length || 0} scenes • {analysis.plans?.length || 0} shots • ${(analysis.costTotal || 0).toFixed(2)}</p>}
           </div>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto ml-12 sm:ml-0">
@@ -166,10 +168,10 @@ export default function ProjectPage() {
                     {[
                       { format: 'pdf', label: 'Bible PDF', icon: '📄', desc: 'Production book' },
                       { format: 'bible_html', label: 'Bible HTML', icon: '🌐', desc: 'Vue navigateur' },
-                      { format: 'json', label: 'JSON complet', icon: '📦', desc: 'Données brutes' },
-                      { format: 'csv', label: 'CSV plans', icon: '📊', desc: 'Tableur' },
-                      { format: 'fountain', label: 'Fountain', icon: '🎬', desc: 'Scénario' },
-                      { format: 'prompts', label: 'Prompts TXT', icon: '📝', desc: 'Copier-coller' },
+                      { format: 'json', label: 'JSON', icon: '📦', desc: 'Data' },
+                      { format: 'csv', label: 'CSV', icon: '📊', desc: 'Spreadsheet' },
+                      { format: 'fountain', label: 'Fountain', icon: '🎬', desc: 'Screenplay' },
+                      { format: 'prompts', label: locale === 'fr' ? 'Prompts TXT' : 'Prompts TXT', icon: '📝', desc: locale === 'fr' ? 'Copier-coller' : 'Copy-paste' },
                     ].map(exp => (
                       <button key={exp.format} onClick={() => { window.open(`/api/projects/${projectId}/export?format=${exp.format}`); setShowExportMenu(false) }}
                         className="flex items-center gap-3 w-full px-3 py-2 hover:bg-dark-700 transition-colors text-left">
@@ -210,46 +212,46 @@ export default function ProjectPage() {
             <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-dark-700">
               <div className="flex items-center gap-2">
                 <Film size={16} className="text-orange-500" />
-                <span className="text-sm font-medium text-slate-200">Votre scénario</span>
+                <span className="text-sm font-medium text-slate-200">{t.project.tabs.script}</span>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <select value={stylePreset} onChange={(e: any) => setStylePreset(e.target.value)} className="px-2 py-1 bg-dark-800 border border-dark-600 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-orange-500/50">
                   <option value="cinematique">🎬 Cinématique</option><option value="documentaire">📹 Documentaire</option>
                   <option value="noir">🌑 Film noir</option><option value="onirique">🌙 Onirique</option>
                 </select>
-                <button onClick={loadDemo} className="px-2 py-1 bg-dark-800 hover:bg-dark-700 border border-dark-600 rounded-lg text-xs text-slate-400">Démo</button>
+                <button onClick={loadDemo} className="px-2 py-1 bg-dark-800 hover:bg-dark-700 border border-dark-600 rounded-lg text-xs text-slate-400">{t.common.demo}</button>
                 <button onClick={handleSave} disabled={saving} className="px-2 py-1 bg-dark-800 hover:bg-dark-700 border border-dark-600 rounded-lg text-xs text-slate-400 flex items-center gap-1">
                   {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />} Sauver
                 </button>
               </div>
             </div>
-            <textarea value={scriptText} onChange={(e: any) => setScriptText(e.target.value)} placeholder="Collez votre scénario ici..." rows={12}
+            <textarea value={scriptText} onChange={(e: any) => setScriptText(e.target.value)} placeholder={t.project.scriptPlaceholder} rows={12}
               className="w-full p-4 bg-transparent text-sm text-slate-200 placeholder:text-slate-600 resize-none focus:outline-none font-mono leading-relaxed" />
           </div>
 
           <button onClick={handleAnalyze} disabled={analyzing || !scriptText.trim()}
             className="w-full py-3.5 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 disabled:from-dark-700 disabled:to-dark-700 disabled:text-slate-600 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 disabled:shadow-none">
-            {analyzing ? <><Loader2 size={18} className="animate-spin" /> Analyse en cours — 13 moteurs...</> : <><Brain size={18} /> Analyser avec 13 moteurs IA</>}
+            {analyzing ? <><Loader2 size={18} className="animate-spin" /> {t.project.analyzing}</> : <><Brain size={18} /> {t.project.analyze}</>}
           </button>
           {error && <p className="text-xs text-red-400 text-center flex items-center justify-center gap-1"><AlertTriangle size={12} /> {error}</p>}
 
           {analysis && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <St icon={Film} label="Scènes" value={analysis.scenes?.length || 0} /><St icon={Eye} label="Plans" value={analysis.plans?.length || 0} />
-                <St icon={DollarSign} label="Budget" value={`$${(analysis.costTotal || 0).toFixed(2)}`} /><St icon={Shield} label="Continuité" value={`${analysis.continuity?.score || 0}%`} />
+                <St icon={Film} label={t.demo.shotsDetected.split(' ')[0]} value={analysis.scenes?.length || 0} /><St icon={Eye} label={t.demo.shotsDetected} value={analysis.plans?.length || 0} />
+                <St icon={DollarSign} label={t.demo.estimatedBudget} value={`$${(analysis.costTotal || 0).toFixed(2)}`} /><St icon={Shield} label="Continuity" value={`${analysis.continuity?.score || 0}%`} />
               </div>
               <div className="bg-dark-900 rounded-2xl border border-dark-700 overflow-hidden">
                 <div className="px-4 py-3 border-b border-dark-700 flex items-center justify-between">
-                  <div className="flex items-center gap-2"><Camera size={16} className="text-orange-500" /><span className="text-sm font-medium text-slate-200">Plans & Prompts</span></div>
+                  <div className="flex items-center gap-2"><Camera size={16} className="text-orange-500" /><span className="text-sm font-medium text-slate-200">{locale === 'fr' ? 'Plans & Prompts' : 'Shots & Prompts'}</span></div>
                   <div className="flex items-center gap-2">
                     <button onClick={() => {
                       const allPrompts = (analysis.plans || []).map((p: any, i: number) => `[P${i+1}] ${p.modelId || 'kling'}\n${p.finalPrompt || p.basePrompt || ''}`).join('\n\n---\n\n')
                       navigator.clipboard.writeText(allPrompts)
                     }} className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-lg shadow-orange-600/20">
-                      <Copy size={12} /> Copier tous les prompts
+                      <Copy size={12} /> {locale === 'fr' ? 'Copier tous les prompts' : 'Copy all prompts'}
                     </button>
-                    <button onClick={() => setMode('expert')} className="text-xs text-orange-400 hover:text-orange-300 flex items-center gap-1"><SlidersHorizontal size={12} /> Mode Expert →</button>
+                    <button onClick={() => setMode('expert')} className="text-xs text-orange-400 hover:text-orange-300 flex items-center gap-1"><SlidersHorizontal size={12} /> {t.project.modeExpert} →</button>
                   </div>
                 </div>
                 <div className="divide-y divide-dark-700/50">
@@ -260,8 +262,8 @@ export default function ProjectPage() {
               </div>
               <div className="flex items-center gap-2 sm:gap-3 justify-center flex-wrap">
                 <button onClick={() => { setMode('expert'); setTab('timeline') }} className="px-4 py-2 bg-dark-800 hover:bg-dark-700 border border-dark-600 text-slate-300 text-xs font-medium rounded-lg flex items-center gap-1.5"><Clock size={14} /> Timeline</button>
-                <button onClick={() => { setMode('expert'); setTab('copilot') }} className="px-4 py-2 bg-dark-800 hover:bg-dark-700 border border-dark-600 text-slate-300 text-xs font-medium rounded-lg flex items-center gap-1.5"><Sparkles size={14} /> Copilote IA</button>
-                <button onClick={() => { setMode('expert'); setTab('subtitles') }} className="px-4 py-2 bg-dark-800 hover:bg-dark-700 border border-dark-600 text-slate-300 text-xs font-medium rounded-lg flex items-center gap-1.5"><Subtitles size={14} /> Sous-titres</button>
+                <button onClick={() => { setMode('expert'); setTab('copilot') }} className="px-4 py-2 bg-dark-800 hover:bg-dark-700 border border-dark-600 text-slate-300 text-xs font-medium rounded-lg flex items-center gap-1.5"><Sparkles size={14} /> {t.project.tabs.copilot}</button>
+                <button onClick={() => { setMode('expert'); setTab('subtitles') }} className="px-4 py-2 bg-dark-800 hover:bg-dark-700 border border-dark-600 text-slate-300 text-xs font-medium rounded-lg flex items-center gap-1.5"><Subtitles size={14} /> {t.project.tabs.subtitles}</button>
               </div>
             </div>
           )}
@@ -272,10 +274,10 @@ export default function ProjectPage() {
       {mode === 'expert' && (
         <div>
           <div className="flex gap-1 mb-5 bg-dark-900 rounded-xl p-1.5 overflow-x-auto border border-dark-700 scrollbar-hide">
-            {tabs.map(t => (
-              <button key={t.id} onClick={() => !t.disabled && setTab(t.id)} disabled={t.disabled}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${tab === t.id ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20' : t.disabled ? 'text-slate-700 cursor-not-allowed' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
-                <t.icon size={14} /> {t.label}
+            {tabs.map(tb => (
+              <button key={tb.id} onClick={() => !tb.disabled && setTab(tb.id)} disabled={tb.disabled}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${tab === tb.id ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20' : tb.disabled ? 'text-slate-700 cursor-not-allowed' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
+                <tb.icon size={14} /> {tb.label}
               </button>
             ))}
           </div>
@@ -314,6 +316,7 @@ const getModelStudio = (mid: string) => MODEL_URLS[mid.toLowerCase()] || MODEL_U
 
 // ═══ Simple Plan Card ═══
 function SPC({ plan, index, analysisId, userKeys }: { plan: any; index: number; analysisId?: string | null; userKeys: Set<string> }) {
+  const { t, locale } = useI18n()
   const [copied, setCopied] = useState(false)
   const [status, setStatus] = useState<'idle'|'processing'|'polling'|'completed'|'failed'>('idle')
   const [progress, setProgress] = useState(0)
@@ -339,7 +342,7 @@ function SPC({ plan, index, analysisId, userKeys }: { plan: any; index: number; 
         body: JSON.stringify({ analysisId, planIndex: index, sceneIndex: plan?.sceneIndex || 0, modelId: plan?.modelId, prompt, negativePrompt: plan?.negativePrompt, duration: plan?.estimatedDuration || 5, aspectRatio: '16:9' }),
       })
       const data = await r.json()
-      if (!r.ok) { setStatus('failed'); setError(data.error || 'Erreur'); return }
+      if (!r.ok) { setStatus('failed'); setError(data.error || t.common.error); return }
       setStatus('polling')
       let tick = 0
       pollRef.current = setInterval(async () => {
@@ -400,21 +403,21 @@ function SPC({ plan, index, analysisId, userKeys }: { plan: any; index: number; 
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] text-slate-600">${(plan?.estimatedCost||0).toFixed(3)}</span>
               <button onClick={copy} className="px-2 py-1 bg-orange-600/10 hover:bg-orange-600/20 text-orange-400 text-[10px] rounded flex items-center gap-1 transition-colors">
-                {copied ? <><Check size={10} /> Copié !</> : <><Copy size={10} /> Prompt</>}
+                {copied ? <><Check size={10} /> {t.demo.copied}</> : <><Copy size={10} /> {t.demo.copyPrompt}</>}
               </button>
               {canGenerate && status === 'idle' && (
                 <button onClick={generate} className="px-2.5 py-1 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-medium rounded flex items-center gap-1 transition-colors">
-                  <Zap size={10} /> Générer
+                  <Zap size={10} /> {t.demo.generateWith}
                 </button>
               )}
               {canGenerate && status === 'failed' && (
                 <button onClick={generate} className="px-2 py-1 bg-red-500/10 text-red-400 text-[10px] rounded flex items-center gap-1 hover:bg-red-500/20">
-                  <AlertTriangle size={10} /> Réessayer
+                  <AlertTriangle size={10} /> Retry
                 </button>
               )}
               {canGenerate && status === 'completed' && (
                 <span className="px-2 py-0.5 bg-green-500/10 text-green-400 text-[10px] rounded flex items-center gap-1">
-                  <Check size={10} /> Prêt
+                  <Check size={10} /> {t.common.success}
                 </span>
               )}
               {!canGenerate && (
@@ -450,6 +453,7 @@ function SPC({ plan, index, analysisId, userKeys }: { plan: any; index: number; 
 
 // ═══ Script Tab ═══
 function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, saving, analyzing, error, handleSave, handleAnalyze, loadDemo }: any) {
+  const { t, locale } = useI18n()
   return (
     <div className="space-y-4">
       {/* AI Screenplay Assistant */}
@@ -465,18 +469,18 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
               <option value="cinematique">🎬 Cinématique</option><option value="documentaire">📹 Documentaire</option>
               <option value="noir">🌑 Film noir</option><option value="onirique">🌙 Onirique</option>
             </select>
-            <button onClick={loadDemo} className="px-2 py-1 bg-dark-800 hover:bg-dark-700 border border-dark-600 rounded-lg text-xs text-slate-400">Démo</button>
+            <button onClick={loadDemo} className="px-2 py-1 bg-dark-800 hover:bg-dark-700 border border-dark-600 rounded-lg text-xs text-slate-400">{t.common.demo}</button>
           </div>
           <button onClick={handleSave} disabled={saving} className="flex items-center gap-1 px-3 py-1.5 bg-dark-800 hover:bg-dark-700 border border-dark-600 rounded-lg text-xs text-slate-300">
             {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />} Sauvegarder
           </button>
         </div>
-        <textarea value={scriptText} onChange={(e: any) => setScriptText(e.target.value)} placeholder="Collez votre scénario ici..." rows={16}
+        <textarea value={scriptText} onChange={(e: any) => setScriptText(e.target.value)} placeholder={t.project.scriptPlaceholder} rows={16}
           className="w-full p-4 bg-transparent text-sm text-slate-200 placeholder:text-slate-600 resize-none focus:outline-none font-mono leading-relaxed" />
       </div>
       <button onClick={handleAnalyze} disabled={analyzing || !scriptText.trim()}
         className="w-full py-3 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 disabled:opacity-40 text-white font-semibold rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20">
-        {analyzing ? <><Loader2 size={18} className="animate-spin" /> Analyse...</> : <><Play size={18} /> Lancer l&apos;analyse</>}
+        {analyzing ? <><Loader2 size={18} className="animate-spin" /> {locale === 'fr' ? 'Analyse...' : 'Analyzing...'}</> : <><Play size={18} /> {locale === 'fr' ? "Lancer l'analyse" : 'Run Analysis'}</>}
       </button>
       {error && <p className="text-xs text-red-400 text-center flex items-center justify-center gap-1"><AlertTriangle size={12} /> {error}</p>}
     </div>
@@ -485,11 +489,12 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
 
 // ═══ Copilot ═══
 function CP({ projectId, projectName }: { projectId: string; projectName?: string }) {
+  const { t, locale } = useI18n()
   const isDemo = (projectName || '').toLowerCase().includes('démo') || (projectName || '').toLowerCase().includes('demo')
   const DEMO_SUGGESTIONS = [
-    { icon: '🎬', title: 'Ça me fait penser à...', detail: 'Cinema Paradiso (Tornatore, 1988) — la scène du cinéma. Technique recommandée : lumière projetée sur les visages, contrejour de l\'écran.' },
+    { icon: '🎬', title: locale === 'fr' ? 'Ça me fait penser à...' : 'This reminds me of...', detail: 'Cinema Paradiso (Tornatore, 1988) — la scène du cinéma. Technique recommandée : lumière projetée sur les visages, contrejour de l\'écran.' },
     { icon: '🎵', title: 'Suggestion musicale', detail: 'Piano solo minimaliste type Yann Tiersen. Les cordes lentes de Max Richter (On the Nature of Daylight) colleraient aussi au thème du deuil.' },
-    { icon: '📐', title: 'As-tu pensé à...', detail: 'Un plan-séquence sans coupe pour la scène de l\'hôpital. La tension continue sans montage renforcerait l\'émotion.' },
+    { icon: '📐', title: locale === 'fr' ? 'As-tu pensé à...' : 'Have you considered...', detail: 'Un plan-séquence sans coupe pour la scène de l\'hôpital. La tension continue sans montage renforcerait l\'émotion.' },
     { icon: '🪑', title: 'L\'art du vide', detail: 'La place vide au cinéma est un personnage. Yasujirō Ozu filmait les espaces vides après le départ des personnages — les "pillow shots".' },
     { icon: '💡', title: 'Astuce flashback', detail: 'Change le ratio d\'image (2.35:1 → 4:3) ou désature légèrement pour distinguer les temporalités. Nolan utilise IMAX vs 35mm dans Oppenheimer.' },
   ]
@@ -497,16 +502,17 @@ function CP({ projectId, projectName }: { projectId: string; projectName?: strin
   const load = async () => { if (isDemo) { setSug(DEMO_SUGGESTIONS); return } setLd(true); try { const r = await fetch(`/api/projects/${projectId}/copilot`); if(r.ok){const d=await r.json();setSug(d.suggestions||[])} } catch{} finally{setLd(false)} }
   return (<div>
     <div className="flex items-center justify-between mb-4">
-      <div><h3 className="text-sm font-medium text-slate-100">Copilote IA</h3><p className="text-xs text-slate-500">Références cinéma, suggestions musicales, cadrage</p></div>
-      <button onClick={load} disabled={ld} className="px-3 py-2 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white text-xs font-medium rounded-lg flex items-center gap-1.5">{ld ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />} {sug.length ? 'Nouvelles idées' : 'Analyser'}</button>
+      <div><h3 className="text-sm font-medium text-slate-100">{t.project.tabs.copilot}</h3><p className="text-xs text-slate-500"></p></div>
+      <button onClick={load} disabled={ld} className="px-3 py-2 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white text-xs font-medium rounded-lg flex items-center gap-1.5">{ld ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />} {sug.length ? t.project.analyze : t.project.analyze}</button>
     </div>
     {sug.length > 0 ? <div className="space-y-3">{sug.map((s:any,i:number) => <div key={i} className="bg-dark-900 rounded-xl border border-dark-700 p-4 flex items-start gap-3"><span className="text-xl flex-shrink-0">{s.icon||'💡'}</span><div><p className="text-sm text-slate-200 font-medium">{s.title}</p><p className="text-xs text-slate-400 mt-1 leading-relaxed">{s.detail}</p></div></div>)}</div>
-      : <div className="p-12 bg-dark-900 rounded-xl border border-dark-700 text-center"><Sparkles size={36} className="text-slate-700 mx-auto mb-3" /><p className="text-sm text-slate-400">Cliquez Analyser pour des suggestions</p></div>}
+      : <div className="p-12 bg-dark-900 rounded-xl border border-dark-700 text-center"><Sparkles size={36} className="text-slate-700 mx-auto mb-3" /><p className="text-sm text-slate-400">{locale === 'fr' ? 'Cliquez Analyser pour des suggestions' : 'Click Analyze for suggestions'}</p></div>}
   </div>)
 }
 
 // ═══ Media Bank ═══
 function MB({ analysis, projectId, projectName }: { analysis: any; projectId: string; projectName?: string }) {
+  const { t, locale } = useI18n()
   const isDemoMB = (projectName || '').toLowerCase().includes('démo') || (projectName || '').toLowerCase().includes('demo')
   const DEMO_MEDIA = [
     { id: 'd1', thumbnail: imgSc1P1.src, title: 'Fleuve au crépuscule', source: 'Référence' },
@@ -517,12 +523,12 @@ function MB({ analysis, projectId, projectName }: { analysis: any; projectId: st
     { id: 'd6', thumbnail: imgSc2P3.src, title: 'Jumeaux — contrejour', source: 'Moodboard' },
   ]
   const [q, setQ] = useState(''); const [res, setRes] = useState<any[]>(isDemoMB ? DEMO_MEDIA : []); const [ld, setLd] = useState(false); const [err, setErr] = useState('')
-  const srch = async (sq?: string) => { const s=sq||q; if(!s.trim())return; setLd(true);setErr(''); try{const r=await fetch(`/api/media?q=${encodeURIComponent(s)}&type=all`);const d=await r.json();if(d.error&&!d.results?.length)setErr(d.error);setRes(d.results||[])}catch{setErr('Erreur')}finally{setLd(false)} }
+  const srch = async (sq?: string) => { const s=sq||q; if(!s.trim())return; setLd(true);setErr(''); try{const r=await fetch(`/api/media?q=${encodeURIComponent(s)}&type=all`);const d=await r.json();if(d.error&&!d.results?.length)setErr(d.error);setRes(d.results||[])}catch{setErr(t.common.error)}finally{setLd(false)} }
   const sugs = (analysis?.scenes||[]).slice(0,4).map((s:any)=>(s.heading||'').replace(/^(INT\.|EXT\.)\s*/i,'').replace(/–.*/g,'').trim()).filter(Boolean)
   return (<div>
     <div className="flex items-center gap-2 mb-4">
       <div className="flex-1 relative"><Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-        <input type="text" value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&srch()} placeholder="Rechercher images et vidéos..." className="w-full h-9 pl-9 pr-3 bg-dark-900 border border-dark-700 rounded-lg text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-orange-500/50" />
+        <input type="text" value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&srch()} placeholder="Search..." className="w-full h-9 pl-9 pr-3 bg-dark-900 border border-dark-700 rounded-lg text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-orange-500/50" />
       </div>
       <button onClick={()=>srch()} disabled={ld||!q.trim()} className="h-9 px-4 bg-orange-600 hover:bg-orange-500 disabled:opacity-40 text-white text-xs font-medium rounded-lg">{ld ? <Loader2 size={14} className="animate-spin" /> : 'Chercher'}</button>
     </div>
@@ -626,6 +632,7 @@ function SV({ projectId, projectName }: { projectId: string; projectName?: strin
 
 // ═══ Voiceover ═══
 function VO({ projectId, projectName }: { projectId: string; projectName?: string }) {
+  const { locale } = useI18n()
   const isDemoVO = (projectName || '').toLowerCase().includes('démo') || (projectName || '').toLowerCase().includes('demo')
   const DEMO_SEGS = [
     { character: 'ADRIEN', text: 'On y va aujourd\'hui. Pas vrai\u00A0?', emotion: 'mélancolie' },
@@ -652,12 +659,13 @@ function VO({ projectId, projectName }: { projectId: string; projectName?: strin
       </div>
     </div>
     {segs.length>0 ? <div className="space-y-2">{segs.map((s:any)=><div key={s.index} className="flex items-start gap-3 p-3 bg-dark-900 rounded-lg border border-dark-700"><button onClick={()=>speak(s.text)} className="p-1.5 rounded bg-dark-800 hover:bg-dark-700 flex-shrink-0"><Volume2 size={12} className="text-slate-400" /></button><span className="text-[10px] text-slate-600 font-mono w-12 flex-shrink-0 pt-1">{fmt(s.startTime)}</span>{s.character&&<span className="text-xs text-orange-400 w-16 flex-shrink-0">{s.character}</span>}<p className="text-sm text-slate-200 flex-1">{s.text}</p></div>)}</div>
-      : <div className="p-12 bg-dark-900 rounded-xl border border-dark-700 text-center"><Mic size={32} className="text-slate-700 mx-auto mb-3" /><p className="text-sm text-slate-400">Cliquez Préparer pour les segments voix off</p></div>}
+      : <div className="p-12 bg-dark-900 rounded-xl border border-dark-700 text-center"><Mic size={32} className="text-slate-700 mx-auto mb-3" /><p className="text-sm text-slate-400">{locale === "fr" ? "Cliquez Préparer pour les segments voix off" : "Click Prepare for voiceover segments"}</p></div>}
   </div>)
 }
 
 // ═══ Analysis Results ═══
 function AR({ analysis, analysisId, userKeys }: { analysis: any; analysisId?: string | null; userKeys: Set<string> }) {
+  const { t, locale } = useI18n()
   try {
     const scenes=analysis?.scenes||[]; const plans=analysis?.plans||[]; const tension=analysis?.tension; const chars=analysis?.characterBible||[]
     const comp=analysis?.compliance||{level:'OK',score:100,flags:[]}; const cont=analysis?.continuity||{score:100,alerts:[]}; const cost=analysis?.costTotal||0
@@ -670,8 +678,8 @@ function AR({ analysis, analysisId, userKeys }: { analysis: any; analysisId?: st
     return (<div className="space-y-4">
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <St icon={Film} label="Scènes" value={scenes.length} /><St icon={Eye} label="Plans" value={plans.length} />
-        <St icon={DollarSign} label="Coût" value={`$${cost.toFixed(2)}`} /><St icon={Shield} label="Continuité" value={`${cont.score}%`} />
+        <St icon={Film} label={t.demo.shotsDetected.split(' ')[0]} value={scenes.length} /><St icon={Eye} label={t.demo.shotsDetected} value={plans.length} />
+        <St icon={DollarSign} label={locale === 'fr' ? 'Coût' : 'Cost'} value={`$${cost.toFixed(2)}`} /><St icon={Shield} label={locale === 'fr' ? 'Continuité' : 'Continuity'} value={`${cont.score}%`} />
       </div>
 
       {/* Model Distribution */}
@@ -679,7 +687,7 @@ function AR({ analysis, analysisId, userKeys }: { analysis: any; analysisId?: st
         <div className="bg-dark-900 border border-dark-700 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-3">
             <Zap size={16} className="text-orange-400" />
-            <span className="text-sm text-slate-200 font-medium">Répartition modèles</span>
+            <span className="text-sm text-slate-200 font-medium">{locale === "fr" ? "Répartition modèles" : "Model Distribution"}</span>
           </div>
           <div className="flex h-3 rounded-full overflow-hidden mb-3">
             {modelEntries.map(([mid, count]) => (
@@ -746,11 +754,11 @@ function AR({ analysis, analysisId, userKeys }: { analysis: any; analysisId?: st
       )}
 
       {/* Characters */}
-      {chars.length>0 && <Sec icon={Users} title="Personnages" color="text-blue-400">{chars.map((c:any,i:number)=><div key={i} className="flex items-center gap-3 py-1.5"><span className="w-24 text-sm text-slate-200 font-medium truncate">{c?.name||'Inconnu'}</span><span className="text-xs text-slate-500 flex-1 truncate">{c?.apparence||c?.description||'apparence non décrite'}</span></div>)}</Sec>}
+      {chars.length>0 && <Sec icon={Users} title={locale === 'fr' ? 'Personnages' : 'Characters'} color="text-blue-400">{chars.map((c:any,i:number)=><div key={i} className="flex items-center gap-3 py-1.5"><span className="w-24 text-sm text-slate-200 font-medium truncate">{c?.name||(locale === 'fr' ? 'Inconnu' : 'Unknown')}</span><span className="text-xs text-slate-500 flex-1 truncate">{c?.apparence||c?.description||(locale === 'fr' ? 'apparence non décrite' : 'appearance not described')}</span></div>)}</Sec>}
 
       {/* Compliance */}
       <Sec icon={Shield} title={`Compliance — ${comp.level} (${comp.score}/100)`} color={comp.level==='OK'?'text-green-400':'text-yellow-400'}>
-        {comp.flags?.length>0 ? comp.flags.map((f:any,i:number)=><div key={i} className="flex items-center gap-2 py-0.5"><span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${f?.severity==='critical'?'bg-red-600/20 text-red-300':f?.severity==='high'?'bg-red-500/20 text-red-400':'bg-yellow-500/20 text-yellow-400'}`}>{(f?.severity||'medium').toUpperCase()}</span><span className="text-xs text-slate-400">{f?.type||f?.message}</span></div>) : <p className="text-xs text-green-400">Aucun flag</p>}
+        {comp.flags?.length>0 ? comp.flags.map((f:any,i:number)=><div key={i} className="flex items-center gap-2 py-0.5"><span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${f?.severity==='critical'?'bg-red-600/20 text-red-300':f?.severity==='high'?'bg-red-500/20 text-red-400':'bg-yellow-500/20 text-yellow-400'}`}>{(f?.severity||'medium').toUpperCase()}</span><span className="text-xs text-slate-400">{f?.type||f?.message}</span></div>) : <p className="text-xs text-green-400">{locale === "fr" ? "Aucun flag" : "No flags"}</p>}
       </Sec>
 
       {/* Continuity */}
@@ -759,7 +767,7 @@ function AR({ analysis, analysisId, userKeys }: { analysis: any; analysisId?: st
       {/* Plans */}
       {plans.length>0 && <Sec icon={Camera} title={`Plans (${plans.length})`} color="text-orange-400" open={false}><div className="space-y-2 max-h-96 overflow-y-auto">{plans.slice(0,30).map((p:any,i:number)=><PC key={i} plan={p} index={i} analysisId={analysisId} userKeys={userKeys} />)}</div></Sec>}
     </div>)
-  } catch { return <p className="text-red-400 text-sm text-center p-6">Erreur d&apos;affichage</p> }
+  } catch { return <p className="text-red-400 text-sm text-center p-6">{locale === 'fr' ? "Erreur d'affichage" : 'Display error'}</p> }
 }
 
 // ═══ Shared ═══
@@ -774,6 +782,7 @@ function Sec({ icon: I, title, color, children, open: so = true }: { icon: any; 
   </div>)
 }
 function PC({ plan, index, analysisId, userKeys }: { plan: any; index: number; analysisId?: string | null; userKeys: Set<string> }) {
+  const { t, locale } = useI18n()
   const [copied, setCopied] = useState(false)
   const prompt = plan?.finalPrompt || plan?.basePrompt || ''; const mid=(plan?.modelId||'kling').toLowerCase(); const mc=getModelColor(mid)
   const studio = getModelStudio(mid); const canGenerate = userKeys.has(studio.provider)
@@ -794,11 +803,11 @@ function PC({ plan, index, analysisId, userKeys }: { plan: any; index: number; a
             <ModelBadge modelId={mid} size="xs" />
           </div>
           <div className="flex items-center gap-1.5">
-            <button onClick={()=>{navigator.clipboard.writeText(prompt);setCopied(true);setTimeout(()=>setCopied(false),2000)}} className="px-2 py-0.5 bg-orange-600/10 hover:bg-orange-600/20 text-orange-400 text-[10px] rounded flex items-center gap-1">{copied?<><Check size={10} /> Copié !</>:<><Copy size={10} /> Prompt</>}</button>
-            {canGenerate && status==='idle' && <button onClick={gen} className="px-2 py-0.5 bg-orange-600 hover:bg-orange-500 text-white text-[10px] rounded flex items-center gap-1"><Zap size={10} /> Générer</button>}
+            <button onClick={()=>{navigator.clipboard.writeText(prompt);setCopied(true);setTimeout(()=>setCopied(false),2000)}} className="px-2 py-0.5 bg-orange-600/10 hover:bg-orange-600/20 text-orange-400 text-[10px] rounded flex items-center gap-1">{copied?<><Check size={10} /> {t.demo.copied}</>:<><Copy size={10} /> {t.demo.copyPrompt}</>}</button>
+            {canGenerate && status==='idle' && <button onClick={gen} className="px-2 py-0.5 bg-orange-600 hover:bg-orange-500 text-white text-[10px] rounded flex items-center gap-1"><Zap size={10} /> {t.demo.generateWith}</button>}
             {canGenerate && status==='processing' && <Loader2 size={12} className="text-yellow-400 animate-spin" />}
             {canGenerate && status==='completed' && <Check size={12} className="text-green-400" />}
-            {canGenerate && status==='failed' && <button onClick={gen} className="px-2 py-0.5 bg-red-500/10 text-red-400 text-[10px] rounded flex items-center gap-1"><AlertTriangle size={10} /> Réessayer</button>}
+            {canGenerate && status==='failed' && <button onClick={gen} className="px-2 py-0.5 bg-red-500/10 text-red-400 text-[10px] rounded flex items-center gap-1"><AlertTriangle size={10} /> Retry</button>}
             {!canGenerate && <a href={studio.url} target="_blank" rel="noopener noreferrer" className="px-2 py-0.5 bg-dark-700 hover:bg-dark-600 text-slate-300 text-[10px] rounded flex items-center gap-1"><ExternalLink size={9} /> {studio.name}</a>}
           </div>
         </div>

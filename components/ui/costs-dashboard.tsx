@@ -1,5 +1,7 @@
 'use client'
 
+import { useI18n } from '@/lib/i18n'
+
 import { useState, useEffect } from 'react'
 import {
   DollarSign, Zap, Film, Clock, TrendingUp, AlertTriangle,
@@ -34,6 +36,7 @@ const STATUS_LABELS: Record<string, { label: string; class: string }> = {
 }
 
 export function CostsDashboard() {
+  const { t } = useI18n()
   const [data, setData] = useState<UsageData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -42,7 +45,7 @@ export function CostsDashboard() {
     setLoading(true)
     try {
       const r = await fetch('/api/usage')
-      if (!r.ok) throw new Error('Erreur chargement')
+      if (!r.ok) throw new Error('Loading error')
       setData(await r.json())
       setError(null)
     } catch (e: any) {
@@ -60,7 +63,7 @@ export function CostsDashboard() {
   if (error || !data) return (
     <div className="text-center py-12">
       <AlertTriangle size={24} className="text-red-400 mx-auto mb-2" />
-      <p className="text-sm text-slate-400">{error || 'Erreur'}</p>
+      <p className="text-sm text-slate-400">{error || t.common.error}</p>
       <button onClick={fetchUsage} className="mt-2 text-xs text-orange-400 hover:text-orange-300">Réessayer</button>
     </div>
   )

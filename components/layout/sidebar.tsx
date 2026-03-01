@@ -16,31 +16,34 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { LanguageToggle } from '@/components/ui/language-toggle'
+import { useI18n } from '@/lib/i18n'
 
 interface SidebarProps {
   userName?: string | null
 }
 
-const navigation = [
-  {
-    label: 'PRODUCTION',
-    items: [
-      { name: 'Mes projets', href: '/dashboard', icon: LayoutDashboard },
-    ],
-  },
-  {
-    label: 'SYSTÈME',
-    items: [
-      { name: 'Réglages', href: '/settings', icon: Settings },
-    ],
-  },
-]
-
 export function Sidebar({ userName }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const { t } = useI18n()
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+
+  const navigation = [
+    {
+      label: 'PRODUCTION',
+      items: [
+        { name: t.sidebar.projects, href: '/dashboard', icon: LayoutDashboard },
+      ],
+    },
+    {
+      label: t.common.settings.toUpperCase(),
+      items: [
+        { name: t.sidebar.settings, href: '/settings', icon: Settings },
+      ],
+    },
+  ]
 
   // Close mobile drawer on route change
   useEffect(() => {
@@ -118,7 +121,7 @@ export function Sidebar({ userName }: SidebarProps) {
         {(isMobile || !collapsed) && userName && (
           <div className="px-3 py-2 mb-1">
             <p className="text-body-sm text-slate-300 font-medium truncate">{userName}</p>
-            <p className="text-caption text-slate-500">Free plan</p>
+            <p className="text-caption text-slate-500">{t.sidebar.plan} Free</p>
           </div>
         )}
 
@@ -129,9 +132,12 @@ export function Sidebar({ userName }: SidebarProps) {
             className="flex items-center gap-3 px-3 py-2 w-full rounded-lg text-slate-500 hover:bg-dark-800 hover:text-slate-300 transition-all duration-150"
           >
             {collapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
-            {!collapsed && <span className="text-body-sm">Réduire</span>}
+            {!collapsed && <span className="text-body-sm">{t.common.settings === 'Settings' ? 'Collapse' : 'Réduire'}</span>}
           </button>
         )}
+
+        {/* Language */}
+        <LanguageToggle className="w-full justify-start px-3 py-2" />
 
         {/* Logout */}
         <button
@@ -139,7 +145,7 @@ export function Sidebar({ userName }: SidebarProps) {
           className="flex items-center gap-3 px-3 py-2 w-full rounded-lg text-slate-500 hover:bg-dark-800 hover:text-red-400 transition-all duration-150"
         >
           <LogOut size={18} />
-          {(isMobile || !collapsed) && <span className="text-body-sm">Déconnexion</span>}
+          {(isMobile || !collapsed) && <span className="text-body-sm">{t.sidebar.logout}</span>}
         </button>
       </div>
     </>
@@ -151,7 +157,7 @@ export function Sidebar({ userName }: SidebarProps) {
       <button
         onClick={() => setMobileOpen(true)}
         className="fixed top-3 left-3 z-50 p-2 rounded-lg bg-dark-900 border border-dark-700 lg:hidden"
-        aria-label="Ouvrir le menu"
+        aria-label="Menu"
       >
         <Menu size={20} className="text-slate-300" />
       </button>

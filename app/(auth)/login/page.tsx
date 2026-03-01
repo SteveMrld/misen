@@ -5,10 +5,13 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Logo } from '@/components/ui/logo'
+import { useI18n } from '@/lib/i18n'
+import { LanguageToggle } from '@/components/ui/language-toggle'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { t } = useI18n()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -29,8 +32,8 @@ export default function LoginPage() {
     if (error) {
       setError(
         error.message === 'Invalid login credentials'
-          ? 'Email ou mot de passe incorrect'
-          : error.message
+          ? t.login.errorInvalid
+          : t.login.errorGeneric
       )
       setLoading(false)
     } else {
@@ -51,6 +54,7 @@ export default function LoginPage() {
 
   return (
     <div className="card p-8 bg-dark-850 border-dark-700 animate-fade-in">
+      <LanguageToggle className="absolute top-4 right-4" />
       {/* Logo */}
       <div className="flex justify-center mb-8">
         <Link href="/">
@@ -60,10 +64,10 @@ export default function LoginPage() {
 
       {/* Title */}
       <h1 className="text-h3 text-center text-slate-50 mb-2">
-        Connexion
+        {t.login.title}
       </h1>
       <p className="text-body-sm text-slate-400 text-center mb-8">
-        Accédez à votre studio de production
+        {t.login.subtitle}
       </p>
 
       {/* Error message */}
@@ -78,7 +82,7 @@ export default function LoginPage() {
         {/* Email */}
         <div>
           <label htmlFor="email" className="input-label">
-            Email
+            {t.login.email}
           </label>
           <input
             id="email"
@@ -95,7 +99,7 @@ export default function LoginPage() {
         {/* Password */}
         <div>
           <label htmlFor="password" className="input-label">
-            Mot de passe
+            {t.login.password}
           </label>
           <div className="relative">
             <input
@@ -127,13 +131,20 @@ export default function LoginPage() {
           {loading ? (
             <>
               <Loader2 size={18} className="animate-spin mr-2" />
-              Connexion...
+              {t.common.loading}
             </>
           ) : (
-            'Se connecter'
+            t.login.submit
           )}
         </button>
       </form>
+
+      {/* Forgot password */}
+      <div className="mt-3 text-right">
+        <Link href="/forgot-password" className="text-xs text-slate-500 hover:text-orange-400 transition-colors">
+          {t.login.forgotPassword}
+        </Link>
+      </div>
 
       {/* Divider */}
       <div className="relative my-6">
@@ -141,7 +152,7 @@ export default function LoginPage() {
           <div className="w-full border-t border-dark-700" />
         </div>
         <div className="relative flex justify-center text-caption">
-          <span className="bg-dark-850 px-3 text-slate-500">ou</span>
+          <span className="bg-dark-850 px-3 text-slate-500">{t.common.or}</span>
         </div>
       </div>
 
@@ -168,17 +179,17 @@ export default function LoginPage() {
             fill="#EA4335"
           />
         </svg>
-        Continuer avec Google
+        {t.login.googleLogin}
       </button>
 
       {/* Register link */}
       <p className="mt-6 text-center text-body-sm text-slate-400">
-        Pas encore de compte ?{' '}
+        {t.login.noAccount}{' '}
         <Link
           href="/register"
           className="text-orange-500 hover:text-orange-400 transition-colors font-medium"
         >
-          S&apos;inscrire
+          {t.login.registerLink}
         </Link>
       </p>
     </div>

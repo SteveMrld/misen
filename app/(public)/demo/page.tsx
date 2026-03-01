@@ -1,5 +1,6 @@
 'use client'
 
+import { useI18n } from '@/lib/i18n'
 import { useState, useEffect, useRef } from 'react'
 import {
   Play, Pause, ChevronRight,
@@ -16,6 +17,7 @@ const TAB_ICONS: Record<string, any> = {
 }
 
 export default function DemoPage() {
+  const { t } = useI18n()
   const [scenarioIdx, setScenarioIdx] = useState(0)
   const [currentStep, setCurrentStep] = useState(0)
   const [autoPlay, setAutoPlay] = useState(false)
@@ -152,7 +154,7 @@ export default function DemoPage() {
             ) : (
               <Link href="/register"
                 className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1">
-                Créer mon compte <ArrowRight size={14} />
+                {t.demo.ctaButton} <ArrowRight size={14} />
               </Link>
             )}
           </div>
@@ -180,11 +182,12 @@ function DemoScript({ scenario }: { scenario: DemoScenario }) {
 }
 
 function DemoAnalyse({ scenario }: { scenario: DemoScenario }) {
+  const { t } = useI18n()
   const stats = [
-    { icon: Film, label: 'Scènes', value: scenario.stats.scenes },
-    { icon: Eye, label: 'Plans', value: scenario.stats.plans },
-    { icon: Users, label: 'Personnages', value: scenario.stats.chars },
-    { icon: DollarSign, label: 'Coût estimé', value: scenario.stats.cost },
+    { icon: Film, label: t.demo.shotsDetected.split(' ')[0] || 'Scenes', value: scenario.stats.scenes },
+    { icon: Eye, label: t.demo.shotsDetected, value: scenario.stats.plans },
+    { icon: Users, label: t.demo.characterTitle, value: scenario.stats.chars },
+    { icon: DollarSign, label: t.demo.estimatedBudget, value: scenario.stats.cost },
   ]
   return (
     <div className="space-y-4">
