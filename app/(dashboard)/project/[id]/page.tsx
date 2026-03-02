@@ -32,6 +32,7 @@ const DEMO_IMAGES = [
 import { CompareButton } from '@/components/ui/compare-panel'
 import { useKeyboardShortcuts, ShortcutOverlay } from '@/components/ui/keyboard-shortcuts'
 import { GuidedTour, useProjectTour } from '@/components/ui/guided-tour'
+import { useToast } from '@/components/ui/toast'
 import { OverviewCockpit } from '@/components/ui/overview-cockpit'
 import { CharacterReferenceCard, getCharacterRefImages, injectCharacterRefsInPrompt } from '@/components/ui/character-reference'
 import { TemplateSelector } from '@/components/ui/template-selector'
@@ -67,6 +68,7 @@ export default function ProjectPage() {
   const [showAllTabs, setShowAllTabs] = useState(false)
   const [cmdPalette, setCmdPalette] = useState(false)
   const [showTour, setShowTour] = useState(false)
+  const { toast } = useToast()
   const [cmdQuery, setCmdQuery] = useState('')
   const cmdRef = useRef<HTMLInputElement>(null)
 
@@ -132,7 +134,7 @@ export default function ProjectPage() {
       const endpoint = aiMode ? 'analyze-ai' : 'analyze'
       const res = await fetch(`/api/projects/${projectId}/${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ style_preset: stylePreset }) })
       const data = await res.json()
-      if (res.ok && data.result) { setAnalysis(data.result); setAnalysisId(data.analysis_id); setShowCelebration(true); setTimeout(() => { setShowCelebration(false); if (mode === 'simple') { /* stay */ } else { setTab('overview'); setWorkspace('analysis') } }, 2500) }
+      if (res.ok && data.result) { setAnalysis(data.result); setAnalysisId(data.analysis_id); toast(locale === 'fr' ? 'Analyse terminée — ' + (data.result.plans?.length || 0) + ' plans détectés' : 'Analysis complete — ' + (data.result.plans?.length || 0) + ' shots detected', 'success'); setShowCelebration(true); setTimeout(() => { setShowCelebration(false); if (mode === 'simple') { /* stay */ } else { setTab('overview'); setWorkspace('analysis') } }, 2500) }
       else setError(data.error || t.common.error)
     } catch { setError(t.common.error) } finally { setAnalyzing(false) }
   }
