@@ -498,14 +498,15 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
       </section>
 
       {/* ═══ FOOTER ═══ */}
-      <footer className="px-6 py-8 border-t border-white/[0.05]">
+      <footer className="px-6 py-8 relative">
+        <div className="beam w-full mb-6" />
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-md bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
                 <Play size={10} className="text-white ml-0.5" fill="white" />
               </div>
-              <span className="font-display text-base text-white">MISEN</span>
+              <span className="font-display text-base text-gradient-copper">MISEN</span>
             </div>
             <p className="text-[11px] text-slate-600 mt-1">Mise en Scène Numérique — par Steve Moradel</p>
           </div>

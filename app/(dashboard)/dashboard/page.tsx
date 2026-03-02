@@ -163,7 +163,7 @@ export default function DashboardPage() {
             { icon: Zap, label: locale === 'fr' ? 'En production' : 'In production', value: projects.filter(p => p.status === 'production' || p.status === 'analyzing').length, color: 'text-yellow-400' },
             { icon: TrendingUp, label: t.dashboard.stats.totalShots, value: projects.filter(p => p.status === 'complete').length, color: 'text-green-400' },
           ].map(({ icon: Icon, label, value, color }) => (
-            <div key={label} className="bg-dark-900 border border-dark-700 rounded-xl px-4 py-3 flex items-center gap-3">
+            <div key={label} className="bg-dark-900/80 border border-dark-700 rounded-xl px-4 py-3 flex items-center gap-3 hover:border-dark-600 transition-all">
               <Icon size={18} className={color} />
               <div>
                 <p className="text-lg font-semibold text-slate-100">{value}</p>
@@ -211,9 +211,10 @@ function EmptyState({ onNew }: { onNew: () => void }) {
   const { t, locale } = useI18n()
   return (
     <div className="flex flex-col items-center justify-center py-20">
-      <div className="mb-6 w-48 h-48 rounded-2xl overflow-hidden opacity-70 shadow-2xl shadow-black/40">
+      <div className="mb-6 w-48 h-48 rounded-2xl overflow-hidden opacity-70 shadow-2xl shadow-black/40 ring-1 ring-orange-500/10">
         <img src={emptyProjectsImg.src} alt={t.dashboard.createFirst} className="w-full h-full object-cover" />
       </div>
+      <div className="beam w-24 mb-4" />
       <h3 className="text-xl font-display text-slate-200 mb-2">{t.dashboard.createFirst}</h3>
       <p className="text-sm text-slate-400 text-center max-w-md mb-8">
         {t.dashboard.noProjectsDesc}
@@ -325,8 +326,8 @@ function NewProjectModal({ onClose, onCreated }: {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={onClose}>
-      <div className="bg-dark-900 border border-dark-700/80 rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 w-full sm:max-w-md max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/50" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={onClose}>
+      <div className="bg-dark-900 border border-dark-700/80 rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 w-full sm:max-w-md max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/50 glow-copper" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-h4 text-slate-100">{t.dashboard.newProject}</h2>
           <button onClick={onClose} className="btn-ghost p-1.5 rounded-md">
