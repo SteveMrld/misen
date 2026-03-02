@@ -20,6 +20,10 @@ import {
   calculateCredits,
   PROVIDER_CAPABILITIES,
 } from '@/lib/types/generation';
+import {
+  injectCharacterImages,
+  type CharacterRefData,
+} from '@/lib/services/image-ref-injector';
 
 // ---------------------------------------------------------------------------
 // Validation
@@ -84,6 +88,7 @@ function validateRequest(body: unknown): {
       style: b.style as string | undefined,
       seed: b.seed ? Number(b.seed) : undefined,
       providerOptions: b.providerOptions as Record<string, unknown> | undefined,
+      characterRefImages: Array.isArray(b.characterRefImages) ? b.characterRefImages as CharacterRefData[] : undefined,
     },
   };
 }
@@ -157,15 +162,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 5. Submit to provider
+    // 5. Inject character reference images if provided
+    let finalPrompt = req.prompt;
+    let refExtensions: Record<string, unknown> = {};
+
+    if (req.characterRefImages && req.characterRefImages.length > 0) {
+      const injection = injectCharacterImages(req.provider, req.characterRefImages, req.prompt);
+      finalPrompt = injection.enhancedPrompt;
+      refExtensions = injection.bodyExtensions;
+
+      // If the injector provides an image URL/data, merge it as referenceImageUrl
+      if (refExtensions.image_url && !req.referenceImageUrl) {
+        req.referenceImageUrl = refExtensions.image_url as string;
+      }
+      if (refExtensions.promptImage && !req.referenceImageUrl) {
+        req.referenceImageUrl = refExtensions.promptImage as string;
+      }
+    }
+
+    // 6. Submit to provider
     const model = getModelForProvider(req.provider);
     const providerResponse = await submitGeneration({
       ...req,
+      prompt: finalPrompt,
       duration,
       aspectRatio: req.aspectRatio ?? '16:9',
+      providerOptions: {
+        ...(req.providerOptions || {}),
+        ...refExtensions,
+      },
     });
 
-    // 6. Insert generation record
+    // 7. Insert generation record
     const { data: generation, error: insertError } = await supabase
       .from('generations')
       .insert({
@@ -174,7 +202,7 @@ export async function POST(request: NextRequest) {
         shot_id: req.shotId,
         provider: req.provider,
         model,
-        prompt: req.prompt,
+        prompt: finalPrompt,
         negative_prompt: req.negativePrompt ?? null,
         duration,
         aspect_ratio: req.aspectRatio ?? '16:9',
@@ -188,6 +216,7 @@ export async function POST(request: NextRequest) {
           seed: req.seed,
           providerOptions: req.providerOptions,
           estimatedDuration: providerResponse.estimatedDuration,
+          characterRefsInjected: req.characterRefImages?.map((r: CharacterRefData) => r.name) || [],
         },
       })
       .select('id')
@@ -201,7 +230,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 7. Deduct credits
+    // 8. Deduct credits
     await supabase.rpc('deduct_credits', {
       p_user_id: userId,
       p_amount: creditCost,
@@ -209,7 +238,7 @@ export async function POST(request: NextRequest) {
       p_description: `Video generation: ${req.provider} - ${duration}s`,
     });
 
-    // 8. Response
+    // 9. Response
     const response: GenerateResponse = {
       jobId: generation.id,
       status: 'pending',

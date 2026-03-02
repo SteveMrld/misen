@@ -363,6 +363,18 @@ export const fr: Dictionary = {
       noKeyTitle: 'Clé OpenAI requise',
       noKeyDesc: 'Configurez votre clé API OpenAI dans Paramètres → Clés API pour générer les vignettes du storyboard.',
     },
+    assembly: {
+      title: 'Assemblage Final',
+      settings: 'Paramètres de rendu',
+      transition: 'Transition entre plans',
+      resolution: 'Résolution',
+      titleCard: 'Carton-titre',
+      credits: 'Générique de fin',
+      assemble: 'Assembler le film',
+      download: 'Télécharger',
+      noClips: 'Aucun clip généré',
+      noClipsDesc: 'Générez des vidéos depuis l\'onglet Plans & Prompts pour pouvoir assembler votre film.',
+    },
     cockpit: {
       title: 'Cockpit Projet',
       totalShots: 'Plans',

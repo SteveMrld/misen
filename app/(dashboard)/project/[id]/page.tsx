@@ -35,6 +35,7 @@ import { OverviewCockpit } from '@/components/ui/overview-cockpit'
 import { CharacterReferenceCard, getCharacterRefImages, injectCharacterRefsInPrompt } from '@/components/ui/character-reference'
 import { TemplateSelector } from '@/components/ui/template-selector'
 import { VisualStoryboard } from '@/components/ui/visual-storyboard'
+import { AssemblyPanel } from '@/components/ui/assembly-panel'
 
 type Mode = 'simple' | 'expert'
 type Tab = 'script' | 'overview' | 'analyse' | 'storyboard' | 'timeline' | 'copilot' | 'media' | 'subtitles' | 'voiceover' | 'render'
@@ -60,6 +61,7 @@ export default function ProjectPage() {
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [showExportMenu, setShowExportMenu] = useState(false)
   const [userKeys, setUserKeys] = useState<Set<string>>(new Set())
+  const [aiMode, setAiMode] = useState(false)
 
   // Keyboard shortcuts — defined after handlers
   const tabKeys: Tab[] = ['script', 'overview', 'analyse', 'storyboard', 'timeline', 'copilot', 'media', 'subtitles', 'voiceover', 'render']
@@ -108,7 +110,8 @@ export default function ProjectPage() {
     setError(''); setAnalyzing(true)
     await fetch(`/api/projects/${projectId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ script_text: scriptText }) })
     try {
-      const res = await fetch(`/api/projects/${projectId}/analyze`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ style_preset: stylePreset }) })
+      const endpoint = aiMode ? 'analyze-ai' : 'analyze'
+      const res = await fetch(`/api/projects/${projectId}/${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ style_preset: stylePreset }) })
       const data = await res.json()
       if (res.ok && data.result) { setAnalysis(data.result); setAnalysisId(data.analysis_id); if (mode === 'expert') setTab('overview') }
       else setError(data.error || t.common.error)
@@ -302,7 +305,7 @@ export default function ProjectPage() {
               </button>
             ))}
           </div>
-          {tab === 'script' && <ScriptTab scriptText={scriptText} setScriptText={setScriptText} stylePreset={stylePreset} setStylePreset={setStylePreset} saving={saving} analyzing={analyzing} error={error} handleSave={handleSave} handleAnalyze={handleAnalyze} loadDemo={loadDemo} loadTemplate={loadTemplate} />}
+          {tab === 'script' && <ScriptTab scriptText={scriptText} setScriptText={setScriptText} stylePreset={stylePreset} setStylePreset={setStylePreset} saving={saving} analyzing={analyzing} error={error} handleSave={handleSave} handleAnalyze={handleAnalyze} loadDemo={loadDemo} loadTemplate={loadTemplate} aiMode={aiMode} setAiMode={setAiMode} />}
           {tab === 'overview' && analysis && <OverviewCockpit analysis={analysis} projectName={project?.name} />}
           {tab === 'analyse' && analysis && <AR analysis={analysis} analysisId={analysisId} userKeys={userKeys} projectId={projectId} />}
           {tab === 'storyboard' && analysis && <VisualStoryboard analysis={analysis} projectId={projectId} projectName={project?.name} />}
@@ -311,7 +314,12 @@ export default function ProjectPage() {
           {tab === 'media' && analysis && <MB analysis={analysis} projectId={projectId} projectName={project?.name} />}
           {tab === 'subtitles' && analysis && <SV projectId={projectId} projectName={project?.name} />}
           {tab === 'voiceover' && analysis && <VO projectId={projectId} projectName={project?.name} />}
-          {tab === 'render' && analysis && <RenderPanel analysis={analysis} analysisId={analysisId} projectName={project?.name} />}
+          {tab === 'render' && analysis && <>
+            <RenderPanel analysis={analysis} analysisId={analysisId} projectName={project?.name} />
+            <div className="mt-6">
+              <AssemblyPanel analysis={analysis} projectId={projectId} projectName={project?.name} />
+            </div>
+          </>}
         </div>
       )}
     </div>
@@ -369,10 +377,24 @@ function SPC({ plan, index, analysisId, userKeys, projectId }: { plan: any; inde
   const generate = async () => {
     if (!analysisId) return
     setStatus('processing'); setProgress(0); setError(null)
+
+    // Collect character reference images for real injection
+    const refImages = projectId ? getCharacterRefImages(projectId) : {}
+    const characterRefImages = Object.entries(refImages).map(([name, dataUrl]) => ({
+      name,
+      base64: dataUrl,
+      mimeType: dataUrl.match(/^data:(image\/\w+)/)?.[1] || 'image/png',
+    }))
+
     try {
       const r = await fetch('/api/generate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ analysisId, planIndex: index, sceneIndex: plan?.sceneIndex || 0, modelId: plan?.modelId, prompt, negativePrompt: plan?.negativePrompt, duration: plan?.estimatedDuration || 5, aspectRatio: '16:9' }),
+        body: JSON.stringify({
+          analysisId, planIndex: index, sceneIndex: plan?.sceneIndex || 0,
+          modelId: plan?.modelId, prompt, negativePrompt: plan?.negativePrompt,
+          duration: plan?.estimatedDuration || 5, aspectRatio: '16:9',
+          characterRefImages: characterRefImages.length > 0 ? characterRefImages : undefined,
+        }),
       })
       const data = await r.json()
       if (!r.ok) { setStatus('failed'); setError(data.error || t.common.error); return }
@@ -485,7 +507,7 @@ function SPC({ plan, index, analysisId, userKeys, projectId }: { plan: any; inde
 }
 
 // ═══ Script Tab ═══
-function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, saving, analyzing, error, handleSave, handleAnalyze, loadDemo, loadTemplate }: any) {
+function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, saving, analyzing, error, handleSave, handleAnalyze, loadDemo, loadTemplate, aiMode, setAiMode }: any) {
   const { t, locale } = useI18n()
   return (
     <div className="space-y-4">
@@ -514,9 +536,37 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
         <textarea value={scriptText} onChange={(e: any) => setScriptText(e.target.value)} placeholder={t.project.scriptPlaceholder} rows={16}
           className="w-full p-4 bg-transparent text-sm text-slate-200 placeholder:text-slate-600 resize-none focus:outline-none font-mono leading-relaxed" />
       </div>
+
+      {/* AI Enhancement Toggle */}
+      <div className="flex items-center justify-between px-1">
+        <button onClick={() => setAiMode(!aiMode)}
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all border ${
+            aiMode
+              ? 'bg-purple-600/15 border-purple-500/30 text-purple-300'
+              : 'bg-dark-800/50 border-dark-700 text-slate-500 hover:text-slate-400'
+          }`}>
+          <div className={`w-7 h-4 rounded-full transition-all relative ${aiMode ? 'bg-purple-600' : 'bg-dark-600'}`}>
+            <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${aiMode ? 'left-3.5' : 'left-0.5'}`} />
+          </div>
+          <Sparkles size={12} className={aiMode ? 'text-purple-400' : 'text-slate-600'} />
+          {locale === 'fr' ? 'Analyse IA narrative' : 'AI Narrative Analysis'}
+        </button>
+        {aiMode && (
+          <span className="text-[10px] text-purple-400/60">
+            Claude / GPT • {locale === 'fr' ? 'enrichit les prompts et la direction artistique' : 'enriches prompts & artistic direction'}
+          </span>
+        )}
+      </div>
+
       <button onClick={handleAnalyze} disabled={analyzing || !scriptText.trim()}
-        className="w-full py-3 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 disabled:opacity-40 text-white font-semibold rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20">
-        {analyzing ? <><Loader2 size={18} className="animate-spin" /> {locale === 'fr' ? 'Analyse...' : 'Analyzing...'}</> : <><Play size={18} /> {locale === 'fr' ? "Lancer l'analyse" : 'Run Analysis'}</>}
+        className={`w-full py-3 font-semibold rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all ${
+          aiMode
+            ? 'bg-gradient-to-r from-purple-600 to-orange-500 hover:from-purple-500 hover:to-orange-400 shadow-purple-500/20'
+            : 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 shadow-orange-500/20'
+        } disabled:opacity-40 text-white`}>
+        {analyzing
+          ? <><Loader2 size={18} className="animate-spin" /> {aiMode ? (locale === 'fr' ? 'Analyse IA profonde...' : 'Deep AI Analysis...') : (locale === 'fr' ? 'Analyse...' : 'Analyzing...')}</>
+          : <><Play size={18} /> {aiMode ? (locale === 'fr' ? "Lancer l'analyse IA" : 'Run AI Analysis') : (locale === 'fr' ? "Lancer l'analyse" : 'Run Analysis')}</>}
       </button>
       {error && <p className="text-xs text-red-400 text-center flex items-center justify-center gap-1"><AlertTriangle size={12} /> {error}</p>}
     </div>

@@ -271,6 +271,18 @@ export interface Dictionary {
       noKeyTitle: string
       noKeyDesc: string
     }
+    assembly: {
+      title: string
+      settings: string
+      transition: string
+      resolution: string
+      titleCard: string
+      credits: string
+      assemble: string
+      download: string
+      noClips: string
+      noClipsDesc: string
+    }
     cockpit: {
       title: string
       totalShots: string

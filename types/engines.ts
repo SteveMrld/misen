@@ -153,4 +153,10 @@ export interface AnalysisResult {
   compliance: ComplianceResult; continuity: ContinuityResult;
   characterBible: CharacterBibleEntry[]; styleBible: StyleBibleResult;
   costTotal: number; costByModel: Record<AIModelId, number>; costByScene: number[];
+  // V10 AI Enrichment (optional — only present when analyze-ai is used)
+  aiEnriched?: boolean;
+  aiError?: string;
+  aiVision?: any;
+  aiModel?: string;
+  aiTokenCost?: { input: number; output: number };
 }

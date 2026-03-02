@@ -363,6 +363,18 @@ export const en: Dictionary = {
       noKeyTitle: 'OpenAI key required',
       noKeyDesc: 'Configure your OpenAI API key in Settings → API Keys to generate storyboard thumbnails.',
     },
+    assembly: {
+      title: 'Final Assembly',
+      settings: 'Render Settings',
+      transition: 'Shot Transition',
+      resolution: 'Resolution',
+      titleCard: 'Title Card',
+      credits: 'End Credits',
+      assemble: 'Assemble Film',
+      download: 'Download',
+      noClips: 'No clips generated',
+      noClipsDesc: 'Generate videos from the Shots & Prompts tab to assemble your film.',
+    },
     cockpit: {
       title: 'Project Cockpit',
       totalShots: 'Shots',

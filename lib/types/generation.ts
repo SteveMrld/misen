@@ -239,6 +239,7 @@ export interface GenerateRequestBody {
   style?: string;
   seed?: number;
   providerOptions?: Record<string, unknown>;
+  characterRefImages?: { name: string; base64: string; mimeType: string }[];
 }
 
 export interface GenerateResponse {
