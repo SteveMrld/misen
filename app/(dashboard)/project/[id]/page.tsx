@@ -371,7 +371,7 @@ export default function ProjectPage() {
           <button onClick={() => setMode('simple')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${mode === 'simple' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/15' : 'text-slate-400 hover:text-slate-200'}`}>
             <Wand2 size={13} /> Simple
           </button>
-          <button onClick={() => setMode('expert')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${mode === 'expert' ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20' : 'text-slate-400 hover:text-slate-200'}`}>
+          <button onClick={() => setMode('expert')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${mode === 'expert' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/15' : 'text-slate-400 hover:text-slate-200'}`}>
             <SlidersHorizontal size={13} /> Expert
           </button>
           </div>
@@ -475,7 +475,7 @@ export default function ProjectPage() {
                     <button onClick={() => {
                       const allPrompts = (analysis.plans || []).map((p: any, i: number) => `[P${i+1}] ${p.modelId || 'kling'}\n${p.finalPrompt || p.basePrompt || ''}`).join('\n\n---\n\n')
                       navigator.clipboard.writeText(allPrompts)
-                    }} className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-lg shadow-orange-600/20">
+                    }} className="px-3 py-1.5 btn-primary text-white text-[10px] font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-lg shadow-orange-600/20">
                       <Copy size={12} /> {locale === 'fr' ? 'Copier tous les prompts' : 'Copy all prompts'}
                     </button>
                     <button onClick={() => setMode('expert')} className="text-xs text-orange-400 hover:text-orange-300 flex items-center gap-1"><SlidersHorizontal size={12} /> {t.project.modeExpert} →</button>
@@ -514,7 +514,7 @@ export default function ProjectPage() {
                 ] as const).map((ws, i) => (
                   <button key={ws.id} onClick={() => { setWorkspace(ws.id); const firstTab = ws.tabs[0] as Tab; if (!analysis && firstTab !== 'script') return; setTab(firstTab) }}
                     disabled={ws.status === 'locked'}
-                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${workspace === ws.id ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20' : ws.status === 'locked' ? 'text-slate-700 cursor-not-allowed' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
+                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${workspace === ws.id ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/15' : ws.status === 'locked' ? 'text-slate-700 cursor-not-allowed' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
                     <ws.icon size={15} />
                     <span className="hidden sm:inline">{ws.label}</span>
                     {/* Health indicator */}
@@ -558,7 +558,7 @@ export default function ProjectPage() {
               <div className="flex gap-1 bg-dark-900 rounded-xl p-1.5 overflow-x-auto border border-dark-700 scrollbar-hide">
                 {tabs.map(tb => (
                   <button key={tb.id} onClick={() => !tb.disabled && setTab(tb.id)} disabled={tb.disabled}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${tab === tb.id ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20' : tb.disabled ? 'text-slate-700 cursor-not-allowed' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${tab === tb.id ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/15' : tb.disabled ? 'text-slate-700 cursor-not-allowed' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
                     <tb.icon size={14} /> {tb.label}
                   </button>
                 ))}
@@ -838,7 +838,7 @@ function SPC({ plan, index, analysisId, userKeys, projectId }: { plan: any; inde
                 {copied ? <><Check size={10} /> {t.demo.copied}</> : <><Copy size={10} /> {t.demo.copyPrompt}</>}
               </button>
               {canGenerate && status === 'idle' && (
-                <button onClick={generate} className="px-2.5 py-1 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-medium rounded flex items-center gap-1 transition-colors">
+                <button onClick={generate} className="px-2.5 py-1 btn-primary text-white text-[10px] font-medium rounded flex items-center gap-1 transition-colors">
                   <Zap size={10} /> {t.demo.generateWith}
                 </button>
               )}
@@ -1143,7 +1143,7 @@ function MB({ analysis, projectId, projectName }: { analysis: any; projectId: st
       <div className="flex-1 relative"><Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
         <input type="text" value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&srch()} placeholder="Search..." className="w-full h-9 pl-9 pr-3 bg-dark-900 border border-dark-700 rounded-lg text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-orange-500/50" />
       </div>
-      <button onClick={()=>srch()} disabled={ld||!q.trim()} className="h-9 px-4 bg-orange-600 hover:bg-orange-500 disabled:opacity-40 text-white text-xs font-medium rounded-lg">{ld ? <Loader2 size={14} className="animate-spin" /> : 'Chercher'}</button>
+      <button onClick={()=>srch()} disabled={ld||!q.trim()} className="h-9 px-4 btn-primary disabled:opacity-40 text-white text-xs font-medium rounded-lg">{ld ? <Loader2 size={14} className="animate-spin" /> : 'Chercher'}</button>
     </div>
     {sugs.length>0&&res.length===0&&<div className="flex items-center gap-2 mb-4 flex-wrap"><span className="text-xs text-slate-500">Suggestions :</span>{sugs.map((s:string,i:number)=><button key={i} onClick={()=>{setQ(s);srch(s)}} className="px-2 py-1 bg-dark-800 hover:bg-dark-700 border border-dark-700 rounded text-xs text-slate-300">{s}</button>)}</div>}
     {err&&<div className="p-3 mb-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-xs text-yellow-400">{err}</div>}
@@ -1163,7 +1163,7 @@ function TL({ analysis, projectName }: { analysis: any; projectName?: string }) 
     {/* Transport controls */}
     <div className="flex items-center gap-3 bg-dark-900 rounded-xl border border-dark-700 px-4 py-3">
       <button onClick={()=>setPh(0)} className="p-1.5 rounded hover:bg-white/5"><SkipBack size={16} className="text-slate-400" /></button>
-      <button onClick={()=>setPlaying(!playing)} className="p-2 rounded-full bg-orange-600 hover:bg-orange-500">{playing ? <Pause size={16} className="text-white" /> : <Play size={16} className="text-white" />}</button>
+      <button onClick={()=>setPlaying(!playing)} className="p-2 rounded-full btn-primary">{playing ? <Pause size={16} className="text-white" /> : <Play size={16} className="text-white" />}</button>
       <button onClick={()=>setPh(Math.min(ph+5,total))} className="p-1.5 rounded hover:bg-white/5"><SkipForward size={16} className="text-slate-400" /></button>
       <span className="text-sm text-slate-200 font-mono">{fmt(ph)}</span>
       <div className="flex-1 relative h-2 bg-dark-700 rounded-full cursor-pointer" onClick={e=>{const r=e.currentTarget.getBoundingClientRect();setPh((e.clientX-r.left)/r.width*total)}}>
@@ -1234,7 +1234,7 @@ function SV({ projectId, projectName }: { projectId: string; projectName?: strin
     <div className="flex items-center justify-between mb-4">
       <div><h3 className="text-sm font-medium text-slate-100">Sous-titres</h3><p className="text-xs text-slate-500">Extraction des dialogues</p></div>
       <div className="flex items-center gap-2">
-        {!subs ? <button onClick={load} disabled={ld} className="px-3 py-2 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white text-xs font-medium rounded-lg flex items-center gap-1.5">{ld ? <Loader2 size={14} className="animate-spin" /> : <Subtitles size={14} />} Générer</button>
+        {!subs ? <button onClick={load} disabled={ld} className="px-3 py-2 btn-primary disabled:opacity-50 text-white text-xs font-medium rounded-lg flex items-center gap-1.5">{ld ? <Loader2 size={14} className="animate-spin" /> : <Subtitles size={14} />} Générer</button>
           : <><button onClick={()=>window.open(`/api/projects/${projectId}/subtitles?format=srt`)} className="px-3 py-1.5 bg-dark-700 hover:bg-dark-600 text-slate-200 text-xs rounded-lg flex items-center gap-1"><Download size={12} /> SRT</button><button onClick={()=>window.open(`/api/projects/${projectId}/subtitles?format=vtt`)} className="px-3 py-1.5 bg-dark-700 hover:bg-dark-600 text-slate-200 text-xs rounded-lg flex items-center gap-1"><Download size={12} /> VTT</button></>}
       </div>
     </div>
@@ -1267,8 +1267,8 @@ function VO({ projectId, projectName }: { projectId: string; projectName?: strin
       <div><h3 className="text-sm font-medium text-slate-100">Voix off</h3><p className="text-xs text-slate-500">Narration et dialogues</p></div>
       <div className="flex items-center gap-2">
         <select value={prov} onChange={(e:any)=>setProv(e.target.value)} className="px-2 py-1.5 bg-dark-800 border border-dark-700 rounded text-xs text-slate-300"><option value="browser">Navigateur (gratuit)</option><option value="openai">OpenAI TTS</option><option value="elevenlabs">ElevenLabs</option></select>
-        {!segs.length ? <button onClick={load} disabled={ld} className="px-3 py-2 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white text-xs font-medium rounded-lg flex items-center gap-1.5">{ld ? <Loader2 size={14} className="animate-spin" /> : <Mic size={14} />} Préparer</button>
-          : <button onClick={()=>speak(segs.map((s:any)=>s.character?`${s.character}: ${s.text}`:s.text).join('. '))} className="px-3 py-2 bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium rounded-lg flex items-center gap-1.5">{sp ? <><Pause size={14} /> Stop</> : <><Volume2 size={14} /> Écouter</>}</button>}
+        {!segs.length ? <button onClick={load} disabled={ld} className="px-3 py-2 btn-primary disabled:opacity-50 text-white text-xs font-medium rounded-lg flex items-center gap-1.5">{ld ? <Loader2 size={14} className="animate-spin" /> : <Mic size={14} />} Préparer</button>
+          : <button onClick={()=>speak(segs.map((s:any)=>s.character?`${s.character}: ${s.text}`:s.text).join('. '))} className="px-3 py-2 btn-primary text-white text-xs font-medium rounded-lg flex items-center gap-1.5">{sp ? <><Pause size={14} /> Stop</> : <><Volume2 size={14} /> Écouter</>}</button>}
       </div>
     </div>
     {segs.length>0 ? <div className="space-y-2">{segs.map((s:any)=><div key={s.index} className="flex items-start gap-3 p-3 bg-dark-900 rounded-lg border border-dark-700"><button onClick={()=>speak(s.text)} className="p-1.5 rounded bg-dark-800 hover:bg-dark-700 flex-shrink-0"><Volume2 size={12} className="text-slate-400" /></button><span className="text-[10px] text-slate-600 font-mono w-12 flex-shrink-0 pt-1">{fmt(s.startTime)}</span>{s.character&&<span className="text-xs text-orange-400 w-16 flex-shrink-0">{s.character}</span>}<p className="text-sm text-slate-200 flex-1">{s.text}</p></div>)}</div>
@@ -1654,7 +1654,7 @@ function PC({ plan, index, analysisId, userKeys, characters }: { plan: any; inde
             className="px-3 py-1.5 bg-orange-600/10 hover:bg-orange-600/20 text-orange-400 text-[10px] rounded-lg flex items-center gap-1.5 border border-orange-500/20">
             {copied?<><Check size={10} />{t.demo.copied}</>:<><Copy size={10} />{t.demo.copyPrompt}</>}
           </button>
-          {canGenerate && status==='idle' && <button onClick={gen} className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white text-[10px] rounded-lg flex items-center gap-1.5"><Zap size={10} /> {t.demo.generateWith}</button>}
+          {canGenerate && status==='idle' && <button onClick={gen} className="px-3 py-1.5 btn-primary text-white text-[10px] rounded-lg flex items-center gap-1.5"><Zap size={10} /> {t.demo.generateWith}</button>}
           {canGenerate && status==='processing' && <span className="flex items-center gap-1.5 text-yellow-400 text-[10px]"><Loader2 size={12} className="animate-spin" />{locale === 'fr' ? 'Génération...' : 'Generating...'}</span>}
           {canGenerate && status==='completed' && <span className="flex items-center gap-1.5 text-green-400 text-[10px]"><Check size={12} />{locale === 'fr' ? 'Terminé' : 'Done'}</span>}
           {canGenerate && status==='failed' && <button onClick={gen} className="px-3 py-1.5 bg-red-500/10 text-red-400 text-[10px] rounded-lg flex items-center gap-1.5 border border-red-500/20"><AlertTriangle size={10} /> Retry</button>}
@@ -1829,7 +1829,7 @@ function RenderPanel({ analysis, analysisId, projectName }: { analysis: any; ana
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 cursor-pointer"
               onClick={() => setPlaying(true)}>
               <p className="text-white/50 text-[10px] tracking-[0.2em] uppercase mb-3">{projectName}</p>
-              <div className="w-14 h-14 rounded-full bg-orange-600/90 hover:bg-orange-500 flex items-center justify-center shadow-xl transition-transform hover:scale-110">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 flex items-center justify-center shadow-xl shadow-orange-500/25 transition-transform hover:scale-110">
                 <Play size={24} fill="white" className="text-white ml-0.5" />
               </div>
             </div>
@@ -1893,7 +1893,7 @@ function RenderPanel({ analysis, analysisId, projectName }: { analysis: any; ana
           </div>
 
           {/* Export */}
-          <button className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-medium rounded-lg flex items-center gap-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          <button className="px-3 py-1.5 btn-primary text-white text-[10px] font-medium rounded-lg flex items-center gap-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             disabled={completedCount < totalPlans}>
             <Download size={12} /> Export {completedCount === totalPlans ? '4K' : `(${completedCount}/${totalPlans})`}
           </button>

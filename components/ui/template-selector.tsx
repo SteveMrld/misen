@@ -151,7 +151,7 @@ function TemplateCard({ template, locale, t, onPreview, onUse }: {
         </button>
         <button
           onClick={onUse}
-          className="flex-1 py-1.5 bg-orange-600 hover:bg-orange-500 text-white text-[11px] font-medium rounded-lg transition-colors"
+          className="flex-1 py-1.5 btn-primary text-[11px] font-medium rounded-lg"
         >
           {t.project.templates.useTemplate}
         </button>
@@ -191,7 +191,7 @@ function TemplatePreview({ template, locale, t, onUse, onBack }: {
         </div>
         <button
           onClick={onUse}
-          className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium rounded-lg transition-colors"
+          className="px-4 py-2 btn-primary text-white text-xs font-medium rounded-lg transition-colors"
         >
           {t.project.templates.useTemplate}
         </button>

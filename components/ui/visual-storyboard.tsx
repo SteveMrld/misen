@@ -291,7 +291,7 @@ export function VisualStoryboard({ analysis, projectId, projectName }: VisualSto
                 { id: 'grid-4' as GridLayout, icon: Grid3X3 },
               ]).map(l => (
                 <button key={l.id} onClick={() => setLayout(l.id)}
-                  className={`p-1.5 rounded-md transition-all ${layout === l.id ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                  className={`p-1.5 rounded-md transition-all ${layout === l.id ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white' : 'text-slate-500 hover:text-slate-300'}`}
                   title={l.id}>
                   <l.icon size={14} />
                 </button>
@@ -301,7 +301,7 @@ export function VisualStoryboard({ analysis, projectId, projectName }: VisualSto
             {/* Generate all */}
             {hasOpenAIKey && !batchRunning && (
               <button onClick={generateAll}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium rounded-lg transition-colors disabled:opacity-40"
+                className="flex items-center gap-1.5 px-3 py-1.5 btn-primary text-white text-xs font-medium rounded-lg transition-colors disabled:opacity-40"
                 disabled={missingCount === 0}>
                 <Sparkles size={13} />
                 {missingCount > 0

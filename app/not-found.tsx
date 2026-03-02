@@ -15,7 +15,7 @@ export default function NotFound() {
           <Link href="/" className="px-5 py-2.5 bg-dark-800 hover:bg-dark-700 border border-dark-600 text-slate-300 text-sm font-medium rounded-xl transition-colors">
             Accueil
           </Link>
-          <Link href="/dashboard" className="px-5 py-2.5 bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium rounded-xl transition-colors shadow-lg shadow-orange-500/20">
+          <Link href="/dashboard" className="px-5 py-2.5 btn-primary text-white text-sm font-medium rounded-xl transition-colors shadow-lg shadow-orange-500/20">
             Mon studio
           </Link>
         </div>

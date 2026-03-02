@@ -146,7 +146,7 @@ export function ScreenplayAssistant({ onUseScript, existingScript }: { onUseScri
           <button onClick={copyScript} className="px-2.5 py-1.5 bg-dark-700 hover:bg-dark-600 text-slate-300 text-[10px] rounded-lg flex items-center gap-1">
             {copied ? <Check size={10} className="text-green-400" /> : <Copy size={10} />} {isFr ? 'Copier' : 'Copy'}
           </button>
-          <button onClick={useScript} className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-medium rounded-lg flex items-center gap-1 shadow-lg shadow-orange-600/20">
+          <button onClick={useScript} className="px-3 py-1.5 btn-primary text-[10px] font-medium rounded-lg flex items-center gap-1">
             <ArrowRight size={10} /> {isFr ? 'Utiliser ce scénario' : 'Use this script'}
           </button>
         </div>
@@ -158,7 +158,7 @@ export function ScreenplayAssistant({ onUseScript, existingScript }: { onUseScri
             <input type="text" value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
               placeholder={isFr ? 'Décrivez votre idée, demandez des modifications...' : 'Describe your idea, request changes...'}
               className="flex-1 h-9 px-3 bg-dark-800 border border-dark-700 rounded-lg text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-orange-500/50" disabled={loading} />
-            <button onClick={() => send()} disabled={loading || !input.trim()} className="h-9 w-9 bg-orange-600 hover:bg-orange-500 disabled:opacity-40 text-white rounded-lg flex items-center justify-center">
+            <button onClick={() => send()} disabled={loading || !input.trim()} className="h-9 w-9 btn-primary disabled:opacity-40 rounded-lg flex items-center justify-center">
               {loading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
             </button>
           </div>

@@ -98,7 +98,7 @@ export default function DemoPage() {
             return (
               <button key={i} onClick={() => { setCurrentStep(i); setAutoPlay(false) }}
                 className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-md text-xs transition-all ${
-                  i === currentStep ? 'bg-orange-600 text-white' :
+                  i === currentStep ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/15' :
                   i < currentStep ? 'bg-orange-500/20 text-orange-400' : 'bg-dark-800 text-slate-600'
                 }`}>
                 <StepIcon size={12} />
@@ -516,7 +516,7 @@ function DemoResult({ scenario }: { scenario: DemoScenario }) {
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40">
             {!imagesLoaded && <div className="absolute top-4 right-4 w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />}
             <p className="text-white/60 text-xs tracking-[0.3em] uppercase mb-4 font-light">{scenario.title}</p>
-            <button className="w-20 h-20 rounded-full bg-orange-600/90 hover:bg-orange-500 flex items-center justify-center shadow-2xl shadow-orange-600/30 transition-all hover:scale-110 group">
+            <button className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 flex items-center justify-center shadow-2xl shadow-orange-500/30 transition-all hover:scale-110 group">
               <Play size={32} fill="white" className="text-white ml-1 group-hover:scale-110 transition-transform" />
             </button>
             <p className="text-white/30 text-[10px] tracking-widest uppercase mt-4">Un film MISEN</p>

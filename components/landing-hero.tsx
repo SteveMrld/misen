@@ -470,7 +470,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
             { name: 'Pro', price: '29€', desc: '20 projets · Mode Expert', features: ['Tout Free +', 'Assistant IA (30 req/mois)', 'Mode Expert complet', 'Timeline & Copilote IA', 'Génération intégrée (vos clés)'], glow: true },
             { name: 'Studio', price: '79€', desc: 'Illimité · API · Support', features: ['Tout Pro +', 'Assistant IA illimité', 'Projets illimités', 'API access', 'Support dédié'] },
           ].map((p) => (
-            <div key={p.name} className={`rounded-2xl p-6 border transition-all ${p.glow ? 'bg-orange-600/[0.06] border-orange-500/30 shadow-lg shadow-orange-600/5' : 'bg-white/[0.02] border-white/[0.06]'}`}>
+            <div key={p.name} className={`rounded-2xl p-6 border transition-all ${p.glow ? 'bg-orange-500/[0.04] border-orange-500/25 shadow-lg shadow-orange-500/10' : 'bg-white/[0.02] border-white/[0.06]'}`}>
               <span className={`text-xs font-bold tracking-wider ${p.glow ? 'text-orange-400' : 'text-slate-500'}`}>{p.name.toUpperCase()}</span>
               <div className="mt-3 mb-1">
                 <span className="font-display text-3xl text-white">{p.price}</span>
@@ -484,7 +484,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
                   </div>
                 ))}
               </div>
-              <Link href="/register" className={`block text-center py-2.5 rounded-xl text-sm font-medium transition-colors ${p.glow ? 'bg-orange-600 hover:bg-orange-500 text-white' : 'bg-white/[0.05] hover:bg-white/[0.08] text-slate-300'}`}>
+              <Link href="/register" className={`block text-center py-2.5 rounded-xl text-sm font-medium transition-colors ${p.glow ? 'btn-primary text-white' : 'bg-white/[0.05] hover:bg-white/[0.08] text-slate-300'}`}>
                 {p.glow ? t.common.getStarted : t.common.tryDemo}
               </Link>
             </div>

@@ -163,7 +163,7 @@ export default function SettingsPage() {
             key={tb.id}
             onClick={() => setTab(tb.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
-              tab === tb.id ? 'bg-orange-600 text-white' : 'text-slate-400 hover:text-slate-200'
+              tab === tb.id ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/15' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <tb.icon size={16} /> {tb.label}
@@ -282,7 +282,7 @@ export default function SettingsPage() {
                       <button
                         onClick={() => handleSaveKey(provider.id)}
                         disabled={!inputs[provider.id]?.trim() || isSaving}
-                        className="h-9 px-3 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors"
+                        className="h-9 px-3 btn-primary text-xs font-medium rounded-lg flex items-center gap-1.5"
                       >
                         {isSaving ? <Loader2 size={14} className="animate-spin" /> : isSaved ? <Check size={14} /> : <Save size={14} />}
                         {isSaved ? 'OK' : t.common.save}
@@ -309,7 +309,7 @@ export default function SettingsPage() {
                   isCurrent ? 'bg-orange-500/5 border-orange-500/30' : 'bg-dark-800 border-dark-700 hover:border-dark-600'
                 }`}>
                   {plan.popular && (
-                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-orange-600 text-white text-[10px] font-bold rounded-full uppercase">
+                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 btn-primary text-[10px] font-bold rounded-full uppercase">
                       {t.pricing.popular}
                     </div>
                   )}
@@ -337,7 +337,7 @@ export default function SettingsPage() {
                     <button
                       onClick={() => handleCheckout(plan.id)}
                       disabled={!!checkoutLoading}
-                      className="w-full py-2 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white text-xs font-medium rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                      className="w-full py-2 btn-primary text-xs font-medium rounded-lg flex items-center justify-center gap-1.5"
                     >
                       {checkoutLoading === plan.id ? <Loader2 size={14} className="animate-spin" /> : null}
                       {t.settings.billing.changePlan} {plan.name}

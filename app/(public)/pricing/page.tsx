@@ -41,7 +41,7 @@ export default function PricingPage() {
         <p className="text-slate-400 text-lg max-w-xl mx-auto">{t.pricing.subtitle}</p>
         <div className="flex items-center justify-center gap-3 mt-8">
           <span className={`text-sm transition-colors ${!annual ? 'text-white' : 'text-slate-500'}`}>{t.pricing.monthly}</span>
-          <button onClick={() => setAnnual(!annual)} className={`relative w-12 h-6 rounded-full transition-colors ${annual ? 'bg-orange-600' : 'bg-dark-700'}`}>
+          <button onClick={() => setAnnual(!annual)} className={`relative w-12 h-6 rounded-full transition-colors ${annual ? 'bg-gradient-to-r from-orange-500 to-orange-600' : 'bg-dark-700'}`}>
             <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${annual ? 'left-7' : 'left-1'}`} />
           </button>
           <span className={`text-sm transition-colors ${annual ? 'text-white' : 'text-slate-500'}`}>
@@ -57,9 +57,9 @@ export default function PricingPage() {
             const price = basePrice === 0 ? 0 : annual ? Math.round(basePrice * 0.8) : basePrice
             return (
               <div key={idx} className={`relative rounded-2xl p-6 border transition-all flex flex-col ${style.popular ? 'bg-orange-500/[0.04] border-orange-500/25 shadow-xl shadow-orange-500/10 glow-copper' : 'bg-white/[0.02] border-white/[0.06]'}`}>
-                {style.popular && <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-orange-600 text-white text-[10px] font-bold tracking-wider uppercase rounded-full">{t.pricing.popular}</div>}
+                {style.popular && <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 btn-primary text-[10px] font-bold tracking-wider uppercase rounded-full">{t.pricing.popular}</div>}
                 <div className="flex items-center gap-2 mb-4">
-                  <div className={`p-1.5 rounded-lg ${style.popular ? 'bg-orange-600/20' : 'bg-white/[0.05]'}`}><Icon size={16} className={style.popular ? 'text-orange-400' : 'text-slate-400'} /></div>
+                  <div className={`p-1.5 rounded-lg ${style.popular ? 'bg-orange-500/15' : 'bg-white/[0.05]'}`}><Icon size={16} className={style.popular ? 'text-orange-400' : 'text-slate-400'} /></div>
                   <span className={`text-sm font-bold tracking-wider ${style.popular ? 'text-orange-400' : 'text-slate-400'}`}>{plan.name.toUpperCase()}</span>
                 </div>
                 <div className="mb-1">
@@ -119,7 +119,7 @@ export default function PricingPage() {
           <h2 className="font-display text-2xl text-white mb-3">{t.pricing.ctaTitle}</h2>
           <p className="text-sm text-slate-400 mb-6">{t.pricing.ctaDesc}</p>
           <div className="flex items-center justify-center gap-3">
-            <Link href="/register" className="px-6 py-3 bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium rounded-xl transition-colors flex items-center gap-2">{t.pricing.ctaButton} <ArrowRight size={16} /></Link>
+            <Link href="/register" className="px-6 py-3 btn-primary text-white text-sm font-medium rounded-xl transition-colors flex items-center gap-2">{t.pricing.ctaButton} <ArrowRight size={16} /></Link>
             <Link href="/demo" className="px-6 py-3 bg-white/[0.05] hover:bg-white/[0.08] text-slate-300 text-sm font-medium rounded-xl transition-colors flex items-center gap-2"><Play size={14} /> {t.pricing.ctaSecondary}</Link>
           </div>
         </div>

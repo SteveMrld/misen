@@ -30,7 +30,7 @@ export default function Error({
           <a href="/" className="flex items-center gap-2 px-4 py-2.5 bg-dark-800 hover:bg-dark-700 border border-dark-600 text-slate-300 text-sm font-medium rounded-xl transition-colors">
             <Home size={16} /> Accueil
           </a>
-          <button onClick={reset} className="flex items-center gap-2 px-4 py-2.5 bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium rounded-xl transition-colors shadow-lg shadow-orange-500/20">
+          <button onClick={reset} className="flex items-center gap-2 px-4 py-2.5 btn-primary text-white text-sm font-medium rounded-xl transition-colors shadow-lg shadow-orange-500/20">
             <RefreshCw size={16} /> Réessayer
           </button>
         </div>
