@@ -171,7 +171,7 @@ export function CostsDashboard() {
               .map(([model, info]) => {
                 const maxCost = Math.max(...Object.values(costByProvider).map(v => v.cost), 0.01)
                 const pct = (info.cost / maxCost) * 100
-                const color = MODEL_COLORS[model] || '#F97316'
+                const color = MODEL_COLORS[model] || '#C07B2A'
                 return (
                   <div key={model}>
                     <div className="flex items-center justify-between mb-1">
@@ -230,7 +230,7 @@ export function CostsDashboard() {
           <div className="divide-y divide-dark-700/50">
             {recentGenerations.slice(0, 10).map(g => {
               const st = STATUS_LABELS[g.status] || STATUS_LABELS.pending
-              const color = MODEL_COLORS[g.model] || '#F97316'
+              const color = MODEL_COLORS[g.model] || '#C07B2A'
               return (
                 <div key={g.id} className="px-4 py-2.5 flex items-center gap-3">
                   <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />

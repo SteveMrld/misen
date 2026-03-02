@@ -9,37 +9,37 @@
 const SHOT_CONFIGS: Record<string, { label: string; subject: (w: number, h: number) => string; frame: (w: number, h: number) => string }> = {
   'plan large': {
     label: 'WIDE',
-    subject: (w, h) => `<ellipse cx="${w*0.5}" cy="${h*0.6}" rx="${w*0.06}" ry="${h*0.12}" fill="none" stroke="#F97316" stroke-width="1.5" opacity="0.7"/>
-      <line x1="${w*0.5}" y1="${h*0.48}" x2="${w*0.5}" y2="${h*0.35}" stroke="#F97316" stroke-width="1" opacity="0.5"/>
-      <circle cx="${w*0.5}" cy="${h*0.32}" r="${w*0.025}" fill="none" stroke="#F97316" stroke-width="1.5" opacity="0.7"/>`,
+    subject: (w, h) => `<ellipse cx="${w*0.5}" cy="${h*0.6}" rx="${w*0.06}" ry="${h*0.12}" fill="none" stroke="#C07B2A" stroke-width="1.5" opacity="0.7"/>
+      <line x1="${w*0.5}" y1="${h*0.48}" x2="${w*0.5}" y2="${h*0.35}" stroke="#C07B2A" stroke-width="1" opacity="0.5"/>
+      <circle cx="${w*0.5}" cy="${h*0.32}" r="${w*0.025}" fill="none" stroke="#C07B2A" stroke-width="1.5" opacity="0.7"/>`,
     frame: (w, h) => `<line x1="${w*0.1}" y1="${h*0.75}" x2="${w*0.9}" y2="${h*0.75}" stroke="#252B3B" stroke-width="1" stroke-dasharray="4,4"/>
       <rect x="${w*0.05}" y="${h*0.05}" width="${w*0.9}" height="${h*0.9}" rx="4" fill="none" stroke="#252B3B" stroke-width="1"/>`,
   },
   'plan moyen': {
     label: 'MEDIUM',
-    subject: (w, h) => `<ellipse cx="${w*0.5}" cy="${h*0.55}" rx="${w*0.1}" ry="${h*0.18}" fill="none" stroke="#F97316" stroke-width="1.5" opacity="0.7"/>
-      <line x1="${w*0.5}" y1="${h*0.37}" x2="${w*0.5}" y2="${h*0.2}" stroke="#F97316" stroke-width="1.2" opacity="0.5"/>
-      <circle cx="${w*0.5}" cy="${h*0.16}" r="${w*0.045}" fill="none" stroke="#F97316" stroke-width="1.5" opacity="0.7"/>`,
+    subject: (w, h) => `<ellipse cx="${w*0.5}" cy="${h*0.55}" rx="${w*0.1}" ry="${h*0.18}" fill="none" stroke="#C07B2A" stroke-width="1.5" opacity="0.7"/>
+      <line x1="${w*0.5}" y1="${h*0.37}" x2="${w*0.5}" y2="${h*0.2}" stroke="#C07B2A" stroke-width="1.2" opacity="0.5"/>
+      <circle cx="${w*0.5}" cy="${h*0.16}" r="${w*0.045}" fill="none" stroke="#C07B2A" stroke-width="1.5" opacity="0.7"/>`,
     frame: (w, h) => `<rect x="${w*0.15}" y="${h*0.05}" width="${w*0.7}" height="${h*0.9}" rx="4" fill="none" stroke="#252B3B" stroke-width="1"/>`,
   },
   'gros plan': {
     label: 'CLOSE',
-    subject: (w, h) => `<circle cx="${w*0.5}" cy="${h*0.45}" r="${w*0.18}" fill="none" stroke="#F97316" stroke-width="2" opacity="0.8"/>
-      <ellipse cx="${w*0.42}" cy="${h*0.4}" rx="${w*0.025}" ry="${h*0.02}" fill="#F97316" opacity="0.4"/>
-      <ellipse cx="${w*0.58}" cy="${h*0.4}" rx="${w*0.025}" ry="${h*0.02}" fill="#F97316" opacity="0.4"/>`,
+    subject: (w, h) => `<circle cx="${w*0.5}" cy="${h*0.45}" r="${w*0.18}" fill="none" stroke="#C07B2A" stroke-width="2" opacity="0.8"/>
+      <ellipse cx="${w*0.42}" cy="${h*0.4}" rx="${w*0.025}" ry="${h*0.02}" fill="#C07B2A" opacity="0.4"/>
+      <ellipse cx="${w*0.58}" cy="${h*0.4}" rx="${w*0.025}" ry="${h*0.02}" fill="#C07B2A" opacity="0.4"/>`,
     frame: (w, h) => `<rect x="${w*0.25}" y="${h*0.1}" width="${w*0.5}" height="${h*0.8}" rx="4" fill="none" stroke="#252B3B" stroke-width="1"/>`,
   },
   'très gros plan': {
     label: 'ECU',
-    subject: (w, h) => `<circle cx="${w*0.5}" cy="${h*0.5}" r="${w*0.25}" fill="none" stroke="#F97316" stroke-width="2" opacity="0.8"/>
-      <ellipse cx="${w*0.42}" cy="${h*0.45}" rx="${w*0.035}" ry="${h*0.025}" fill="#F97316" opacity="0.5"/>
-      <ellipse cx="${w*0.58}" cy="${h*0.45}" rx="${w*0.035}" ry="${h*0.025}" fill="#F97316" opacity="0.5"/>`,
+    subject: (w, h) => `<circle cx="${w*0.5}" cy="${h*0.5}" r="${w*0.25}" fill="none" stroke="#C07B2A" stroke-width="2" opacity="0.8"/>
+      <ellipse cx="${w*0.42}" cy="${h*0.45}" rx="${w*0.035}" ry="${h*0.025}" fill="#C07B2A" opacity="0.5"/>
+      <ellipse cx="${w*0.58}" cy="${h*0.45}" rx="${w*0.035}" ry="${h*0.025}" fill="#C07B2A" opacity="0.5"/>`,
     frame: (w, h) => `<rect x="${w*0.35}" y="${h*0.15}" width="${w*0.3}" height="${h*0.7}" rx="4" fill="none" stroke="#252B3B" stroke-width="1"/>`,
   },
   'insert': {
     label: 'INSERT',
-    subject: (w, h) => `<rect x="${w*0.3}" y="${h*0.3}" width="${w*0.4}" height="${h*0.35}" rx="3" fill="none" stroke="#F97316" stroke-width="1.5" opacity="0.7"/>
-      <line x1="${w*0.35}" y1="${h*0.65}" x2="${w*0.65}" y2="${h*0.35}" stroke="#F97316" stroke-width="0.8" opacity="0.3"/>`,
+    subject: (w, h) => `<rect x="${w*0.3}" y="${h*0.3}" width="${w*0.4}" height="${h*0.35}" rx="3" fill="none" stroke="#C07B2A" stroke-width="1.5" opacity="0.7"/>
+      <line x1="${w*0.35}" y1="${h*0.65}" x2="${w*0.65}" y2="${h*0.35}" stroke="#C07B2A" stroke-width="0.8" opacity="0.3"/>`,
     frame: (w, h) => `<rect x="${w*0.2}" y="${h*0.15}" width="${w*0.6}" height="${h*0.7}" rx="4" fill="none" stroke="#252B3B" stroke-width="1"/>`,
   },
 }
@@ -108,7 +108,7 @@ interface StoryboardSVGProps {
   className?: string
 }
 
-export function StoryboardSVG({ shotType = '', cameraMove = '', width = 240, height = 135, modelColor = '#F97316', className = '' }: StoryboardSVGProps) {
+export function StoryboardSVG({ shotType = '', cameraMove = '', width = 240, height = 135, modelColor = '#C07B2A', className = '' }: StoryboardSVGProps) {
   const shot = matchShot(shotType)
   const move = matchMove(cameraMove)
   const config = SHOT_CONFIGS[shot] || SHOT_CONFIGS['plan moyen']
@@ -143,13 +143,13 @@ export function StoryboardSVG({ shotType = '', cameraMove = '', width = 240, hei
 }
 
 // Compact version for timeline clips
-export function StoryboardThumb({ shotType = '', cameraMove = '', modelColor = '#F97316' }: { shotType?: string; cameraMove?: string; modelColor?: string }) {
+export function StoryboardThumb({ shotType = '', cameraMove = '', modelColor = '#C07B2A' }: { shotType?: string; cameraMove?: string; modelColor?: string }) {
   return <StoryboardSVG shotType={shotType} cameraMove={cameraMove} width={120} height={68} modelColor={modelColor} />
 }
 
 // Full card version with info overlay
 export function StoryboardCard({
-  planIndex, shotType = '', cameraMove = '', modelId = '', modelColor = '#F97316',
+  planIndex, shotType = '', cameraMove = '', modelId = '', modelColor = '#C07B2A',
   prompt = '', duration = 0, cost = 0, className = ''
 }: {
   planIndex: number; shotType?: string; cameraMove?: string; modelId?: string; modelColor?: string;

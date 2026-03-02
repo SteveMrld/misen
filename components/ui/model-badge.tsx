@@ -19,7 +19,7 @@ const MODELS: Record<string, { name: string; version: string; color: string }> =
 
 export function getModelInfo(id: string) {
   const key = (id || 'kling').toLowerCase().replace(/[\s\-]/g, '')
-  return MODELS[key] || { name: id || 'Auto', version: '', color: '#F97316' }
+  return MODELS[key] || { name: id || 'Auto', version: '', color: '#C07B2A' }
 }
 
 export function getModelColor(id: string): string {
