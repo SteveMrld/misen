@@ -245,6 +245,20 @@ export interface Dictionary {
       storyboard: string
       score: string
     }
+    workspaces: {
+      writing: string
+      writingDesc: string
+      analysis: string
+      analysisDesc: string
+      production: string
+      productionDesc: string
+      postprod: string
+      postprodDesc: string
+      export: string
+      exportDesc: string
+      allTabs: string
+      progress: string
+    }
     modeSimple: string
     shortcuts: {
       shortcuts: string

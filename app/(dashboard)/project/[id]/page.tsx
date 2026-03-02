@@ -7,7 +7,7 @@ import {
   Film, Eye, DollarSign, Shield, Users, TrendingUp, Camera, Zap, Copy, Check,
   Subtitles, Mic, Clock, Download, Volume2, Pause, SkipForward, SkipBack,
   Sparkles, Image, Search, RefreshCw, Wand2, SlidersHorizontal, Keyboard, ExternalLink, Music2
-} from 'lucide-react'
+, Layers, Package, Headphones, Upload } from 'lucide-react'
 import { StoryboardSVG } from '@/components/ui/storyboard-svg'
 import { ModelBadge, getModelColor, ModelLegend } from '@/components/ui/model-badge'
 import { ScreenplayAssistant } from '@/components/ui/screenplay-assistant'
@@ -40,6 +40,7 @@ import { ScorePanel } from '@/components/ui/score-panel'
 
 type Mode = 'simple' | 'expert'
 type Tab = 'script' | 'overview' | 'analyse' | 'storyboard' | 'timeline' | 'copilot' | 'media' | 'subtitles' | 'voiceover' | 'score' | 'render'
+type Workspace = 'writing' | 'analysis' | 'production' | 'postprod' | 'export'
 
 function fmt(s: number) { return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` }
 
@@ -60,6 +61,18 @@ export default function ProjectPage() {
   const [mode, setMode] = useState<Mode>('simple')
   const [tab, setTab] = useState<Tab>('script')
   const [showShortcuts, setShowShortcuts] = useState(false)
+  const [workspace, setWorkspace] = useState<Workspace>('writing')
+  const [showAllTabs, setShowAllTabs] = useState(false)
+
+  // Sync workspace when tab changes
+  const tabToWorkspace: Record<Tab, Workspace> = {
+    script: 'writing', overview: 'analysis', analyse: 'analysis', copilot: 'analysis',
+    storyboard: 'production', timeline: 'production', media: 'production',
+    subtitles: 'postprod', voiceover: 'postprod', score: 'postprod',
+    render: 'export',
+  }
+  useEffect(() => { setWorkspace(tabToWorkspace[tab]) }, [tab])
+
   const [showExportMenu, setShowExportMenu] = useState(false)
   const [userKeys, setUserKeys] = useState<Set<string>>(new Set())
   const [aiMode, setAiMode] = useState(false)
@@ -287,9 +300,9 @@ export default function ProjectPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2 sm:gap-3 justify-center flex-wrap">
-                <button onClick={() => { setMode('expert'); setTab('timeline') }} className="px-4 py-2 bg-dark-800 hover:bg-dark-700 border border-dark-600 text-slate-300 text-xs font-medium rounded-lg flex items-center gap-1.5"><Clock size={14} /> Timeline</button>
-                <button onClick={() => { setMode('expert'); setTab('copilot') }} className="px-4 py-2 bg-dark-800 hover:bg-dark-700 border border-dark-600 text-slate-300 text-xs font-medium rounded-lg flex items-center gap-1.5"><Sparkles size={14} /> {t.project.tabs.copilot}</button>
-                <button onClick={() => { setMode('expert'); setTab('subtitles') }} className="px-4 py-2 bg-dark-800 hover:bg-dark-700 border border-dark-600 text-slate-300 text-xs font-medium rounded-lg flex items-center gap-1.5"><Subtitles size={14} /> {t.project.tabs.subtitles}</button>
+                <button onClick={() => { setMode('expert'); setTab('timeline'); setWorkspace('production') }} className="px-4 py-2 bg-dark-800 hover:bg-dark-700 border border-dark-600 text-slate-300 text-xs font-medium rounded-lg flex items-center gap-1.5"><Clock size={14} /> Timeline</button>
+                <button onClick={() => { setMode('expert'); setTab('copilot'); setWorkspace('analysis') }} className="px-4 py-2 bg-dark-800 hover:bg-dark-700 border border-dark-600 text-slate-300 text-xs font-medium rounded-lg flex items-center gap-1.5"><Sparkles size={14} /> {t.project.tabs.copilot}</button>
+                <button onClick={() => { setMode('expert'); setTab('subtitles'); setWorkspace('postprod') }} className="px-4 py-2 bg-dark-800 hover:bg-dark-700 border border-dark-600 text-slate-300 text-xs font-medium rounded-lg flex items-center gap-1.5"><Subtitles size={14} /> {t.project.tabs.subtitles}</button>
               </div>
             </div>
           )}
@@ -299,14 +312,76 @@ export default function ProjectPage() {
       {/* MODE EXPERT */}
       {mode === 'expert' && (
         <div>
-          <div className="flex gap-1 mb-5 bg-dark-900 rounded-xl p-1.5 overflow-x-auto border border-dark-700 scrollbar-hide">
-            {tabs.map(tb => (
-              <button key={tb.id} onClick={() => !tb.disabled && setTab(tb.id)} disabled={tb.disabled}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${tab === tb.id ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20' : tb.disabled ? 'text-slate-700 cursor-not-allowed' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
-                <tb.icon size={14} /> {tb.label}
-              </button>
-            ))}
-          </div>
+          {/* WORKSPACE NAVIGATION */}
+          {!showAllTabs ? (
+            <div className="mb-5 space-y-2">
+              {/* 5 Workspaces bar */}
+              <div className="flex gap-1 bg-dark-900 rounded-xl p-1.5 border border-dark-700">
+                {([
+                  { id: 'writing' as Workspace, label: t.project.workspaces.writing, icon: Film, tabs: ['script'], done: !!scriptText.trim() },
+                  { id: 'analysis' as Workspace, label: t.project.workspaces.analysis, icon: Brain, tabs: ['overview', 'analyse', 'copilot'], done: !!analysis },
+                  { id: 'production' as Workspace, label: t.project.workspaces.production, icon: Image, tabs: ['storyboard', 'timeline', 'media'], done: !!analysis },
+                  { id: 'postprod' as Workspace, label: t.project.workspaces.postprod, icon: Headphones, tabs: ['subtitles', 'voiceover', 'score'], done: !!analysis },
+                  { id: 'export' as Workspace, label: t.project.workspaces.export, icon: Upload, tabs: ['render'], done: false },
+                ] as const).map((ws, i) => (
+                  <button key={ws.id} onClick={() => { setWorkspace(ws.id); const firstTab = ws.tabs[0] as Tab; if (!analysis && firstTab !== 'script') return; setTab(firstTab) }}
+                    disabled={ws.id !== 'writing' && !analysis}
+                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${workspace === ws.id ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20' : ws.id !== 'writing' && !analysis ? 'text-slate-700 cursor-not-allowed' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
+                    <ws.icon size={15} />
+                    <span className="hidden sm:inline">{ws.label}</span>
+                    {/* Progress dot */}
+                    <div className={`w-2 h-2 rounded-full ${ws.done ? 'bg-green-400' : ws.id !== 'writing' && !analysis ? 'bg-slate-700' : 'bg-slate-500'}`} />
+                    {/* Step number */}
+                    <span className={`text-[9px] font-mono ${workspace === ws.id ? 'text-white/60' : 'text-slate-600'}`}>{i + 1}</span>
+                  </button>
+                ))}
+                {/* All tabs toggle */}
+                <button onClick={() => setShowAllTabs(true)}
+                  className="px-2 py-2 rounded-lg text-slate-600 hover:text-slate-400 hover:bg-white/5 transition-all"
+                  title={t.project.workspaces.allTabs}>
+                  <Layers size={14} />
+                </button>
+              </div>
+              {/* Sub-tabs within workspace */}
+              {(() => {
+                const wsTabMap: Record<Workspace, { id: Tab; label: string; icon: any }[]> = {
+                  writing: [{ id: 'script', label: t.project.tabs.script, icon: Film }],
+                  analysis: [{ id: 'overview', label: t.project.tabs.overview, icon: Eye }, { id: 'analyse', label: t.project.tabs.analysis, icon: Brain }, { id: 'copilot', label: t.project.tabs.copilot, icon: Sparkles }],
+                  production: [{ id: 'storyboard', label: t.project.tabs.storyboard, icon: Image }, { id: 'timeline', label: t.project.tabs.timeline, icon: Clock }, { id: 'media', label: t.project.tabs.media, icon: Camera }],
+                  postprod: [{ id: 'subtitles', label: t.project.tabs.subtitles, icon: Subtitles }, { id: 'voiceover', label: t.project.tabs.voiceover, icon: Mic }, { id: 'score', label: t.project.tabs.score, icon: Music2 }],
+                  export: [{ id: 'render', label: t.project.tabs.render, icon: Play }],
+                }
+                const subTabs = wsTabMap[workspace]
+                if (subTabs.length <= 1) return null
+                return (
+                  <div className="flex gap-1 bg-dark-950/50 rounded-lg p-1 border border-dark-800">
+                    {subTabs.map(st => (
+                      <button key={st.id} onClick={() => setTab(st.id)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${tab === st.id ? 'bg-dark-700 text-orange-400 border border-dark-600' : 'text-slate-500 hover:text-slate-300'}`}>
+                        <st.icon size={13} /> {st.label}
+                      </button>
+                    ))}
+                  </div>
+                )
+              })()}
+            </div>
+          ) : (
+            <div className="mb-5">
+              <div className="flex gap-1 bg-dark-900 rounded-xl p-1.5 overflow-x-auto border border-dark-700 scrollbar-hide">
+                {tabs.map(tb => (
+                  <button key={tb.id} onClick={() => !tb.disabled && setTab(tb.id)} disabled={tb.disabled}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${tab === tb.id ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20' : tb.disabled ? 'text-slate-700 cursor-not-allowed' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
+                    <tb.icon size={14} /> {tb.label}
+                  </button>
+                ))}
+                <button onClick={() => setShowAllTabs(false)}
+                  className="px-2 py-2 rounded-lg text-orange-400 hover:text-orange-300 hover:bg-white/5 transition-all ml-1"
+                  title={t.project.workspaces.allTabs}>
+                  <Layers size={14} />
+                </button>
+              </div>
+            </div>
+          )}
           {tab === 'script' && <ScriptTab scriptText={scriptText} setScriptText={setScriptText} stylePreset={stylePreset} setStylePreset={setStylePreset} saving={saving} analyzing={analyzing} error={error} handleSave={handleSave} handleAnalyze={handleAnalyze} loadDemo={loadDemo} loadTemplate={loadTemplate} aiMode={aiMode} setAiMode={setAiMode} />}
           {tab === 'overview' && analysis && <OverviewCockpit analysis={analysis} projectName={project?.name} />}
           {tab === 'analyse' && analysis && <AR analysis={analysis} analysisId={analysisId} userKeys={userKeys} projectId={projectId} />}
