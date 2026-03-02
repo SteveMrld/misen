@@ -293,7 +293,7 @@ function DemoMedia({ scenario }: { scenario: DemoScenario }) {
         <div className="flex-1 h-9 px-3 bg-dark-900 border border-dark-700 rounded-lg flex items-center text-sm text-slate-500">
           🔍 Recherche pour « {scenario.title} »…
         </div>
-        <div className="px-3 py-2 bg-orange-600 text-white text-xs font-medium rounded-lg">Pexels</div>
+        <div className="px-3 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-xs font-medium rounded-lg">Pexels</div>
         <div className="px-3 py-2 bg-dark-700 text-slate-300 text-xs font-medium rounded-lg">Pixabay</div>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
