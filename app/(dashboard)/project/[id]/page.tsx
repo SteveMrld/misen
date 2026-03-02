@@ -32,6 +32,7 @@ const DEMO_IMAGES = [
 import { CompareButton } from '@/components/ui/compare-panel'
 import { useKeyboardShortcuts, ShortcutOverlay } from '@/components/ui/keyboard-shortcuts'
 import { GuidedTour, useProjectTour } from '@/components/ui/guided-tour'
+import { CinematicPlayer } from '@/components/ui/cinematic-player'
 import { useToast } from '@/components/ui/toast'
 import { OverviewCockpit } from '@/components/ui/overview-cockpit'
 import { CharacterReferenceCard, getCharacterRefImages, injectCharacterRefsInPrompt } from '@/components/ui/character-reference'
@@ -159,6 +160,8 @@ export default function ProjectPage() {
       setProject((p: any) => ({ ...p, name }))
     } catch {}
   }
+
+  const isDemoProject = (project?.name || '').toLowerCase().includes('démo') || (project?.name || '').toLowerCase().includes('demo')
 
   const tourSteps = useProjectTour({ setMode, setWorkspace, setTab, hasAnalysis: !!analysis })
 
@@ -609,7 +612,12 @@ export default function ProjectPage() {
           </>}
           {tab === 'analyse' && analysis && <AR analysis={analysis} analysisId={analysisId} userKeys={userKeys} projectId={projectId} />}
           {tab === 'storyboard' && analysis && <VisualStoryboard analysis={analysis} projectId={projectId} projectName={project?.name} />}
-          {tab === 'timeline' && analysis && <TL analysis={analysis} projectName={project?.name} />}
+          {tab === 'timeline' && analysis && <>
+            {/* Cinematic Player */}
+            <CinematicPlayer analysis={analysis} projectName={project?.name} demoImages={isDemoProject ? DEMO_IMAGES : undefined} />
+            {/* Timeline tracks */}
+            <div className="mt-4"><TL analysis={analysis} projectName={project?.name} /></div>
+          </>}
           {tab === 'copilot' && analysis && <CP projectId={projectId} projectName={project?.name} />}
           {tab === 'media' && analysis && <MB analysis={analysis} projectId={projectId} projectName={project?.name} />}
           {tab === 'subtitles' && analysis && <SV projectId={projectId} projectName={project?.name} />}
