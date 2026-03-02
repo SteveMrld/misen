@@ -20,6 +20,7 @@ export const AI_PROVIDERS = [
   { id: 'seedance', name: 'Seedance 2.0', placeholder: 'sd-...', docsUrl: 'https://docs.seedance.ai' },
   { id: 'wan', name: 'Wan 2.5', placeholder: 'wan-...', docsUrl: 'https://docs.wan.ai' },
   { id: 'hailuo', name: 'Hailuo 2.3', placeholder: 'hl-...', docsUrl: 'https://docs.hailuo.ai' },
+  { id: 'suno', name: 'Suno (AI Music)', placeholder: 'suno-...', docsUrl: 'https://docs.suno.com' },
 ] as const;
 
 export type ProviderId = typeof AI_PROVIDERS[number]['id'];

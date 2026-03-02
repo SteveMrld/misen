@@ -6,7 +6,7 @@ import {
   ArrowLeft, Play, Loader2, Save, Brain, AlertTriangle, ChevronDown, ChevronRight,
   Film, Eye, DollarSign, Shield, Users, TrendingUp, Camera, Zap, Copy, Check,
   Subtitles, Mic, Clock, Download, Volume2, Pause, SkipForward, SkipBack,
-  Sparkles, Image, Search, RefreshCw, Wand2, SlidersHorizontal, Keyboard, ExternalLink
+  Sparkles, Image, Search, RefreshCw, Wand2, SlidersHorizontal, Keyboard, ExternalLink, Music2
 } from 'lucide-react'
 import { StoryboardSVG } from '@/components/ui/storyboard-svg'
 import { ModelBadge, getModelColor, ModelLegend } from '@/components/ui/model-badge'
@@ -36,9 +36,10 @@ import { CharacterReferenceCard, getCharacterRefImages, injectCharacterRefsInPro
 import { TemplateSelector } from '@/components/ui/template-selector'
 import { VisualStoryboard } from '@/components/ui/visual-storyboard'
 import { AssemblyPanel } from '@/components/ui/assembly-panel'
+import { ScorePanel } from '@/components/ui/score-panel'
 
 type Mode = 'simple' | 'expert'
-type Tab = 'script' | 'overview' | 'analyse' | 'storyboard' | 'timeline' | 'copilot' | 'media' | 'subtitles' | 'voiceover' | 'render'
+type Tab = 'script' | 'overview' | 'analyse' | 'storyboard' | 'timeline' | 'copilot' | 'media' | 'subtitles' | 'voiceover' | 'score' | 'render'
 
 function fmt(s: number) { return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` }
 
@@ -64,7 +65,7 @@ export default function ProjectPage() {
   const [aiMode, setAiMode] = useState(false)
 
   // Keyboard shortcuts — defined after handlers
-  const tabKeys: Tab[] = ['script', 'overview', 'analyse', 'storyboard', 'timeline', 'copilot', 'media', 'subtitles', 'voiceover', 'render']
+  const tabKeys: Tab[] = ['script', 'overview', 'analyse', 'storyboard', 'timeline', 'copilot', 'media', 'subtitles', 'voiceover', 'score', 'render']
 
   useEffect(() => {
     if (!projectId) return
@@ -160,6 +161,7 @@ export default function ProjectPage() {
     { id: 'media', label: t.project.tabs.media, icon: Camera, disabled: !analysis },
     { id: 'subtitles', label: t.project.tabs.subtitles, icon: Subtitles, disabled: !analysis },
     { id: 'voiceover', label: t.project.tabs.voiceover, icon: Mic, disabled: !analysis },
+    { id: 'score', label: t.project.tabs.score, icon: Music2, disabled: !analysis },
     { id: 'render', label: t.project.tabs.render, icon: Play, disabled: !analysis },
   ]
 
@@ -314,6 +316,7 @@ export default function ProjectPage() {
           {tab === 'media' && analysis && <MB analysis={analysis} projectId={projectId} projectName={project?.name} />}
           {tab === 'subtitles' && analysis && <SV projectId={projectId} projectName={project?.name} />}
           {tab === 'voiceover' && analysis && <VO projectId={projectId} projectName={project?.name} />}
+          {tab === 'score' && analysis && <ScorePanel analysis={analysis} projectId={projectId} projectName={project?.name} />}
           {tab === 'render' && analysis && <>
             <RenderPanel analysis={analysis} analysisId={analysisId} projectName={project?.name} />
             <div className="mt-6">

@@ -335,6 +335,7 @@ export const fr: Dictionary = {
       overview: 'Vue d\'ensemble',
       render: 'Rendu',
       storyboard: 'Storyboard',
+      score: 'Musique IA',
     },
     modeSimple: 'Simple',
     shortcuts: {
@@ -374,6 +375,14 @@ export const fr: Dictionary = {
       download: 'Télécharger',
       noClips: 'Aucun clip généré',
       noClipsDesc: 'Générez des vidéos depuis l\'onglet Plans & Prompts pour pouvoir assembler votre film.',
+    },
+    score: {
+      title: 'Bande Originale IA',
+      subtitle: 'Composez une bande-son cinématique générée par IA, synchronisée sur la courbe émotionnelle de votre film. Chaque scène reçoit un cue musical calibré : tonalité, tempo, dynamique, instrumentation.',
+      compose: 'Composer la bande originale',
+      composing: 'Composition en cours...',
+      noKeyTitle: 'Génération Suno disponible',
+      noKeyDesc: 'Ajoutez votre clé API Suno dans Paramètres → Clés API pour générer de vraies pistes audio. Le preview synthétiseur fonctionne sans clé.',
     },
     cockpit: {
       title: 'Cockpit Projet',

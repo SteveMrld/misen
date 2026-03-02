@@ -335,6 +335,7 @@ export const en: Dictionary = {
       overview: 'Overview',
       render: 'Render',
       storyboard: 'Storyboard',
+      score: 'AI Score',
     },
     modeSimple: 'Simple',
     shortcuts: {
@@ -374,6 +375,14 @@ export const en: Dictionary = {
       download: 'Download',
       noClips: 'No clips generated',
       noClipsDesc: 'Generate videos from the Shots & Prompts tab to assemble your film.',
+    },
+    score: {
+      title: 'AI Original Score',
+      subtitle: 'Compose an AI-generated cinematic soundtrack, synchronized to the emotional arc of your film. Each scene receives a calibrated music cue: key, tempo, dynamics, instrumentation.',
+      compose: 'Compose Original Score',
+      composing: 'Composing...',
+      noKeyTitle: 'Suno generation available',
+      noKeyDesc: 'Add your Suno API key in Settings → API Keys to generate real audio tracks. The synthesizer preview works without a key.',
     },
     cockpit: {
       title: 'Project Cockpit',

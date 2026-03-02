@@ -243,6 +243,7 @@ export interface Dictionary {
       overview: string
       render: string
       storyboard: string
+      score: string
     }
     modeSimple: string
     shortcuts: {
@@ -282,6 +283,14 @@ export interface Dictionary {
       download: string
       noClips: string
       noClipsDesc: string
+    }
+    score: {
+      title: string
+      subtitle: string
+      compose: string
+      composing: string
+      noKeyTitle: string
+      noKeyDesc: string
     }
     cockpit: {
       title: string
