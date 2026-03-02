@@ -63,6 +63,9 @@ export default function ProjectPage() {
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [workspace, setWorkspace] = useState<Workspace>('writing')
   const [showAllTabs, setShowAllTabs] = useState(false)
+  const [cmdPalette, setCmdPalette] = useState(false)
+  const [cmdQuery, setCmdQuery] = useState('')
+  const cmdRef = useRef<HTMLInputElement>(null)
 
   // Sync workspace when tab changes
   const tabToWorkspace: Record<Tab, Workspace> = {
@@ -155,6 +158,7 @@ export default function ProjectPage() {
 
   useKeyboardShortcuts([
     { key: '?', label: t.project.shortcuts.shortcuts, action: () => setShowShortcuts(s => !s) },
+    { key: 'k', ctrl: true, label: 'Command palette', action: () => { setCmdPalette(true); setTimeout(() => cmdRef.current?.focus(), 50) } },
     { key: 'Escape', label: t.project.shortcuts.close, action: () => showShortcuts ? setShowShortcuts(false) : router.push('/dashboard') },
     { key: 'e', label: t.project.shortcuts.mode, action: () => setMode(m => m === 'simple' ? 'expert' : 'simple') },
     { key: 's', ctrl: true, label: t.project.shortcuts.save, action: handleSave },
@@ -181,6 +185,54 @@ export default function ProjectPage() {
   return (
     <div>
       <ShortcutOverlay show={showShortcuts} onClose={() => setShowShortcuts(false)} />
+      {/* COMMAND PALETTE */}
+      {cmdPalette && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]" onClick={() => setCmdPalette(false)}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="relative w-full max-w-lg bg-dark-900 border border-dark-600 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-dark-700">
+              <Search size={16} className="text-slate-500" />
+              <input ref={cmdRef} value={cmdQuery} onChange={e => setCmdQuery(e.target.value)}
+                placeholder={locale === 'fr' ? 'Naviguer, chercher, agir...' : 'Navigate, search, act...'}
+                className="flex-1 bg-transparent text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none"
+                onKeyDown={e => { if (e.key === 'Escape') setCmdPalette(false) }}
+              />
+              <kbd className="text-[10px] text-slate-600 bg-dark-800 px-1.5 py-0.5 rounded border border-dark-700">ESC</kbd>
+            </div>
+            <div className="max-h-64 overflow-y-auto p-1.5">
+              {[
+                { label: t.project.workspaces.writing, desc: t.project.workspaces.writingDesc, icon: '✏️', action: () => { setMode('expert'); setWorkspace('writing'); setTab('script') } },
+                { label: t.project.workspaces.analysis, desc: t.project.workspaces.analysisDesc, icon: '🔍', action: () => { if(analysis) { setMode('expert'); setWorkspace('analysis'); setTab('overview') } } },
+                { label: t.project.workspaces.production, desc: t.project.workspaces.productionDesc, icon: '🎬', action: () => { if(analysis) { setMode('expert'); setWorkspace('production'); setTab('storyboard') } } },
+                { label: t.project.workspaces.postprod, desc: t.project.workspaces.postprodDesc, icon: '🎧', action: () => { if(analysis) { setMode('expert'); setWorkspace('postprod'); setTab('subtitles') } } },
+                { label: t.project.workspaces.export, desc: t.project.workspaces.exportDesc, icon: '📤', action: () => { if(analysis) { setMode('expert'); setWorkspace('export'); setTab('render') } } },
+                { label: locale === 'fr' ? 'Lancer l\'analyse' : 'Run analysis', desc: 'Ctrl+Enter', icon: '▶️', action: handleAnalyze },
+                { label: locale === 'fr' ? 'Sauvegarder' : 'Save', desc: 'Ctrl+S', icon: '💾', action: handleSave },
+                { label: t.project.tabs.storyboard, desc: locale === 'fr' ? 'Générer les visuels' : 'Generate visuals', icon: '🖼️', action: () => { if(analysis) { setMode('expert'); setTab('storyboard') } } },
+                { label: t.project.tabs.score, desc: locale === 'fr' ? 'Composer la musique' : 'Compose music', icon: '🎵', action: () => { if(analysis) { setMode('expert'); setTab('score') } } },
+                { label: locale === 'fr' ? 'Mode simple' : 'Simple mode', desc: '', icon: '⚡', action: () => setMode('simple') },
+              ].filter(cmd => !cmdQuery || cmd.label.toLowerCase().includes(cmdQuery.toLowerCase()) || (cmd.desc||'').toLowerCase().includes(cmdQuery.toLowerCase()))
+              .map((cmd, i) => (
+                <button key={i} onClick={() => { cmd.action(); setCmdPalette(false); setCmdQuery('') }}
+                  className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg hover:bg-dark-800 transition-colors text-left group">
+                  <span className="text-sm">{cmd.icon}</span>
+                  <div className="flex-1">
+                    <p className="text-sm text-slate-200 group-hover:text-white">{cmd.label}</p>
+                    {cmd.desc && <p className="text-[10px] text-slate-500">{cmd.desc}</p>}
+                  </div>
+                  <ChevronRight size={12} className="text-slate-700 group-hover:text-slate-500" />
+                </button>
+              ))}
+            </div>
+            <div className="px-4 py-2 border-t border-dark-700 flex items-center gap-3">
+              <kbd className="text-[9px] text-slate-600 bg-dark-800 px-1.5 py-0.5 rounded border border-dark-700">↑↓</kbd>
+              <span className="text-[10px] text-slate-600">{locale === 'fr' ? 'Naviguer' : 'Navigate'}</span>
+              <kbd className="text-[9px] text-slate-600 bg-dark-800 px-1.5 py-0.5 rounded border border-dark-700">↵</kbd>
+              <span className="text-[10px] text-slate-600">{locale === 'fr' ? 'Sélectionner' : 'Select'}</span>
+            </div>
+          </div>
+        </div>
+      )}
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div className="flex items-center gap-3">
@@ -392,6 +444,61 @@ export default function ProjectPage() {
           {tab === 'subtitles' && analysis && <SV projectId={projectId} projectName={project?.name} />}
           {tab === 'voiceover' && analysis && <VO projectId={projectId} projectName={project?.name} />}
           {tab === 'score' && analysis && <ScorePanel analysis={analysis} projectId={projectId} projectName={project?.name} />}
+          
+          {/* MINI-TIMELINE — persistent film overview */}
+          {analysis && analysis.plans && analysis.plans.length > 0 && (
+            <div className="mt-6 bg-dark-900 rounded-xl border border-dark-700 p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock size={12} className="text-slate-500" />
+                <span className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Timeline</span>
+                <span className="text-[10px] text-slate-600 ml-auto">{analysis.plans.length} {locale === 'fr' ? 'plans' : 'shots'}</span>
+              </div>
+              <div className="flex gap-0.5 h-6 rounded-lg overflow-hidden bg-dark-800">
+                {analysis.plans.map((plan: any, i: number) => {
+                  const emotionColors: Record<string, string> = {
+                    tension: '#ef4444', tristesse: '#6366f1', colère: '#b91c1c', joie: '#f59e0b',
+                    peur: '#8b5cf6', nostalgie: '#a78bfa', amour: '#ec4899', mystère: '#06b6d4',
+                    détermination: '#f97316', neutre: '#64748b',
+                    sadness: '#6366f1', anger: '#b91c1c', joy: '#f59e0b', fear: '#8b5cf6',
+                    love: '#ec4899', mystery: '#06b6d4', determination: '#f97316', neutral: '#64748b',
+                  }
+                  const emotion = (plan.emotion || 'neutre').toLowerCase()
+                  const color = emotionColors[emotion] || '#64748b'
+                  return (
+                    <button key={i}
+                      onClick={() => { setTab('analyse'); setWorkspace('analysis') }}
+                      className="relative group h-full transition-all hover:opacity-80"
+                      style={{ flex: 1, backgroundColor: color + '40', borderRight: i < analysis.plans.length - 1 ? '1px solid rgba(0,0,0,0.3)' : 'none' }}
+                      title={`S${plan.sceneIndex ?? '?'}P${plan.planIndex ?? i+1} — ${plan.emotion || 'neutre'}`}
+                    >
+                      <div className="absolute bottom-0 left-0 right-0 h-1.5" style={{ backgroundColor: color }} />
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-[7px] font-mono text-white font-bold drop-shadow">P{i+1}</span>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+              {/* Emotion legend */}
+              <div className="flex gap-2 mt-2 flex-wrap">
+                {(() => {
+                  const counts: Record<string, { color: string; count: number }> = {}
+                  for (const plan of (analysis.plans || [])) {
+                    const e = (plan.emotion || 'neutre').toLowerCase()
+                    const emotionColors: Record<string, string> = { tension: '#ef4444', tristesse: '#6366f1', joie: '#f59e0b', peur: '#8b5cf6', nostalgie: '#a78bfa', amour: '#ec4899', mystère: '#06b6d4', détermination: '#f97316', neutre: '#64748b', sadness: '#6366f1', joy: '#f59e0b', fear: '#8b5cf6', love: '#ec4899', mystery: '#06b6d4', determination: '#f97316', neutral: '#64748b' }
+                    if (!counts[e]) counts[e] = { color: emotionColors[e] || '#64748b', count: 0 }
+                    counts[e].count++
+                  }
+                  return Object.entries(counts).map(([e, v]) => (
+                    <span key={e} className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: v.color }} />
+                      <span className="text-[9px] text-slate-500">{e} ({v.count})</span>
+                    </span>
+                  ))
+                })()}
+              </div>
+            </div>
+          )}
           {tab === 'render' && analysis && <>
             <RenderPanel analysis={analysis} analysisId={analysisId} projectName={project?.name} />
             <div className="mt-6">
@@ -587,6 +694,31 @@ function SPC({ plan, index, analysisId, userKeys, projectId }: { plan: any; inde
 // ═══ Script Tab ═══
 function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, saving, analyzing, error, handleSave, handleAnalyze, loadDemo, loadTemplate, aiMode, setAiMode }: any) {
   const { t, locale } = useI18n()
+  // Live script parsing for preview
+  const scriptPreview = useMemo(() => {
+    if (!scriptText.trim()) return { scenes: [], chars: [], duration: 0 }
+    const lines = scriptText.split('\n')
+    const scenes: { heading: string; lines: number; chars: string[] }[] = []
+    const charSet = new Set<string>()
+    let current: any = null
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (/^(INT\.|EXT\.|INT\/EXT)/i.test(trimmed)) {
+        if (current) scenes.push(current)
+        current = { heading: trimmed, lines: 0, chars: [] }
+      } else if (current) {
+        current.lines++
+        if (/^[A-Z\u00C0-\u00DC]{2,}(\s|$)/.test(trimmed) && trimmed.length < 30) {
+          const name = trimmed.replace(/\(.*\)/, '').trim()
+          if (name.length > 1) { charSet.add(name); current.chars.push(name) }
+        }
+      }
+    }
+    if (current) scenes.push(current)
+    const duration = Math.round(scriptText.length / 15)
+    return { scenes, chars: Array.from(charSet), duration }
+  }, [scriptText])
+
   return (
     <div className="space-y-4">
       {/* AI Screenplay Assistant */}
@@ -598,21 +730,86 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
       {/* Template Selector */}
       <TemplateSelector onUseTemplate={loadTemplate} />
 
-      <div className="bg-dark-900 rounded-xl border border-dark-700">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-dark-700">
-          <div className="flex items-center gap-2">
-            <select value={stylePreset} onChange={(e: any) => setStylePreset(e.target.value)} className="px-2 py-1 bg-dark-800 border border-dark-600 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-orange-500/50">
-              <option value="cinematique">🎬 Cinématique</option><option value="documentaire">📹 Documentaire</option>
-              <option value="noir">🌑 Film noir</option><option value="onirique">🌙 Onirique</option>
-            </select>
-            <button onClick={loadDemo} className="px-2 py-1 bg-dark-800 hover:bg-dark-700 border border-dark-600 rounded-lg text-xs text-slate-400">{t.common.demo}</button>
+      {/* Split-view: Editor + Live Preview */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Editor (2/3) */}
+        <div className="lg:col-span-2 bg-dark-900 rounded-xl border border-dark-700">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-dark-700">
+            <div className="flex items-center gap-2">
+              <select value={stylePreset} onChange={(e: any) => setStylePreset(e.target.value)} className="px-2 py-1 bg-dark-800 border border-dark-600 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-orange-500/50">
+                <option value="cinematique">🎬 Cinématique</option><option value="documentaire">📹 Documentaire</option>
+                <option value="noir">🌑 Film noir</option><option value="onirique">🌙 Onirique</option>
+              </select>
+              <button onClick={loadDemo} className="px-2 py-1 bg-dark-800 hover:bg-dark-700 border border-dark-600 rounded-lg text-xs text-slate-400">{t.common.demo}</button>
+            </div>
+            <button onClick={handleSave} disabled={saving} className="flex items-center gap-1 px-3 py-1.5 bg-dark-800 hover:bg-dark-700 border border-dark-600 rounded-lg text-xs text-slate-300">
+              {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />} Sauvegarder
+            </button>
           </div>
-          <button onClick={handleSave} disabled={saving} className="flex items-center gap-1 px-3 py-1.5 bg-dark-800 hover:bg-dark-700 border border-dark-600 rounded-lg text-xs text-slate-300">
-            {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />} Sauvegarder
-          </button>
+          <textarea value={scriptText} onChange={(e: any) => setScriptText(e.target.value)} placeholder={t.project.scriptPlaceholder} rows={20}
+            className="w-full p-4 bg-transparent text-sm text-slate-200 placeholder:text-slate-600 resize-none focus:outline-none font-mono leading-relaxed" />
         </div>
-        <textarea value={scriptText} onChange={(e: any) => setScriptText(e.target.value)} placeholder={t.project.scriptPlaceholder} rows={16}
-          className="w-full p-4 bg-transparent text-sm text-slate-200 placeholder:text-slate-600 resize-none focus:outline-none font-mono leading-relaxed" />
+
+        {/* Live Preview (1/3) */}
+        <div className="bg-dark-900 rounded-xl border border-dark-700 p-4 space-y-4 max-h-[600px] overflow-y-auto">
+          <div className="flex items-center gap-2 mb-2">
+            <Eye size={14} className="text-orange-500" />
+            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">{locale === 'fr' ? 'Aperçu' : 'Preview'}</span>
+          </div>
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="bg-dark-800 rounded-lg p-2.5 text-center">
+              <div className="text-lg font-bold text-orange-400">{scriptPreview.scenes.length}</div>
+              <div className="text-[9px] text-slate-500 uppercase">Scènes</div>
+            </div>
+            <div className="bg-dark-800 rounded-lg p-2.5 text-center">
+              <div className="text-lg font-bold text-orange-400">{scriptPreview.chars.length}</div>
+              <div className="text-[9px] text-slate-500 uppercase">{locale === 'fr' ? 'Personnages' : 'Characters'}</div>
+            </div>
+            <div className="bg-dark-800 rounded-lg p-2.5 text-center">
+              <div className="text-lg font-bold text-orange-400">~{scriptPreview.duration}s</div>
+              <div className="text-[9px] text-slate-500 uppercase">{locale === 'fr' ? 'Durée est.' : 'Est. duration'}</div>
+            </div>
+          </div>
+          {/* Scene list */}
+          {scriptPreview.scenes.length > 0 && (
+            <div className="space-y-1.5">
+              <span className="text-[10px] text-slate-500 uppercase tracking-wider">{locale === 'fr' ? 'Structure' : 'Structure'}</span>
+              {scriptPreview.scenes.map((s: any, i: number) => (
+                <div key={i} className="bg-dark-800/60 rounded-lg px-3 py-2 border border-dark-700/50">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] font-mono text-orange-500/70">S{i+1}</span>
+                    <span className="text-xs text-slate-300 font-medium truncate">{s.heading}</span>
+                  </div>
+                  {s.chars.length > 0 && (
+                    <div className="flex gap-1 mt-1 flex-wrap">
+                      {[...new Set(s.chars)].map((c: any, j: number) => (
+                        <span key={j} className="text-[9px] px-1.5 py-0.5 bg-dark-700 rounded text-slate-400">{c}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          {/* Characters list */}
+          {scriptPreview.chars.length > 0 && (
+            <div className="space-y-1.5">
+              <span className="text-[10px] text-slate-500 uppercase tracking-wider">{locale === 'fr' ? 'Personnages détectés' : 'Detected characters'}</span>
+              <div className="flex gap-1.5 flex-wrap">
+                {scriptPreview.chars.map((c: any, i: number) => (
+                  <span key={i} className="text-xs px-2 py-1 bg-orange-500/10 border border-orange-500/20 rounded-lg text-orange-300">{c}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {!scriptText.trim() && (
+            <div className="text-center py-8">
+              <Film size={28} className="text-slate-700 mx-auto mb-2" />
+              <p className="text-xs text-slate-600">{locale === 'fr' ? 'Commencez à écrire pour voir la structure' : 'Start writing to see structure'}</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* AI Enhancement Toggle */}
