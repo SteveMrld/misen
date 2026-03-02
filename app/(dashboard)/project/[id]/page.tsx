@@ -370,19 +370,19 @@ export default function ProjectPage() {
               {/* 5 Workspaces bar */}
               <div className="flex gap-1 bg-dark-900 rounded-xl p-1.5 border border-dark-700">
                 {([
-                  { id: 'writing' as Workspace, label: t.project.workspaces.writing, icon: Film, tabs: ['script'], done: !!scriptText.trim() },
-                  { id: 'analysis' as Workspace, label: t.project.workspaces.analysis, icon: Brain, tabs: ['overview', 'analyse', 'copilot'], done: !!analysis },
-                  { id: 'production' as Workspace, label: t.project.workspaces.production, icon: Image, tabs: ['storyboard', 'timeline', 'media'], done: !!analysis },
-                  { id: 'postprod' as Workspace, label: t.project.workspaces.postprod, icon: Headphones, tabs: ['subtitles', 'voiceover', 'score'], done: !!analysis },
-                  { id: 'export' as Workspace, label: t.project.workspaces.export, icon: Upload, tabs: ['render'], done: false },
+                  { id: 'writing' as Workspace, label: t.project.workspaces.writing, icon: Film, tabs: ['script'], status: scriptText.trim() ? (scriptText.length > 100 ? 'done' : 'partial') : 'empty' },
+                  { id: 'analysis' as Workspace, label: t.project.workspaces.analysis, icon: Brain, tabs: ['overview', 'analyse', 'copilot'], status: analysis ? 'done' : scriptText.trim() ? 'ready' : 'locked' },
+                  { id: 'production' as Workspace, label: t.project.workspaces.production, icon: Image, tabs: ['storyboard', 'timeline', 'media'], status: analysis ? 'ready' : 'locked' },
+                  { id: 'postprod' as Workspace, label: t.project.workspaces.postprod, icon: Headphones, tabs: ['subtitles', 'voiceover', 'score'], status: analysis ? 'ready' : 'locked' },
+                  { id: 'export' as Workspace, label: t.project.workspaces.export, icon: Upload, tabs: ['render'], status: analysis ? 'ready' : 'locked' },
                 ] as const).map((ws, i) => (
                   <button key={ws.id} onClick={() => { setWorkspace(ws.id); const firstTab = ws.tabs[0] as Tab; if (!analysis && firstTab !== 'script') return; setTab(firstTab) }}
-                    disabled={ws.id !== 'writing' && !analysis}
-                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${workspace === ws.id ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20' : ws.id !== 'writing' && !analysis ? 'text-slate-700 cursor-not-allowed' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
+                    disabled={ws.status === 'locked'}
+                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${workspace === ws.id ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20' : ws.status === 'locked' ? 'text-slate-700 cursor-not-allowed' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
                     <ws.icon size={15} />
                     <span className="hidden sm:inline">{ws.label}</span>
-                    {/* Progress dot */}
-                    <div className={`w-2 h-2 rounded-full ${ws.done ? 'bg-green-400' : ws.id !== 'writing' && !analysis ? 'bg-slate-700' : 'bg-slate-500'}`} />
+                    {/* Health indicator */}
+                    <div className={`w-2 h-2 rounded-full ${ws.status === 'done' ? 'bg-green-400 shadow-sm shadow-green-400/50' : ws.status === 'partial' ? 'bg-yellow-400' : ws.status === 'ready' ? 'bg-orange-400/60' : 'bg-slate-700'}`} />
                     {/* Step number */}
                     <span className={`text-[9px] font-mono ${workspace === ws.id ? 'text-white/60' : 'text-slate-600'}`}>{i + 1}</span>
                   </button>
@@ -1036,6 +1036,21 @@ function AR({ analysis, analysisId, userKeys, projectId }: { analysis: any; anal
     plans.forEach((p: any) => { const m = p?.modelId || 'kling'; modelCounts[m] = (modelCounts[m] || 0) + 1 })
     const modelEntries = Object.entries(modelCounts).sort((a, b) => b[1] - a[1])
 
+    // Filters
+    const [filterEmotion, setFilterEmotion] = useState<string|null>(null)
+    const [filterModel, setFilterModel] = useState<string|null>(null)
+    const [filterScene, setFilterScene] = useState<number|null>(null)
+    const [expandedPlan, setExpandedPlan] = useState<number|null>(null)
+    const emotions = Array.from(new Set(plans.map((p: any) => (p.emotion || 'neutre').toLowerCase()))) as string[]
+    const models = Array.from(new Set(plans.map((p: any) => (p.modelId || 'kling').toLowerCase()))) as string[]
+    const sceneNums = (Array.from(new Set(plans.map((p: any) => p.sceneIndex ?? 0))) as number[]).sort((a, b) => a - b)
+    const filteredPlans = plans.filter((p: any, i: number) => {
+      if (filterEmotion && (p.emotion || 'neutre').toLowerCase() !== filterEmotion) return false
+      if (filterModel && (p.modelId || 'kling').toLowerCase() !== filterModel) return false
+      if (filterScene !== null && (p.sceneIndex ?? 0) !== filterScene) return false
+      return true
+    })
+
     return (<div className="space-y-4">
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -1126,7 +1141,91 @@ function AR({ analysis, analysisId, userKeys, projectId }: { analysis: any; anal
       {cont.alerts?.length>0 && <Sec icon={AlertTriangle} title={`Continuité — ${cont.score}/100`} color="text-yellow-400">{cont.alerts.map((a:any,i:number)=><div key={i} className="flex items-center gap-2 py-0.5"><span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${a?.severity==='critical'?'bg-red-600/20 text-red-300':a?.severity==='high'?'bg-red-500/20 text-red-400':'bg-yellow-500/20 text-yellow-400'}`}>{(a?.severity||'medium').toUpperCase()}</span><span className="text-xs text-slate-400">{a?.type}</span></div>)}</Sec>}
 
       {/* Plans */}
-      {plans.length>0 && <Sec icon={Camera} title={`Plans (${plans.length})`} color="text-orange-400" open={false}><div className="space-y-2 max-h-96 overflow-y-auto">{plans.slice(0,30).map((p:any,i:number)=><PC key={i} plan={p} index={i} analysisId={analysisId} userKeys={userKeys} />)}</div></Sec>}
+      {/* Filmstrip + Filters + Plans */}
+      {plans.length > 0 && (
+        <div className="bg-dark-900 border border-dark-700 rounded-xl overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-dark-700">
+            <Camera size={18} className="text-orange-400" />
+            <span className="text-sm text-slate-200 font-medium">{locale === 'fr' ? 'Plans' : 'Shots'} ({filteredPlans.length}/{plans.length})</span>
+          </div>
+
+          {/* Filmstrip */}
+          <div className="px-4 pt-3">
+            <div className="flex gap-0.5 h-10 rounded-lg overflow-hidden bg-dark-800 overflow-x-auto scrollbar-hide">
+              {plans.map((plan: any, i: number) => {
+                const emotion = (plan.emotion || 'neutre').toLowerCase()
+                const emotionColors: Record<string, string> = { tension: '#ef4444', tristesse: '#6366f1', joie: '#f59e0b', peur: '#8b5cf6', nostalgie: '#a78bfa', amour: '#ec4899', mystere: '#06b6d4', neutre: '#64748b', sadness: '#6366f1', joy: '#f59e0b', fear: '#8b5cf6', love: '#ec4899', mystery: '#06b6d4', determination: '#f97316', neutral: '#64748b' }
+                const color = emotionColors[emotion] || '#64748b'
+                const isFiltered = filteredPlans.includes(plan)
+                return (
+                  <button key={i} onClick={() => setExpandedPlan(expandedPlan === i ? null : i)}
+                    className={`relative group h-full transition-all min-w-[24px] ${!isFiltered ? 'opacity-20' : ''} ${expandedPlan === i ? 'ring-2 ring-orange-500' : ''}`}
+                    style={{ flex: 1, backgroundColor: color + '30' }}>
+                    <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: color }} />
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <span className="text-[7px] font-mono text-slate-400 font-bold">P{i+1}</span>
+                      <span className="text-[6px] text-slate-600">{(plan.modelId || 'kling').slice(0,3)}</span>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Filters bar */}
+          <div className="px-4 py-2 flex items-center gap-2 flex-wrap border-b border-dark-800">
+            <span className="text-[10px] text-slate-600 uppercase tracking-wider">{locale === 'fr' ? 'Filtres' : 'Filters'}</span>
+            {/* Emotion chips */}
+            {emotions.map((e: string) => {
+              const emotionColors: Record<string, string> = { tension: '#ef4444', tristesse: '#6366f1', joie: '#f59e0b', peur: '#8b5cf6', nostalgie: '#a78bfa', amour: '#ec4899', mystere: '#06b6d4', determination: '#f97316', neutre: '#64748b', sadness: '#6366f1', joy: '#f59e0b', fear: '#8b5cf6', love: '#ec4899', mystery: '#06b6d4', neutral: '#64748b' }
+              const c = emotionColors[e] || '#64748b'
+              return (
+                <button key={e} onClick={() => setFilterEmotion(filterEmotion === e ? null : e)}
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] transition-all border ${filterEmotion === e ? 'border-current text-white' : 'border-dark-700 text-slate-500 hover:text-slate-300'}`}
+                  style={filterEmotion === e ? { borderColor: c, color: c, backgroundColor: c + '20' } : {}}>
+                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: c }} />
+                  {e}
+                </button>
+              )
+            })}
+            <span className="text-dark-700">|</span>
+            {/* Model chips */}
+            {models.map((m: string) => (
+              <button key={m} onClick={() => setFilterModel(filterModel === m ? null : m)}
+                className={`px-2 py-0.5 rounded-full text-[10px] transition-all border ${filterModel === m ? 'border-orange-500 text-orange-400 bg-orange-500/10' : 'border-dark-700 text-slate-500 hover:text-slate-300'}`}>
+                {m}
+              </button>
+            ))}
+            <span className="text-dark-700">|</span>
+            {/* Scene chips */}
+            {sceneNums.map((s: number) => (
+              <button key={s} onClick={() => setFilterScene(filterScene === s ? null : s)}
+                className={`px-2 py-0.5 rounded-full text-[10px] transition-all border ${filterScene === s ? 'border-cyan-500 text-cyan-400 bg-cyan-500/10' : 'border-dark-700 text-slate-500 hover:text-slate-300'}`}>
+                S{s+1}
+              </button>
+            ))}
+            {/* Clear */}
+            {(filterEmotion || filterModel || filterScene !== null) && (
+              <button onClick={() => { setFilterEmotion(null); setFilterModel(null); setFilterScene(null) }}
+                className="px-2 py-0.5 rounded-full text-[10px] text-red-400 border border-red-500/30 hover:bg-red-500/10">
+                ✕ {locale === 'fr' ? 'Effacer' : 'Clear'}
+              </button>
+            )}
+          </div>
+
+          {/* Plan cards */}
+          <div className="p-3 space-y-2 max-h-[500px] overflow-y-auto">
+            {filteredPlans.map((p: any, fi: number) => {
+              const realIndex = plans.indexOf(p)
+              return <PC key={realIndex} plan={p} index={realIndex} analysisId={analysisId} userKeys={userKeys} />
+            })}
+            {filteredPlans.length === 0 && (
+              <p className="text-xs text-slate-500 text-center py-6">{locale === 'fr' ? 'Aucun plan ne correspond aux filtres' : 'No shots match filters'}</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>)
   } catch { return <p className="text-red-400 text-sm text-center p-6">{locale === 'fr' ? "Erreur d'affichage" : 'Display error'}</p> }
 }
@@ -1145,43 +1244,113 @@ function Sec({ icon: I, title, color, children, open: so = true }: { icon: any; 
 function PC({ plan, index, analysisId, userKeys }: { plan: any; index: number; analysisId?: string | null; userKeys: Set<string> }) {
   const { t, locale } = useI18n()
   const [copied, setCopied] = useState(false)
+  const [expanded, setExpanded] = useState(false)
+  const [editingPrompt, setEditingPrompt] = useState(false)
+  const [editedPrompt, setEditedPrompt] = useState('')
   const prompt = plan?.finalPrompt || plan?.basePrompt || ''; const mid=(plan?.modelId||'kling').toLowerCase(); const mc=getModelColor(mid)
   const studio = getModelStudio(mid); const canGenerate = userKeys.has(studio.provider)
   const [status, setStatus] = useState<string>('idle')
-  const gen = async () => { if(!analysisId||!canGenerate)return;setStatus('processing'); try{const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({analysisId,planIndex:index,sceneIndex:plan?.sceneIndex||0,modelId:plan?.modelId,prompt,negativePrompt:plan?.negativePrompt})});setStatus(r.ok?'completed':'failed')}catch{setStatus('failed')} }
+  const emotionColors: Record<string, string> = { tension: '#ef4444', tristesse: '#6366f1', joie: '#f59e0b', peur: '#8b5cf6', nostalgie: '#a78bfa', amour: '#ec4899', mystere: '#06b6d4', determination: '#f97316', neutre: '#64748b', sadness: '#6366f1', joy: '#f59e0b', fear: '#8b5cf6', love: '#ec4899', mystery: '#06b6d4', neutral: '#64748b' }
+  const emotion = (plan?.emotion || 'neutre').toLowerCase()
+  const eColor = emotionColors[emotion] || '#64748b'
+  const gen = async () => { if(!analysisId||!canGenerate)return;setStatus('processing'); try{const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({analysisId,planIndex:index,sceneIndex:plan?.sceneIndex||0,modelId:plan?.modelId,prompt:editedPrompt||prompt,negativePrompt:plan?.negativePrompt})});setStatus(r.ok?'completed':'failed')}catch{setStatus('failed')} }
   return (<div className="card overflow-hidden hover:border-dark-600 transition-all">
-    <div className="flex gap-3">
-      {/* SVG Preview */}
-      <div className="flex-shrink-0">
-        <StoryboardSVG shotType={plan?.shotType} cameraMove={plan?.cameraMove} width={180} height={101} modelColor={mc} />
+    {/* Compact row — always visible */}
+    <button onClick={() => setExpanded(!expanded)} className="w-full flex items-center gap-3 p-2.5 text-left hover:bg-white/[0.02] transition-colors">
+      {/* Emotion stripe */}
+      <div className="w-1 h-8 rounded-full flex-shrink-0" style={{ backgroundColor: eColor }} />
+      {/* ID */}
+      <span className="text-xs text-slate-300 font-bold font-mono w-8 flex-shrink-0">P{index+1}</span>
+      <span className="text-[10px] text-slate-500 w-6 flex-shrink-0">S{(plan?.sceneIndex||0)+1}</span>
+      {/* Model badge */}
+      <ModelBadge modelId={mid} size="xs" />
+      {/* Emotion chip */}
+      <span className="px-1.5 py-0.5 rounded text-[9px] font-medium" style={{ backgroundColor: eColor + '20', color: eColor }}>{emotion}</span>
+      {/* Shot info */}
+      <span className="text-[10px] text-slate-500 hidden sm:inline">{plan?.shotType}</span>
+      {plan?.cameraMove && plan.cameraMove !== 'fixe' && <span className="text-[10px] text-cyan-400/60 hidden sm:inline">{plan.cameraMove}</span>}
+      {/* Duration + cost */}
+      <span className="text-[10px] text-slate-600 ml-auto">{(plan?.estimatedDuration||0).toFixed(1)}s</span>
+      <span className="text-[10px] text-slate-600">${(plan?.estimatedCost||0).toFixed(3)}</span>
+      {/* Actions in compact */}
+      <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+        <button onClick={()=>{navigator.clipboard.writeText(prompt);setCopied(true);setTimeout(()=>setCopied(false),2000)}} className="p-1 hover:bg-dark-700 rounded text-slate-500 hover:text-orange-400"><Copy size={12} /></button>
+        {canGenerate && status==='idle' && <button onClick={gen} className="p-1 hover:bg-dark-700 rounded text-slate-500 hover:text-orange-400"><Zap size={12} /></button>}
+        {status==='processing' && <Loader2 size={12} className="text-yellow-400 animate-spin" />}
+        {status==='completed' && <Check size={12} className="text-green-400" />}
       </div>
-      {/* Content */}
-      <div className="flex-1 min-w-0 py-2 pr-3">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-300 font-bold">P{index+1}</span>
-            <span className="text-[10px] text-slate-500">S{(plan?.sceneIndex||0)+1}</span>
-            <ModelBadge modelId={mid} size="xs" />
+      <ChevronDown size={14} className={`text-slate-600 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+    </button>
+
+    {/* Expanded detail */}
+    {expanded && (
+      <div className="px-4 pb-4 pt-1 border-t border-dark-800 space-y-3">
+        {/* SVG + Metadata grid */}
+        <div className="flex gap-4">
+          <div className="flex-shrink-0">
+            <StoryboardSVG shotType={plan?.shotType} cameraMove={plan?.cameraMove} width={200} height={112} modelColor={mc} />
           </div>
-          <div className="flex items-center gap-1.5">
-            <button onClick={()=>{navigator.clipboard.writeText(prompt);setCopied(true);setTimeout(()=>setCopied(false),2000)}} className="px-2 py-0.5 bg-orange-600/10 hover:bg-orange-600/20 text-orange-400 text-[10px] rounded flex items-center gap-1">{copied?<><Check size={10} /> {t.demo.copied}</>:<><Copy size={10} /> {t.demo.copyPrompt}</>}</button>
-            {canGenerate && status==='idle' && <button onClick={gen} className="px-2 py-0.5 bg-orange-600 hover:bg-orange-500 text-white text-[10px] rounded flex items-center gap-1"><Zap size={10} /> {t.demo.generateWith}</button>}
-            {canGenerate && status==='processing' && <Loader2 size={12} className="text-yellow-400 animate-spin" />}
-            {canGenerate && status==='completed' && <Check size={12} className="text-green-400" />}
-            {canGenerate && status==='failed' && <button onClick={gen} className="px-2 py-0.5 bg-red-500/10 text-red-400 text-[10px] rounded flex items-center gap-1"><AlertTriangle size={10} /> Retry</button>}
-            {!canGenerate && <a href={studio.url} target="_blank" rel="noopener noreferrer" className="px-2 py-0.5 bg-dark-700 hover:bg-dark-600 text-slate-300 text-[10px] rounded flex items-center gap-1"><ExternalLink size={9} /> {studio.name}</a>}
+          <div className="flex-1 grid grid-cols-2 gap-2">
+            <div className="bg-dark-800/50 rounded-lg px-3 py-2"><span className="text-[9px] text-slate-600 uppercase block">{locale === 'fr' ? 'Cadrage' : 'Shot'}</span><span className="text-xs text-slate-300">{plan?.shotType || '—'}</span></div>
+            <div className="bg-dark-800/50 rounded-lg px-3 py-2"><span className="text-[9px] text-slate-600 uppercase block">{locale === 'fr' ? 'Caméra' : 'Camera'}</span><span className="text-xs text-slate-300">{plan?.cameraMove || 'fixe'}</span></div>
+            <div className="bg-dark-800/50 rounded-lg px-3 py-2"><span className="text-[9px] text-slate-600 uppercase block">{locale === 'fr' ? 'Émotion' : 'Emotion'}</span><span className="text-xs" style={{ color: eColor }}>{emotion}</span></div>
+            <div className="bg-dark-800/50 rounded-lg px-3 py-2"><span className="text-[9px] text-slate-600 uppercase block">{locale === 'fr' ? 'Modèle' : 'Model'}</span><span className="text-xs text-slate-300">{plan?.modelId || 'kling'}</span></div>
           </div>
         </div>
-        <div className="flex items-center gap-2 mb-1 text-[10px]">
-          <span className="text-slate-500">{plan?.shotType}</span>
-          {plan?.cameraMove && plan.cameraMove !== 'fixe' && <span className="text-cyan-400/60">{plan.cameraMove}</span>}
-          <span className="text-slate-600">{(plan?.estimatedDuration||0).toFixed(1)}s</span>
-          <span className="text-slate-600">${(plan?.estimatedCost||0).toFixed(3)}</span>
+
+        {/* Prompt — inline editable */}
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] text-slate-500 uppercase tracking-wider">Prompt</span>
+            <button onClick={() => { if (!editingPrompt) setEditedPrompt(prompt); setEditingPrompt(!editingPrompt) }}
+              className="text-[10px] text-orange-400 hover:text-orange-300">
+              {editingPrompt ? (locale === 'fr' ? '✓ Fermer' : '✓ Close') : (locale === 'fr' ? '✎ Modifier' : '✎ Edit')}
+            </button>
+            {editingPrompt && editedPrompt !== prompt && <span className="text-[9px] text-yellow-400 bg-yellow-400/10 px-1.5 rounded">{locale === 'fr' ? 'modifié' : 'modified'}</span>}
+          </div>
+          {editingPrompt ? (
+            <textarea value={editedPrompt} onChange={e => setEditedPrompt(e.target.value)}
+              className="w-full p-2.5 bg-dark-800 border border-orange-500/30 rounded-lg text-[11px] text-slate-200 font-mono leading-relaxed resize-none focus:outline-none focus:border-orange-500/50"
+              rows={4} />
+          ) : (
+            <p className="text-[11px] text-slate-400 leading-relaxed font-mono bg-dark-800/50 rounded-lg p-2.5">{prompt || '—'}</p>
+          )}
+        </div>
+
+        {/* Negative prompt */}
+        {plan?.negativePrompt && (
+          <div>
+            <span className="text-[10px] text-slate-500 uppercase tracking-wider">Negative prompt</span>
+            <p className="text-[10px] text-red-400/60 font-mono mt-1">{plan.negativePrompt}</p>
+          </div>
+        )}
+
+        {/* AI Enrichment */}
+        {plan?.aiEnrichment && (
+          <div className="bg-purple-500/5 border border-purple-500/15 rounded-lg p-3">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <Sparkles size={12} className="text-purple-400" />
+              <span className="text-[10px] text-purple-300 uppercase tracking-wider">AI Enrichment</span>
+            </div>
+            <p className="text-[11px] text-purple-200/70 leading-relaxed">{typeof plan.aiEnrichment === 'string' ? plan.aiEnrichment : JSON.stringify(plan.aiEnrichment)}</p>
+          </div>
+        )}
+
+        {/* Actions bar */}
+        <div className="flex items-center gap-2 pt-1">
+          <button onClick={()=>{navigator.clipboard.writeText(editedPrompt||prompt);setCopied(true);setTimeout(()=>setCopied(false),2000)}}
+            className="px-3 py-1.5 bg-orange-600/10 hover:bg-orange-600/20 text-orange-400 text-[10px] rounded-lg flex items-center gap-1.5 border border-orange-500/20">
+            {copied?<><Check size={10} />{t.demo.copied}</>:<><Copy size={10} />{t.demo.copyPrompt}</>}
+          </button>
+          {canGenerate && status==='idle' && <button onClick={gen} className="px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white text-[10px] rounded-lg flex items-center gap-1.5"><Zap size={10} /> {t.demo.generateWith}</button>}
+          {canGenerate && status==='processing' && <span className="flex items-center gap-1.5 text-yellow-400 text-[10px]"><Loader2 size={12} className="animate-spin" />{locale === 'fr' ? 'Génération...' : 'Generating...'}</span>}
+          {canGenerate && status==='completed' && <span className="flex items-center gap-1.5 text-green-400 text-[10px]"><Check size={12} />{locale === 'fr' ? 'Terminé' : 'Done'}</span>}
+          {canGenerate && status==='failed' && <button onClick={gen} className="px-3 py-1.5 bg-red-500/10 text-red-400 text-[10px] rounded-lg flex items-center gap-1.5 border border-red-500/20"><AlertTriangle size={10} /> Retry</button>}
+          {!canGenerate && <a href={studio.url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-dark-700 hover:bg-dark-600 text-slate-300 text-[10px] rounded-lg flex items-center gap-1.5 border border-dark-600"><ExternalLink size={9} /> {studio.name}</a>}
           <CompareButton plan={plan} />
         </div>
-        <p className="text-[11px] text-slate-400 leading-relaxed font-mono line-clamp-2">{prompt||'—'}</p>
       </div>
-    </div>
+    )}
   </div>)
 }
 
