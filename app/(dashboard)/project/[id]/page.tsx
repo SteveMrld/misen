@@ -1232,64 +1232,160 @@ function MB({ analysis, projectId, projectName }: { analysis: any; projectId: st
   </div>)
 }
 
-// ═══ Timeline ═══
+// ═══ Multi-Track Timeline ═══
 function TL({ analysis, projectName }: { analysis: any; projectName?: string }) {
+  const { locale } = useI18n()
+  const fr = locale === 'fr'
   const isDemoTL = (projectName || '').toLowerCase().includes('démo') || (projectName || '').toLowerCase().includes('demo')
   const [playing, setPlaying] = useState(false); const [ph, setPh] = useState(0)
+  const [trackVisibility, setTrackVisibility] = useState({ scene: true, video: true, audio: true, subtitle: true, emotion: true })
+  const toggleTrack = (key: string) => setTrackVisibility(prev => ({ ...prev, [key]: !prev[key as keyof typeof prev] }))
   const plans = analysis?.plans || []; const scenes = analysis?.scenes || []
   const total = plans.reduce((s:number,p:any)=>s+(p?.estimatedDuration||3),0)||1
   useEffect(() => { if(!playing)return; const id=setInterval(()=>{setPh(p=>{if(p>=total){setPlaying(false);return 0};return p+0.1})},100); return()=>clearInterval(id) }, [playing, total])
-  return (<div className="space-y-4">
+
+  const EMOTION_COLORS: Record<string, string> = {
+    tension: '#ef4444', tristesse: '#6366f1', colere: '#dc2626', joie: '#f59e0b',
+    peur: '#7c3aed', nostalgie: '#8b5cf6', amour: '#ec4899', mystere: '#06b6d4',
+    determination: '#f97316', neutre: '#64748b',
+  }
+
+  return (<div className="space-y-3">
     {/* Transport controls */}
     <div className="flex items-center gap-3 bg-dark-900 rounded-xl border border-dark-700 px-4 py-3">
       <button onClick={()=>setPh(0)} className="p-1.5 rounded hover:bg-white/5"><SkipBack size={16} className="text-slate-400" /></button>
-      <button onClick={()=>setPlaying(!playing)} className="p-2 rounded-full btn-primary">{playing ? <Pause size={16} className="text-white" /> : <Play size={16} className="text-white" />}</button>
+      <button onClick={()=>setPlaying(!playing)} className="p-2 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg shadow-orange-500/15">{playing ? <Pause size={14} className="text-white" /> : <Play size={14} className="text-white ml-0.5" />}</button>
       <button onClick={()=>setPh(Math.min(ph+5,total))} className="p-1.5 rounded hover:bg-white/5"><SkipForward size={16} className="text-slate-400" /></button>
-      <span className="text-sm text-slate-200 font-mono">{fmt(ph)}</span>
-      <div className="flex-1 relative h-2 bg-dark-700 rounded-full cursor-pointer" onClick={e=>{const r=e.currentTarget.getBoundingClientRect();setPh((e.clientX-r.left)/r.width*total)}}>
-        <div className="absolute top-0 left-0 h-full bg-orange-500 rounded-full" style={{width:`${(ph/total)*100}%`}} />
+      <span className="text-[11px] text-slate-200 font-mono tabular-nums">{fmt(ph)}</span>
+      <div className="flex-1 relative h-1.5 bg-dark-700 rounded-full cursor-pointer group" onClick={e=>{const r=e.currentTarget.getBoundingClientRect();setPh((e.clientX-r.left)/r.width*total)}}>
+        <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full" style={{width:`${(ph/total)*100}%`}} />
+        <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity" style={{left:`calc(${(ph/total)*100}% - 6px)`}} />
       </div>
-      <span className="text-sm text-slate-500 font-mono">{fmt(total)}</span>
+      <span className="text-[11px] text-slate-500 font-mono tabular-nums">{fmt(total)}</span>
     </div>
-    {/* Model legend */}
-    <ModelLegend className="px-1" />
-    {/* Tracks */}
-    <div className="bg-dark-900 rounded-xl border border-dark-700 p-4 overflow-x-auto">
-      <div className="relative" style={{ minWidth: Math.max(plans.length * 120, 600) }}>
-        {/* Scene track */}
-        <div className="flex h-7 mb-2 rounded overflow-hidden">
-          {scenes.map((s:any,i:number)=>{
-            const sp=plans.filter((p:any)=>(p?.sceneIndex||0)===i)
-            const d=sp.reduce((sum:number,p:any)=>sum+(p?.estimatedDuration||3),0)||1
-            return <div key={i} className="flex items-center justify-center text-[10px] text-slate-300 font-medium border-r border-dark-700/50" style={{width:`${(d/total)*100}%`, backgroundColor:'rgba(249,115,22,0.08)'}}>
-              <Film size={10} className="text-orange-400/60 mr-1" />S{i+1}
-            </div>
-          })}
-        </div>
-        {/* Plan track with storyboard thumbnails */}
-        <div className="flex gap-1 min-h-[72px]">
-          {plans.map((p:any,i:number)=>{
-            const d=p?.estimatedDuration||3
-            const mc=getModelColor((p?.modelId||'').toLowerCase())
-            return <div key={i} className="flex-shrink-0 rounded-lg overflow-hidden border border-dark-700/50 hover:border-dark-600 transition-all cursor-pointer group relative" style={{width:`${Math.max((d/total)*100,5)}%`, minWidth: 80}}>
-              {isDemoTL && DEMO_IMAGES[i % DEMO_IMAGES.length] ? (
-                <img src={DEMO_IMAGES[i % DEMO_IMAGES.length].src} alt={`P${i+1}`} className="w-full h-[68px] object-cover" />
-              ) : (
-                <StoryboardSVG shotType={p?.shotType} cameraMove={p?.cameraMove} width={120} height={68} modelColor={mc} />
-              )}
-              {/* Overlay info */}
-              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-dark-950/90 to-transparent px-1.5 py-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-[8px] font-bold text-slate-300">P{i+1}</span>
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: mc }} />
-                </div>
+
+    {/* Track controls + legend */}
+    <div className="flex items-center justify-between px-1">
+      <div className="flex items-center gap-1">
+        {[
+          { key: 'scene', label: fr ? 'Scènes' : 'Scenes', color: 'text-orange-400' },
+          { key: 'video', label: fr ? 'Vidéo' : 'Video', color: 'text-blue-400' },
+          { key: 'audio', label: 'Audio', color: 'text-purple-400' },
+          { key: 'subtitle', label: fr ? 'Sous-titres' : 'Subtitles', color: 'text-green-400' },
+          { key: 'emotion', label: fr ? 'Émotion' : 'Emotion', color: 'text-pink-400' },
+        ].map(({ key, label, color }) => (
+          <button key={key} onClick={() => toggleTrack(key)}
+            className={`px-2 py-1 rounded text-[9px] font-medium transition-all ${trackVisibility[key as keyof typeof trackVisibility] ? `${color} bg-dark-800` : 'text-slate-600 bg-dark-900'}`}>
+            {trackVisibility[key as keyof typeof trackVisibility] ? '◉' : '○'} {label}
+          </button>
+        ))}
+      </div>
+      <ModelLegend className="" />
+    </div>
+
+    {/* Multi-track area */}
+    <div className="bg-dark-900 rounded-xl border border-dark-700 overflow-hidden">
+      <div className="overflow-x-auto p-3">
+        <div className="relative" style={{ minWidth: Math.max(plans.length * 100, 600) }}>
+          {/* Track 1: Scenes */}
+          {trackVisibility.scene && (
+            <div className="flex items-center mb-1">
+              <span className="w-16 flex-shrink-0 text-[8px] text-orange-400/60 uppercase tracking-wider font-bold pr-2 text-right">{fr ? 'Scène' : 'Scene'}</span>
+              <div className="flex-1 flex h-6 rounded overflow-hidden">
+                {scenes.map((s:any,i:number)=>{
+                  const sp=plans.filter((p:any)=>(p?.sceneIndex||0)===i)
+                  const d=sp.reduce((sum:number,p:any)=>sum+(p?.estimatedDuration||3),0)||1
+                  return <div key={i} className="flex items-center justify-center text-[9px] text-slate-400 font-medium border-r border-dark-700/30" style={{width:`${(d/total)*100}%`, backgroundColor:'rgba(249,115,22,0.06)'}}>
+                    S{i+1}
+                  </div>
+                })}
               </div>
             </div>
-          })}
-        </div>
-        {/* Playhead */}
-        <div className="absolute top-0 bottom-0 w-0.5 bg-orange-500 pointer-events-none z-10" style={{left:`${(ph/total)*100}%`}}>
-          <div className="w-2.5 h-2.5 bg-orange-500 rounded-full -ml-[4px] -mt-1" />
+          )}
+
+          {/* Track 2: Video (thumbnails) */}
+          {trackVisibility.video && (
+            <div className="flex items-center mb-1">
+              <span className="w-16 flex-shrink-0 text-[8px] text-blue-400/60 uppercase tracking-wider font-bold pr-2 text-right">{fr ? 'Vidéo' : 'Video'}</span>
+              <div className="flex-1 flex gap-px min-h-[56px]">
+                {plans.map((p:any,i:number)=>{
+                  const d=p?.estimatedDuration||3
+                  const mc=getModelColor((p?.modelId||'').toLowerCase())
+                  return <div key={i} className="flex-shrink-0 rounded overflow-hidden border border-dark-700/30 hover:border-dark-600 transition-all cursor-pointer group relative" style={{width:`${Math.max((d/total)*100,4)}%`, minWidth: 60}}>
+                    {isDemoTL && DEMO_IMAGES[i % DEMO_IMAGES.length] ? (
+                      <img src={DEMO_IMAGES[i % DEMO_IMAGES.length].src} alt={`P${i+1}`} className="w-full h-[52px] object-cover" />
+                    ) : (
+                      <StoryboardSVG shotType={p?.shotType} cameraMove={p?.cameraMove} width={100} height={52} modelColor={mc} />
+                    )}
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-dark-950/80 to-transparent px-1 py-0.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[7px] font-bold text-slate-300">P{i+1}</span>
+                        <div className="w-1 h-1 rounded-full" style={{ backgroundColor: mc }} />
+                      </div>
+                    </div>
+                  </div>
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Track 3: Audio (waveform-style) */}
+          {trackVisibility.audio && (
+            <div className="flex items-center mb-1">
+              <span className="w-16 flex-shrink-0 text-[8px] text-purple-400/60 uppercase tracking-wider font-bold pr-2 text-right">Audio</span>
+              <div className="flex-1 flex h-8 rounded bg-dark-800/30 overflow-hidden">
+                {plans.map((p:any,i:number)=>{
+                  const d=p?.estimatedDuration||3
+                  const bars = Math.max(Math.floor(d * 2), 3)
+                  return <div key={i} className="flex items-end justify-center gap-px px-px" style={{width:`${(d/total)*100}%`}}>
+                    {Array.from({length: bars}).map((_,b)=>{
+                      const h = 20 + Math.sin((i * 7 + b * 3) * 0.7) * 15 + Math.random() * 10
+                      return <div key={b} className="bg-purple-500/40 rounded-t-sm" style={{width: 2, height: `${Math.min(h, 100)}%`}} />
+                    })}
+                  </div>
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Track 4: Subtitles */}
+          {trackVisibility.subtitle && (
+            <div className="flex items-center mb-1">
+              <span className="w-16 flex-shrink-0 text-[8px] text-green-400/60 uppercase tracking-wider font-bold pr-2 text-right">{fr ? 'Sous-t.' : 'Subs'}</span>
+              <div className="flex-1 flex h-5 rounded bg-dark-800/20 overflow-hidden">
+                {plans.map((p:any,i:number)=>{
+                  const d=p?.estimatedDuration||3
+                  const hasDialogue = p?.dialogue || p?.characterName
+                  return <div key={i} className="flex items-center justify-center border-r border-dark-700/20" style={{width:`${(d/total)*100}%`}}>
+                    {hasDialogue && <div className="h-3 mx-0.5 rounded-sm bg-green-500/30 border border-green-500/20 flex-1 flex items-center justify-center">
+                      <span className="text-[6px] text-green-400/70 truncate px-0.5">{p.characterName || '💬'}</span>
+                    </div>}
+                  </div>
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Track 5: Emotion curve */}
+          {trackVisibility.emotion && (
+            <div className="flex items-center">
+              <span className="w-16 flex-shrink-0 text-[8px] text-pink-400/60 uppercase tracking-wider font-bold pr-2 text-right">{fr ? 'Émotion' : 'Emotion'}</span>
+              <div className="flex-1 flex h-4 rounded overflow-hidden">
+                {plans.map((p:any,i:number)=>{
+                  const d=p?.estimatedDuration||3
+                  const emo = (p?.emotion || p?.emotionTag || 'neutre').toLowerCase()
+                  const c = EMOTION_COLORS[emo] || EMOTION_COLORS.neutre
+                  return <div key={i} className="cursor-pointer hover:opacity-80 transition-opacity" title={emo}
+                    style={{width:`${(d/total)*100}%`, backgroundColor: c, opacity: 0.5}} />
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Playhead line */}
+          <div className="absolute top-0 bottom-0 w-0.5 bg-orange-400 pointer-events-none z-10" style={{left:`calc(64px + ${(ph/total) * (100)}% - ${(ph/total) * 64}px)`}}>
+            <div className="w-2 h-2 bg-orange-400 rounded-full -ml-[3px] -mt-0.5" />
+          </div>
         </div>
       </div>
     </div>
