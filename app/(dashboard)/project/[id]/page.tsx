@@ -1048,21 +1048,59 @@ function CP({ projectId, projectName }: { projectId: string; projectName?: strin
   const { t, locale } = useI18n()
   const isDemo = (projectName || '').toLowerCase().includes('démo') || (projectName || '').toLowerCase().includes('demo')
   const DEMO_SUGGESTIONS = [
-    { icon: '🎬', title: locale === 'fr' ? 'Ça me fait penser à...' : 'This reminds me of...', detail: 'Cinema Paradiso (Tornatore, 1988) — la scène du cinéma. Technique recommandée : lumière projetée sur les visages, contrejour de l\'écran.' },
-    { icon: '🎵', title: 'Suggestion musicale', detail: 'Piano solo minimaliste type Yann Tiersen. Les cordes lentes de Max Richter (On the Nature of Daylight) colleraient aussi au thème du deuil.' },
-    { icon: '📐', title: locale === 'fr' ? 'As-tu pensé à...' : 'Have you considered...', detail: 'Un plan-séquence sans coupe pour la scène de l\'hôpital. La tension continue sans montage renforcerait l\'émotion.' },
-    { icon: '🪑', title: 'L\'art du vide', detail: 'La place vide au cinéma est un personnage. Yasujirō Ozu filmait les espaces vides après le départ des personnages — les "pillow shots".' },
-    { icon: '💡', title: 'Astuce flashback', detail: 'Change le ratio d\'image (2.35:1 → 4:3) ou désature légèrement pour distinguer les temporalités. Nolan utilise IMAX vs 35mm dans Oppenheimer.' },
+    { icon: '🎬', title: locale === 'fr' ? 'Ça me fait penser à...' : 'This reminds me of...', detail: 'Cinema Paradiso (Tornatore, 1988) — la scène du cinéma. Technique recommandée : lumière projetée sur les visages, contrejour de l\'écran.', category: 'reference' },
+    { icon: '🎵', title: 'Suggestion musicale', detail: 'Piano solo minimaliste type Yann Tiersen. Les cordes lentes de Max Richter (On the Nature of Daylight) colleraient aussi au thème du deuil.', category: 'music' },
+    { icon: '📐', title: locale === 'fr' ? 'As-tu pensé à...' : 'Have you considered...', detail: 'Un plan-séquence sans coupe pour la scène de l\'hôpital. La tension continue sans montage renforcerait l\'émotion.', category: 'technique' },
+    { icon: '🪑', title: 'L\'art du vide', detail: 'La place vide au cinéma est un personnage. Yasujirō Ozu filmait les espaces vides après le départ des personnages — les "pillow shots".', category: 'theory' },
+    { icon: '💡', title: 'Astuce flashback', detail: 'Change le ratio d\'image (2.35:1 → 4:3) ou désature légèrement pour distinguer les temporalités. Nolan utilise IMAX vs 35mm dans Oppenheimer.', category: 'technique' },
   ]
   const [sug, setSug] = useState<any[]>(isDemo ? DEMO_SUGGESTIONS : []); const [ld, setLd] = useState(false)
   const load = async () => { if (isDemo) { setSug(DEMO_SUGGESTIONS); return } setLd(true); try { const r = await fetch(`/api/projects/${projectId}/copilot`); if(r.ok){const d=await r.json();setSug(d.suggestions||[])} } catch{} finally{setLd(false)} }
+  const catColors: Record<string, string> = { reference: 'border-l-blue-400', music: 'border-l-purple-400', technique: 'border-l-cyan-400', theory: 'border-l-amber-400' }
+  const catLabels: Record<string, string> = { reference: locale === 'fr' ? 'Référence' : 'Reference', music: locale === 'fr' ? 'Musique' : 'Music', technique: 'Technique', theory: locale === 'fr' ? 'Théorie' : 'Theory' }
   return (<div>
-    <div className="flex items-center justify-between mb-4">
-      <div><h3 className="text-sm font-medium text-slate-100">{t.project.tabs.copilot}</h3><p className="text-xs text-slate-500"></p></div>
-      <button onClick={load} disabled={ld} className="px-3 py-2 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white text-xs font-medium rounded-lg flex items-center gap-1.5">{ld ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />} {sug.length ? t.project.analyze : t.project.analyze}</button>
+    {/* Header */}
+    <div className="bg-dark-900 rounded-xl border border-dark-700 p-4 mb-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500/20 to-orange-500/20 border border-purple-500/15 flex items-center justify-center">
+            <Sparkles size={16} className="text-orange-400" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-slate-100">{locale === 'fr' ? 'Copilote IA' : 'AI Copilot'}</h3>
+            <p className="text-[10px] text-slate-500">{locale === 'fr' ? 'Conseils de réalisation contextuel' : 'Contextual directing advice'}</p>
+          </div>
+        </div>
+        <button onClick={load} disabled={ld} className="btn-primary px-3 py-2 text-xs font-medium rounded-lg flex items-center gap-1.5">
+          {ld ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />} {locale === 'fr' ? 'Analyser' : 'Analyze'}
+        </button>
+      </div>
     </div>
-    {sug.length > 0 ? <div className="space-y-3">{sug.map((s:any,i:number) => <div key={i} className="bg-dark-900 rounded-xl border border-dark-700 p-4 flex items-start gap-3"><span className="text-xl flex-shrink-0">{s.icon||'💡'}</span><div><p className="text-sm text-slate-200 font-medium">{s.title}</p><p className="text-xs text-slate-400 mt-1 leading-relaxed">{s.detail}</p></div></div>)}</div>
-      : <div className="p-12 bg-dark-900 rounded-xl border border-dark-700 text-center"><Sparkles size={36} className="text-slate-700 mx-auto mb-3" /><p className="text-sm text-slate-400">{locale === 'fr' ? 'Cliquez Analyser pour des suggestions' : 'Click Analyze for suggestions'}</p></div>}
+    {/* Suggestions */}
+    {sug.length > 0 ? <div className="space-y-3">{sug.map((s:any,i:number) => {
+      const cat = s.category || 'technique'
+      return (
+        <div key={i} className={`bg-dark-900 rounded-xl border border-dark-700 border-l-2 ${catColors[cat] || 'border-l-orange-400'} p-4 hover:bg-dark-850 transition-all group`}>
+          <div className="flex items-start gap-3">
+            <span className="text-xl flex-shrink-0 mt-0.5">{s.icon||'💡'}</span>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1.5">
+                <p className="text-sm text-slate-200 font-medium">{s.title}</p>
+                <span className="px-1.5 py-0.5 rounded text-[8px] font-semibold uppercase tracking-wider text-slate-500 bg-dark-800">{catLabels[cat] || cat}</span>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed">{s.detail}</p>
+            </div>
+          </div>
+        </div>
+      )
+    })}</div>
+      : <div className="p-16 bg-dark-900 rounded-xl border border-dark-700 text-center">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-purple-500/10 border border-purple-500/15 flex items-center justify-center">
+            <Sparkles size={24} className="text-purple-400/50" />
+          </div>
+          <p className="text-sm text-slate-300 font-display mb-1">{locale === 'fr' ? 'Votre copilote attend' : 'Your copilot is waiting'}</p>
+          <p className="text-xs text-slate-500">{locale === 'fr' ? 'Cliquez Analyser pour des suggestions de réalisation' : 'Click Analyze for directing suggestions'}</p>
+        </div>}
   </div>)
 }
 
