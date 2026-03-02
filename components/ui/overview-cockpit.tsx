@@ -11,9 +11,10 @@ import { getModelColor } from '@/components/ui/model-badge'
 interface OverviewCockpitProps {
   analysis: any
   projectName?: string
+  onNavigate?: (tab: string) => void
 }
 
-export function OverviewCockpit({ analysis, projectName }: OverviewCockpitProps) {
+export function OverviewCockpit({ analysis, projectName, onNavigate }: OverviewCockpitProps) {
   const { t } = useI18n()
 
   const scenes = analysis?.scenes || []
@@ -70,12 +71,12 @@ export function OverviewCockpit({ analysis, projectName }: OverviewCockpitProps)
     <div className="space-y-5">
       {/* ═══ KPI Cards ═══ */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <KPI icon={Film} label={t.project.cockpit.totalScenes} value={scenes.length} color="text-orange-500" />
-        <KPI icon={Eye} label={t.project.cockpit.totalShots} value={plans.length} color="text-blue-400" />
-        <KPI icon={DollarSign} label={t.project.cockpit.totalBudget} value={`$${costTotal.toFixed(2)}`} color="text-green-400" />
-        <KPI icon={Shield} label={t.project.cockpit.continuityScore} value={`${continuity.score}%`} color={continuity.score >= 80 ? 'text-green-400' : 'text-yellow-400'} />
-        <KPI icon={Clock} label={t.project.cockpit.avgDuration} value={fmtDur(totalDuration)} color="text-cyan-400" />
-        <KPI icon={Users} label={t.project.cockpit.characters} value={chars.length} color="text-purple-400" />
+        <KPI icon={Film} label={t.project.cockpit.totalScenes} value={scenes.length} color="text-orange-500" onClick={() => onNavigate?.('analyse')} />
+        <KPI icon={Eye} label={t.project.cockpit.totalShots} value={plans.length} color="text-blue-400" onClick={() => onNavigate?.('analyse')} />
+        <KPI icon={DollarSign} label={t.project.cockpit.totalBudget} value={`${costTotal.toFixed(2)}`} color="text-green-400" onClick={() => onNavigate?.("analyse")} />
+        <KPI icon={Shield} label={t.project.cockpit.continuityScore} value={`${continuity.score}%`} color={continuity.score >= 80 ? 'text-green-400' : 'text-yellow-400'} onClick={() => onNavigate?.("analyse")} />
+        <KPI icon={Clock} label={t.project.cockpit.avgDuration} value={fmtDur(totalDuration)} color="text-cyan-400" onClick={() => onNavigate?.("timeline")} />
+        <KPI icon={Users} label={t.project.cockpit.characters} value={chars.length} color="text-purple-400" onClick={() => onNavigate?.("analyse")} />
       </div>
 
       {/* ═══ Row: Pie Chart + Tension Curve ═══ */}
@@ -256,9 +257,9 @@ export function OverviewCockpit({ analysis, projectName }: OverviewCockpitProps)
 }
 
 // ═══ KPI Card ═══
-function KPI({ icon: I, label, value, color }: { icon: any; label: string; value: string | number; color: string }) {
+function KPI({ icon: I, label, value, color, onClick }: { icon: any; label: string; value: string | number; color: string; onClick?: () => void }) {
   return (
-    <div className="bg-dark-900 border border-dark-700 rounded-xl p-3.5 text-center hover:border-dark-600 transition-colors">
+    <div className={`bg-dark-900 border border-dark-700 rounded-xl p-3.5 text-center transition-colors ${onClick ? "cursor-pointer hover:border-orange-500/30 hover:bg-dark-800/50" : "hover:border-dark-600"}`} onClick={onClick}>
       <I size={18} className={`${color} mx-auto mb-1.5 opacity-70`} />
       <p className="text-lg font-bold text-slate-100 tabular-nums">{value}</p>
       <p className="text-[10px] text-slate-500 mt-0.5">{label}</p>

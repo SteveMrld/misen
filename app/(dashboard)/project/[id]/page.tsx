@@ -471,7 +471,7 @@ export default function ProjectPage() {
             </div>
           )}
           {tab === 'script' && <ScriptTab scriptText={scriptText} setScriptText={setScriptText} stylePreset={stylePreset} setStylePreset={setStylePreset} saving={saving} analyzing={analyzing} error={error} handleSave={handleSave} handleAnalyze={handleAnalyze} loadDemo={loadDemo} loadTemplate={loadTemplate} aiMode={aiMode} setAiMode={setAiMode} />}
-          {tab === 'overview' && analysis && <OverviewCockpit analysis={analysis} projectName={project?.name} />}
+          {tab === 'overview' && analysis && <OverviewCockpit analysis={analysis} projectName={project?.name} onNavigate={(tab: string) => setTab(tab as Tab)} />}
           {tab === 'analyse' && analysis && <AR analysis={analysis} analysisId={analysisId} userKeys={userKeys} projectId={projectId} />}
           {tab === 'storyboard' && analysis && <VisualStoryboard analysis={analysis} projectId={projectId} projectName={project?.name} />}
           {tab === 'timeline' && analysis && <TL analysis={analysis} projectName={project?.name} />}
