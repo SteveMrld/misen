@@ -200,6 +200,49 @@ export default function ProjectPage() {
   return (
     <div>
 
+      
+      {/* Analysis Progress Overlay */}
+      {analyzing && (
+        <div className="fixed inset-0 z-[140] flex items-center justify-center">
+          <div className="absolute inset-0 bg-dark-950/90 backdrop-blur-lg" />
+          <div className="relative max-w-md w-full px-6 animate-fade-in">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-orange-500/15 border border-orange-500/20 flex items-center justify-center">
+                <Brain size={28} className="text-orange-400 animate-pulse" />
+              </div>
+              <h2 className="font-display text-xl text-white mb-1">{locale === 'fr' ? 'Analyse en cours...' : 'Analysis in progress...'}</h2>
+              <p className="text-xs text-slate-500">{locale === 'fr' ? '13 moteurs IA analysent votre scénario' : '13 AI engines analyzing your script'}</p>
+            </div>
+            <div className="space-y-2">
+              {[
+                { name: 'Intent Parser', emoji: '🎯' },
+                { name: 'Scénariste', emoji: '✍️' },
+                { name: 'Story Tracker', emoji: '📖' },
+                { name: 'Shot Evaluator', emoji: '🎞️' },
+                { name: 'Crispifier', emoji: '✨' },
+                { name: 'Human Align', emoji: '🤝' },
+                { name: 'Camera Director', emoji: '📷' },
+                { name: 'Audio Tracker', emoji: '🔊' },
+                { name: 'Camera Control', emoji: '🎥' },
+                { name: 'Style Guard', emoji: '🎨' },
+                { name: 'Color Harmonizer', emoji: '🌈' },
+                { name: 'Motion Flow', emoji: '🌊' },
+                { name: 'Model Selector', emoji: '🤖' },
+              ].map((engine, i) => (
+                <div key={i} className="flex items-center gap-3 px-3 py-1.5 rounded-lg bg-dark-900/50 border border-dark-800">
+                  <span className="text-sm">{engine.emoji}</span>
+                  <span className="text-[11px] text-slate-400 flex-1">{engine.name}</span>
+                  <div className="w-16 h-1 bg-dark-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-orange-500 rounded-full animate-shimmer" style={{ animationDelay: i * 0.15 + 's' }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="beam w-full mt-6" />
+          </div>
+        </div>
+      )}
+
       {/* Analysis Celebration */}
       {showCelebration && analysis && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center pointer-events-none">
