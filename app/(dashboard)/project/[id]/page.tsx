@@ -1485,6 +1485,15 @@ function AR({ analysis, analysisId, userKeys, projectId }: { analysis: any; anal
               }} className="px-2.5 py-1 bg-orange-500/20 hover:bg-orange-500/30 text-orange-300 text-[10px] rounded-lg flex items-center gap-1">
                 <Copy size={10} /> {locale === 'fr' ? 'Copier prompts' : 'Copy prompts'}
               </button>
+              <button onClick={() => {
+                Array.from(selectedPlans).forEach((i, idx) => {
+                  const pl = plans[i]; const mid = (pl?.modelId || 'kling').toLowerCase()
+                  const url = Object.entries(MODEL_URLS).find(([k]) => mid.includes(k))?.[1]?.url
+                  if (url) setTimeout(() => window.open(url, '_blank'), idx * 300)
+                })
+              }} className="px-2.5 py-1 btn-primary text-[10px] rounded-lg flex items-center gap-1">
+                <Zap size={10} /> {locale === 'fr' ? 'Ouvrir studios' : 'Open studios'}
+              </button>
               <button onClick={selectNone} className="px-2 py-1 text-[10px] text-slate-400 hover:text-slate-200">✕</button>
             </div>
           )}
@@ -1599,29 +1608,65 @@ function PC({ plan, index, analysisId, userKeys, characters }: { plan: any; inde
           </div>
           {editingPrompt ? (
             <div className="space-y-2">
-              {/* @ Reference chips — insert character/style/mood tags */}
-              <div className="flex items-center gap-1 flex-wrap">
-                <span className="text-[9px] text-slate-600 mr-1">@ Insert:</span>
-                {(() => {
-                  const charNames = (characters || []).map((c: any) => typeof c === 'string' ? c : c?.name || '?')
-                  
-                  
-                  const refs = [
-                    ...charNames.map((name: string) => ({ label: name, type: 'char', color: 'text-blue-400 bg-blue-400/10 border-blue-400/20' })),
-                    { label: 'cinematic lighting', type: 'style', color: 'text-purple-400 bg-purple-400/10 border-purple-400/20' },
-                    { label: 'golden hour', type: 'style', color: 'text-amber-400 bg-amber-400/10 border-amber-400/20' },
-                    { label: 'shallow depth of field', type: 'style', color: 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20' },
-                    { label: 'anamorphic lens flare', type: 'style', color: 'text-orange-400 bg-orange-400/10 border-orange-400/20' },
-                    { label: 'slow motion', type: 'motion', color: 'text-green-400 bg-green-400/10 border-green-400/20' },
-                  ]
-                  return refs.map((ref, ri) => (
-                    <button key={ri} onClick={() => setEditedPrompt(prev => prev + (prev.endsWith(' ') || !prev ? '' : ', ') + ref.label)}
-                      className={`px-1.5 py-0.5 rounded text-[9px] border transition-all hover:opacity-80 ${ref.color}`}>
-                      {ref.type === 'char' ? '👤' : ref.type === 'motion' ? '🎬' : '✨'} {ref.label}
-                    </button>
-                  ))
-                })()}
-              </div>
+              {/* @ Autocomplete reference system */}
+              {(() => {
+                const charNames = (characters || []).map((c: any) => typeof c === 'string' ? c : c?.name || '?')
+                const allRefs = [
+                  ...charNames.map((name: string) => ({ label: name, type: 'char', icon: '👤', color: 'text-blue-400 bg-blue-400/10 border-blue-400/20' })),
+                  { label: 'cinematic lighting', type: 'style', icon: '✨', color: 'text-purple-400 bg-purple-400/10 border-purple-400/20' },
+                  { label: 'golden hour', type: 'style', icon: '✨', color: 'text-amber-400 bg-amber-400/10 border-amber-400/20' },
+                  { label: 'shallow depth of field', type: 'style', icon: '✨', color: 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20' },
+                  { label: 'anamorphic lens flare', type: 'style', icon: '✨', color: 'text-orange-400 bg-orange-400/10 border-orange-400/20' },
+                  { label: 'slow motion', type: 'motion', icon: '🎬', color: 'text-green-400 bg-green-400/10 border-green-400/20' },
+                  { label: 'rack focus', type: 'motion', icon: '🎬', color: 'text-green-400 bg-green-400/10 border-green-400/20' },
+                  { label: 'dolly zoom', type: 'motion', icon: '🎬', color: 'text-green-400 bg-green-400/10 border-green-400/20' },
+                  { label: 'handheld', type: 'motion', icon: '🎬', color: 'text-green-400 bg-green-400/10 border-green-400/20' },
+                  { label: 'film grain', type: 'style', icon: '🎨', color: 'text-amber-400 bg-amber-400/10 border-amber-400/20' },
+                  { label: 'teal and orange', type: 'style', icon: '🎨', color: 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20' },
+                  { label: 'chiaroscuro', type: 'style', icon: '🎨', color: 'text-amber-400 bg-amber-400/10 border-amber-400/20' },
+                ]
+                // Check if prompt ends with @ to show autocomplete
+                const atMatch = editedPrompt.match(/@(\S*)$/)
+                const query = atMatch ? atMatch[1].toLowerCase() : ''
+                const showDropdown = !!atMatch
+                const filtered = showDropdown ? allRefs.filter(r => r.label.toLowerCase().includes(query)) : []
+                const insertRef = (label: string) => {
+                  setEditedPrompt(prev => prev.replace(/@\S*$/, label + ', '))
+                }
+                return (
+                  <div className="relative">
+                    {/* Quick chips row */}
+                    <div className="flex items-center gap-1 flex-wrap mb-2">
+                      <span className="text-[9px] text-slate-600 mr-0.5">@ Insert:</span>
+                      {allRefs.slice(0, 6).map((ref, ri) => (
+                        <button key={ri} onClick={() => setEditedPrompt(prev => prev + (prev.endsWith(' ') || !prev ? '' : ', ') + ref.label)}
+                          className={`px-1.5 py-0.5 rounded text-[9px] border transition-all hover:opacity-80 ${ref.color}`}>
+                          {ref.icon} {ref.label}
+                        </button>
+                      ))}
+                      <span className="text-[8px] text-slate-600 ml-1">{locale === 'fr' ? 'ou tapez @...' : 'or type @...'}</span>
+                    </div>
+                    {/* Fuzzy autocomplete dropdown */}
+                    {showDropdown && filtered.length > 0 && (
+                      <div className="absolute bottom-full left-0 w-64 mb-1 bg-dark-800 border border-dark-600 rounded-xl shadow-xl shadow-black/40 overflow-hidden z-20 animate-fade-in">
+                        <div className="px-3 py-1.5 border-b border-dark-700">
+                          <span className="text-[9px] text-orange-400 font-semibold">@ {query || '...'}</span>
+                        </div>
+                        <div className="max-h-40 overflow-y-auto">
+                          {filtered.map((ref, ri) => (
+                            <button key={ri} onClick={() => insertRef(ref.label)}
+                              className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-dark-700 text-left transition-colors">
+                              <span className="text-sm">{ref.icon}</span>
+                              <span className="text-[11px] text-slate-200 flex-1">{ref.label}</span>
+                              <span className={`text-[8px] px-1 rounded ${ref.color}`}>{ref.type}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
               <textarea value={editedPrompt} onChange={e => setEditedPrompt(e.target.value)}
                 className="w-full p-2.5 bg-dark-800 border border-orange-500/30 rounded-lg text-[11px] text-slate-200 font-mono leading-relaxed resize-none focus:outline-none focus:border-orange-500/50"
                 rows={4} />
