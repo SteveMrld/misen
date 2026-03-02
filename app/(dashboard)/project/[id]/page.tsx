@@ -1310,7 +1310,7 @@ function AR({ analysis, analysisId, userKeys, projectId }: { analysis: any; anal
                   <button onClick={() => toggleSelect(realIndex)} className={`mt-3 w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-all ${selectedPlans.has(realIndex) ? 'bg-orange-500 border-orange-500 text-white' : 'border-dark-600 hover:border-dark-500'}`}>
                     {selectedPlans.has(realIndex) && <Check size={10} />}
                   </button>
-                  <div className="flex-1"><PC plan={p} index={realIndex} analysisId={analysisId} userKeys={userKeys} /></div>
+                  <div className="flex-1"><PC plan={p} index={realIndex} analysisId={analysisId} userKeys={userKeys} characters={chars} /></div>
                 </div>
               )
             })}
@@ -1335,7 +1335,7 @@ function Sec({ icon: I, title, color, children, open: so = true }: { icon: any; 
     {o && <div className="px-4 pb-3">{children}</div>}
   </div>)
 }
-function PC({ plan, index, analysisId, userKeys }: { plan: any; index: number; analysisId?: string | null; userKeys: Set<string> }) {
+function PC({ plan, index, analysisId, userKeys, characters }: { plan: any; index: number; analysisId?: string | null; userKeys: Set<string>; characters?: any[] }) {
   const { t, locale } = useI18n()
   const [copied, setCopied] = useState(false)
   const [expanded, setExpanded] = useState(false)
@@ -1403,9 +1403,34 @@ function PC({ plan, index, analysisId, userKeys }: { plan: any; index: number; a
             {editingPrompt && editedPrompt !== prompt && <span className="text-[9px] text-yellow-400 bg-yellow-400/10 px-1.5 rounded">{locale === 'fr' ? 'modifié' : 'modified'}</span>}
           </div>
           {editingPrompt ? (
-            <textarea value={editedPrompt} onChange={e => setEditedPrompt(e.target.value)}
-              className="w-full p-2.5 bg-dark-800 border border-orange-500/30 rounded-lg text-[11px] text-slate-200 font-mono leading-relaxed resize-none focus:outline-none focus:border-orange-500/50"
-              rows={4} />
+            <div className="space-y-2">
+              {/* @ Reference chips — insert character/style/mood tags */}
+              <div className="flex items-center gap-1 flex-wrap">
+                <span className="text-[9px] text-slate-600 mr-1">@ Insert:</span>
+                {(() => {
+                  const charNames = (characters || []).map((c: any) => typeof c === 'string' ? c : c?.name || '?')
+                  
+                  
+                  const refs = [
+                    ...charNames.map((name: string) => ({ label: name, type: 'char', color: 'text-blue-400 bg-blue-400/10 border-blue-400/20' })),
+                    { label: 'cinematic lighting', type: 'style', color: 'text-purple-400 bg-purple-400/10 border-purple-400/20' },
+                    { label: 'golden hour', type: 'style', color: 'text-amber-400 bg-amber-400/10 border-amber-400/20' },
+                    { label: 'shallow depth of field', type: 'style', color: 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20' },
+                    { label: 'anamorphic lens flare', type: 'style', color: 'text-orange-400 bg-orange-400/10 border-orange-400/20' },
+                    { label: 'slow motion', type: 'motion', color: 'text-green-400 bg-green-400/10 border-green-400/20' },
+                  ]
+                  return refs.map((ref, ri) => (
+                    <button key={ri} onClick={() => setEditedPrompt(prev => prev + (prev.endsWith(' ') || !prev ? '' : ', ') + ref.label)}
+                      className={`px-1.5 py-0.5 rounded text-[9px] border transition-all hover:opacity-80 ${ref.color}`}>
+                      {ref.type === 'char' ? '👤' : ref.type === 'motion' ? '🎬' : '✨'} {ref.label}
+                    </button>
+                  ))
+                })()}
+              </div>
+              <textarea value={editedPrompt} onChange={e => setEditedPrompt(e.target.value)}
+                className="w-full p-2.5 bg-dark-800 border border-orange-500/30 rounded-lg text-[11px] text-slate-200 font-mono leading-relaxed resize-none focus:outline-none focus:border-orange-500/50"
+                rows={4} />
+            </div>
           ) : (
             <p className="text-[11px] text-slate-400 leading-relaxed font-mono bg-dark-800/50 rounded-lg p-2.5">{prompt || '—'}</p>
           )}
