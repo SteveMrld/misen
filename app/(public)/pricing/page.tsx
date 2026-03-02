@@ -9,7 +9,7 @@ import { Check, X, Zap, Crown, Sparkles, Play, ArrowRight, Brain, Film, Copy, He
 const PLAN_ICONS = [Zap, Crown, Sparkles]
 const PLAN_STYLES = [
   { ctaStyle: 'bg-white/[0.06] hover:bg-white/[0.1] text-slate-200', popular: false },
-  { ctaStyle: 'bg-orange-600 hover:bg-orange-500 text-white shadow-lg shadow-orange-600/20', popular: true },
+  { ctaStyle: 'btn-primary shadow-lg shadow-orange-500/15', popular: true },
   { ctaStyle: 'bg-white/[0.06] hover:bg-white/[0.1] text-slate-200', popular: false },
 ]
 const PLAN_PRICES = [0, 29, 79]
@@ -21,7 +21,7 @@ export default function PricingPage() {
   const VALUE_ICONS = [Brain, Film, Copy]
 
   return (
-    <div className="min-h-screen bg-dark-950">
+    <div className="min-h-screen bg-dark-950 relative"><div className="fixed inset-0 vignette pointer-events-none" />
       <nav className="px-6 py-4 flex items-center justify-between max-w-6xl mx-auto">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
@@ -32,12 +32,12 @@ export default function PricingPage() {
         <div className="flex items-center gap-3">
           <LanguageToggle />
           <Link href="/login" className="text-sm text-slate-400 hover:text-white transition-colors">{t.nav.login}</Link>
-          <Link href="/register" className="text-sm px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white rounded-lg transition-colors">{t.pricing.ctaButton}</Link>
+          <Link href="/register" className="text-sm px-4 py-2 btn-primary rounded-xl">{t.pricing.ctaButton}</Link>
         </div>
       </nav>
 
       <header className="px-6 pt-12 pb-8 text-center max-w-3xl mx-auto">
-        <h1 className="font-display text-3xl md:text-4xl font-bold text-white tracking-tight mb-4">{t.pricing.title}</h1>
+        <h1 className="font-display text-3xl md:text-4xl font-bold text-white tracking-tight mb-4"><span className="text-gradient-copper">{t.pricing.title}</span></h1>
         <p className="text-slate-400 text-lg max-w-xl mx-auto">{t.pricing.subtitle}</p>
         <div className="flex items-center justify-center gap-3 mt-8">
           <span className={`text-sm transition-colors ${!annual ? 'text-white' : 'text-slate-500'}`}>{t.pricing.monthly}</span>
@@ -56,7 +56,7 @@ export default function PricingPage() {
             const Icon = PLAN_ICONS[idx]; const style = PLAN_STYLES[idx]; const basePrice = PLAN_PRICES[idx]
             const price = basePrice === 0 ? 0 : annual ? Math.round(basePrice * 0.8) : basePrice
             return (
-              <div key={idx} className={`relative rounded-2xl p-6 border transition-all flex flex-col ${style.popular ? 'bg-orange-600/[0.06] border-orange-500/30 shadow-xl shadow-orange-600/5' : 'bg-white/[0.02] border-white/[0.06]'}`}>
+              <div key={idx} className={`relative rounded-2xl p-6 border transition-all flex flex-col ${style.popular ? 'bg-orange-500/[0.04] border-orange-500/25 shadow-xl shadow-orange-500/10 glow-copper' : 'bg-white/[0.02] border-white/[0.06]'}`}>
                 {style.popular && <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-orange-600 text-white text-[10px] font-bold tracking-wider uppercase rounded-full">{t.pricing.popular}</div>}
                 <div className="flex items-center gap-2 mb-4">
                   <div className={`p-1.5 rounded-lg ${style.popular ? 'bg-orange-600/20' : 'bg-white/[0.05]'}`}><Icon size={16} className={style.popular ? 'text-orange-400' : 'text-slate-400'} /></div>
