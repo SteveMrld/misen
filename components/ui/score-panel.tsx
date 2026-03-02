@@ -315,6 +315,12 @@ export function ScorePanel({ analysis, projectId, projectName }: ScorePanelProps
   const [generatedUrls, setGeneratedUrls] = useState<Record<number, string>>({})
   const [showLeitmotifs, setShowLeitmotifs] = useState(true)
   const [showScoringNotes, setShowScoringNotes] = useState(false)
+  const [showDirection, setShowDirection] = useState(false)
+  const [dirSliders, setDirSliders] = useState({
+    intensity: 65, darkness: 40, tempo: 55, orchestral: 50,
+    electronic: 30, acoustic: 70, tension: 50, warmth: 60,
+  })
+  const updateSlider = (key: string, val: number) => setDirSliders(prev => ({ ...prev, [key]: val }))
   const [hasSunoKey, setHasSunoKey] = useState(false)
 
   const synthRef = useRef<SynthEngine | null>(null)
@@ -559,6 +565,79 @@ export function ScorePanel({ analysis, projectId, projectName }: ScorePanelProps
           <p className="text-xs text-slate-400 leading-relaxed">{cueSheet.scoringNotes}</p>
         </div>
       )}
+
+      {/* ═══ MUSICAL DIRECTION SLIDERS ═══ */}
+      <div className="bg-dark-900 rounded-xl border border-dark-700 overflow-hidden">
+        <button onClick={() => setShowDirection(!showDirection)}
+          className="flex items-center justify-between w-full px-4 py-3 hover:bg-dark-800/30 transition-colors">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500/15 to-purple-500/15 border border-cyan-500/15 flex items-center justify-center">
+              <Settings size={13} className="text-cyan-400" />
+            </div>
+            <div className="text-left">
+              <span className="text-xs font-semibold text-slate-200 block">{locale === 'fr' ? 'Direction musicale' : 'Musical Direction'}</span>
+              <span className="text-[9px] text-slate-500">{locale === 'fr' ? 'Ajustez le caractère du score' : 'Adjust the score character'}</span>
+            </div>
+          </div>
+          {showDirection ? <ChevronUp size={14} className="text-slate-500" /> : <ChevronDown size={14} className="text-slate-500" />}
+        </button>
+        {showDirection && (
+          <div className="px-4 pb-4 space-y-4">
+            <div className="h-px bg-dark-700" />
+            {/* Semantic slider pairs */}
+            {([
+              { key: 'intensity', left: locale === 'fr' ? 'Subtil' : 'Subtle', right: locale === 'fr' ? 'Intense' : 'Intense', colorFrom: 'from-blue-500', colorTo: 'to-red-500' },
+              { key: 'darkness', left: locale === 'fr' ? 'Lumineux' : 'Bright', right: locale === 'fr' ? 'Sombre' : 'Dark', colorFrom: 'from-amber-400', colorTo: 'to-indigo-600' },
+              { key: 'tempo', left: 'Lento', right: 'Allegro', colorFrom: 'from-emerald-500', colorTo: 'to-orange-500' },
+              { key: 'warmth', left: locale === 'fr' ? 'Froid' : 'Cold', right: locale === 'fr' ? 'Chaleureux' : 'Warm', colorFrom: 'from-cyan-400', colorTo: 'to-orange-400' },
+              { key: 'tension', left: locale === 'fr' ? 'Serein' : 'Serene', right: locale === 'fr' ? 'Tendu' : 'Tense', colorFrom: 'from-green-400', colorTo: 'to-red-400' },
+            ] as const).map(({ key, left, right, colorFrom, colorTo }) => (
+              <div key={key}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] text-slate-500">{left}</span>
+                  <span className="text-[10px] text-slate-400 font-mono tabular-nums">{dirSliders[key as keyof typeof dirSliders]}</span>
+                  <span className="text-[10px] text-slate-500">{right}</span>
+                </div>
+                <div className="relative h-2 bg-dark-700 rounded-full">
+                  <div className={`absolute inset-y-0 left-0 rounded-full bg-gradient-to-r ${colorFrom} ${colorTo} opacity-60`} style={{ width: `${dirSliders[key as keyof typeof dirSliders]}%` }} />
+                  <input type="range" min={0} max={100} value={dirSliders[key as keyof typeof dirSliders]}
+                    onChange={(e) => updateSlider(key, parseInt(e.target.value))}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                  <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-md shadow-black/30 border border-dark-600 pointer-events-none"
+                    style={{ left: `calc(${dirSliders[key as keyof typeof dirSliders]}% - 6px)` }} />
+                </div>
+              </div>
+            ))}
+            {/* Instrument mix */}
+            <div className="pt-2">
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-2">{locale === 'fr' ? 'Mix instrumental' : 'Instrument Mix'}</span>
+              <div className="grid grid-cols-3 gap-3">
+                {([
+                  { key: 'orchestral', label: '🎻 Orchestral', color: 'text-amber-400' },
+                  { key: 'electronic', label: '🎹 Electronic', color: 'text-cyan-400' },
+                  { key: 'acoustic', label: '🎸 Acoustic', color: 'text-green-400' },
+                ] as const).map(({ key, label, color }) => (
+                  <div key={key} className="text-center">
+                    <div className="relative h-20 w-full bg-dark-800 rounded-lg overflow-hidden mb-1">
+                      <div className={`absolute bottom-0 inset-x-0 bg-gradient-to-t from-current opacity-20 ${color}`}
+                        style={{ height: `${dirSliders[key as keyof typeof dirSliders]}%` }} />
+                      <input type="range" min={0} max={100} value={dirSliders[key as keyof typeof dirSliders]}
+                        onChange={(e) => updateSlider(key, parseInt(e.target.value))}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        style={{ writingMode: 'vertical-lr', direction: 'rtl' }} />
+                      <span className="absolute inset-0 flex items-center justify-center text-lg">{label.split(' ')[0]}</span>
+                    </div>
+                    <span className="text-[9px] text-slate-500">{label.split(' ')[1]}</span>
+                    <span className={`text-[10px] font-mono block ${color}`}>{dirSliders[key as keyof typeof dirSliders]}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Apply hint */}
+            <p className="text-[9px] text-slate-600 text-center pt-1">{locale === 'fr' ? 'Les ajustements seront appliqués à la prochaine recomposition' : 'Adjustments will apply on next recomposition'}</p>
+          </div>
+        )}
+      </div>
 
       {/* ═══ LEITMOTIFS ═══ */}
       {cueSheet.leitmotifs.length > 0 && (
