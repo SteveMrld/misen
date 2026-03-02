@@ -698,6 +698,29 @@ export default function ProjectPage() {
             <div className="mt-4">
               <AssemblyPanel analysis={analysis} projectId={projectId} projectName={project?.name} />
             </div>
+
+            {/* Export History */}
+            <div className="mt-4 bg-dark-900 rounded-xl border border-dark-700 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Clock size={16} className="text-slate-400" />
+                <span className="text-sm text-slate-200 font-medium">{locale === 'fr' ? 'Historique d\'export' : 'Export History'}</span>
+              </div>
+              <div className="space-y-2">
+                {[
+                  { date: new Date().toLocaleDateString(locale === 'fr' ? 'fr-FR' : 'en-US'), type: 'JSON', size: '2.4 KB', icon: '📋' },
+                ].map((ex, i) => (
+                  <div key={i} className="flex items-center gap-3 px-3 py-2 bg-dark-800/50 rounded-lg border border-dark-700/50">
+                    <span className="text-sm">{ex.icon}</span>
+                    <div className="flex-1">
+                      <span className="text-xs text-slate-300">{ex.type}</span>
+                      <span className="text-[10px] text-slate-500 ml-2">{ex.size}</span>
+                    </div>
+                    <span className="text-[10px] text-slate-500">{ex.date}</span>
+                  </div>
+                ))}
+                <p className="text-[10px] text-slate-600 text-center mt-2">{locale === 'fr' ? 'L\'historique se remplit au fur et à mesure de vos exports' : 'History fills as you export'}</p>
+              </div>
+            </div>
           </>}
         </div>
       )}

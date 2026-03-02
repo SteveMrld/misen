@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import emptyProjectsImg from '@/public/images/empty_projects.png'
 import { useRouter } from 'next/navigation'
-import { Plus, Film, Clapperboard, Clock, MoreHorizontal, Trash2, Download, Upload, X, Loader2, Play, Camera, Zap, TrendingUp, DollarSign } from 'lucide-react'
+import { Plus, Film, Clapperboard, Clock, MoreHorizontal, Trash2, Download, Upload, X, Loader2, Play, Camera, Zap, TrendingUp, DollarSign , ArrowRight } from 'lucide-react'
 import { ModelLegend } from '@/components/ui/model-badge'
 import { StoryboardSVG } from '@/components/ui/storyboard-svg'
 import demoThumbCendres from '@/public/images/sc1_fleuve.jpg'
@@ -153,6 +153,33 @@ export default function DashboardPage() {
           </button>
         </div>
       </div>
+
+      {/* Continue last project */}
+      {projects.length > 0 && (() => {
+        const last = projects[0]
+        const lastStatus = statusLabels[last.status] || statusLabels.draft
+        return (
+          <div onClick={() => router.push(`/project/${last.id}`)}
+            className="mb-4 bg-dark-900 border border-dark-700 hover:border-orange-500/20 rounded-xl p-4 cursor-pointer transition-all group">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/15 to-orange-600/10 border border-orange-500/15 flex items-center justify-center group-hover:from-orange-500/25 group-hover:to-orange-600/15 transition-all">
+                  <Film size={20} className="text-orange-400" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-0.5">{locale === 'fr' ? 'Reprendre' : 'Continue'}</p>
+                  <h3 className="text-sm font-semibold text-slate-100 group-hover:text-orange-300 transition-colors">{last.name}</h3>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={lastStatus.class}>{lastStatus.label}</span>
+                <span className="text-xs text-slate-500">{new Date(last.updated_at).toLocaleDateString(locale === 'fr' ? 'fr-FR' : 'en-US')}</span>
+                <ArrowRight size={16} className="text-slate-600 group-hover:text-orange-400 transition-colors" />
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Stats row */}
       {projects.length > 0 && (
