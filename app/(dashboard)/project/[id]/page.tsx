@@ -1100,6 +1100,10 @@ function AR({ analysis, analysisId, userKeys, projectId }: { analysis: any; anal
     const [filterModel, setFilterModel] = useState<string|null>(null)
     const [filterScene, setFilterScene] = useState<number|null>(null)
     const [expandedPlan, setExpandedPlan] = useState<number|null>(null)
+    const [selectedPlans, setSelectedPlans] = useState<Set<number>>(new Set())
+    const toggleSelect = (i: number) => { const s = new Set(selectedPlans); s.has(i) ? s.delete(i) : s.add(i); setSelectedPlans(s) }
+    const selectAll = () => setSelectedPlans(new Set(filteredPlans.map((_: any, i: number) => plans.indexOf(_))))
+    const selectNone = () => setSelectedPlans(new Set())
     const emotions = Array.from(new Set(plans.map((p: any) => (p.emotion || 'neutre').toLowerCase()))) as string[]
     const models = Array.from(new Set(plans.map((p: any) => (p.modelId || 'kling').toLowerCase()))) as string[]
     const sceneNums = (Array.from(new Set(plans.map((p: any) => p.sceneIndex ?? 0))) as number[]).sort((a, b) => a - b)
@@ -1273,11 +1277,42 @@ function AR({ analysis, analysisId, userKeys, projectId }: { analysis: any; anal
             )}
           </div>
 
+          {/* Batch action bar */}
+          {selectedPlans.size > 0 && (
+            <div className="mx-3 mt-2 flex items-center gap-2 px-3 py-2 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+              <span className="text-xs text-orange-300 font-medium">{selectedPlans.size} {locale === 'fr' ? 'sélectionné(s)' : 'selected'}</span>
+              <div className="flex-1" />
+              <button onClick={() => {
+                const allPrompts = Array.from(selectedPlans).map(i => {
+                  const pl = plans[i]; return `[P${i+1}] ${pl?.modelId || 'kling'}\n${pl?.finalPrompt || pl?.basePrompt || ''}`
+                }).join('\n\n---\n\n')
+                navigator.clipboard.writeText(allPrompts)
+              }} className="px-2.5 py-1 bg-orange-500/20 hover:bg-orange-500/30 text-orange-300 text-[10px] rounded-lg flex items-center gap-1">
+                <Copy size={10} /> {locale === 'fr' ? 'Copier prompts' : 'Copy prompts'}
+              </button>
+              <button onClick={selectNone} className="px-2 py-1 text-[10px] text-slate-400 hover:text-slate-200">✕</button>
+            </div>
+          )}
+
           {/* Plan cards */}
           <div className="p-3 space-y-2 max-h-[500px] overflow-y-auto">
+            {/* Select all / none */}
+            <div className="flex items-center gap-2 mb-1">
+              <button onClick={selectedPlans.size === filteredPlans.length ? selectNone : selectAll}
+                className="text-[10px] text-slate-500 hover:text-slate-300">
+                {selectedPlans.size === filteredPlans.length ? (locale === 'fr' ? '☑ Tout désélectionner' : '☑ Deselect all') : (locale === 'fr' ? '☐ Tout sélectionner' : '☐ Select all')}
+              </button>
+            </div>
             {filteredPlans.map((p: any, fi: number) => {
               const realIndex = plans.indexOf(p)
-              return <PC key={realIndex} plan={p} index={realIndex} analysisId={analysisId} userKeys={userKeys} />
+              return (
+                <div key={realIndex} className="flex items-start gap-2">
+                  <button onClick={() => toggleSelect(realIndex)} className={`mt-3 w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-all ${selectedPlans.has(realIndex) ? 'bg-orange-500 border-orange-500 text-white' : 'border-dark-600 hover:border-dark-500'}`}>
+                    {selectedPlans.has(realIndex) && <Check size={10} />}
+                  </button>
+                  <div className="flex-1"><PC plan={p} index={realIndex} analysisId={analysisId} userKeys={userKeys} /></div>
+                </div>
+              )
             })}
             {filteredPlans.length === 0 && (
               <p className="text-xs text-slate-500 text-center py-6">{locale === 'fr' ? 'Aucun plan ne correspond aux filtres' : 'No shots match filters'}</p>

@@ -493,7 +493,66 @@ export function ScorePanel({ analysis, projectId, projectName }: ScorePanelProps
         </div>
       </div>
 
-      {/* ═══ SCORING NOTES (collapsible) ═══ */}
+      {/* ═══ SYNCHRONIZED PREVIEW PLAYER ═══ */}
+      <div className="bg-dark-900 rounded-xl border border-dark-700 overflow-hidden">
+        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-dark-700">
+          <Volume2 size={14} className="text-orange-400" />
+          <span className="text-[10px] font-semibold text-slate-300 uppercase tracking-wider">{locale === 'fr' ? 'Aperçu synchronisé' : 'Synchronized Preview'}</span>
+          <span className="text-[9px] text-slate-600 ml-auto">{locale === 'fr' ? 'Image + Musique' : 'Image + Music'}</span>
+        </div>
+        {/* Mini waveform timeline */}
+        <div className="px-4 py-3">
+          <div className="flex gap-0.5 h-12 rounded-lg overflow-hidden bg-dark-800">
+            {cueSheet.cues.map((cue: MusicCue, i: number) => {
+              const color = EMOTION_COLORS[(cue as any).emotion] || EMOTION_COLORS['neutre'] || '#666'
+              const dynHeight = cue.dynamics === 'fff' ? 100 : cue.dynamics === 'ff' ? 85 : cue.dynamics === 'f' ? 70 : cue.dynamics === 'mf' ? 55 : cue.dynamics === 'mp' ? 40 : cue.dynamics === 'p' ? 30 : cue.dynamics === 'pp' ? 20 : 50
+              const isActive = playingCue === i
+              return (
+                <button key={i}
+                  onClick={() => playCue(i)}
+                  className={`relative group h-full transition-all ${isActive ? 'ring-1 ring-orange-400' : ''}`}
+                  style={{ flex: cue.duration, backgroundColor: color + '15' }}
+                  title={`${cue.label} — ${cue.tempo} BPM — ${cue.dynamics}`}>
+                  {/* Dynamics bar from bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 transition-all" style={{ height: dynHeight + '%', backgroundColor: color + '30' }} />
+                  <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: color }} />
+                  {/* Label on hover */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-[7px] font-mono text-white font-bold drop-shadow">{cue.label}</span>
+                    <span className="text-[6px] text-white/60">{cue.tempo}bpm</span>
+                  </div>
+                  {/* Playing indicator */}
+                  {isActive && (
+                    <div className="absolute top-1 left-1/2 -translate-x-1/2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
+                    </div>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+          {/* Legend */}
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center gap-3">
+              {Object.entries(
+                cueSheet.cues.reduce((acc: Record<string, string>, cue: any) => {
+                  const e = (cue.emotion || 'neutre').toLowerCase()
+                  if (!acc[e]) acc[e] = EMOTION_COLORS[e] || '#666'
+                  return acc
+                }, {} as Record<string, string>)
+              ).map(([emotion, color]) => (
+                <span key={emotion} className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color as string }} />
+                  <span className="text-[8px] text-slate-500">{emotion}</span>
+                </span>
+              ))}
+            </div>
+            <span className="text-[9px] text-slate-600">{locale === 'fr' ? 'Hauteur = dynamique' : 'Height = dynamics'}</span>
+          </div>
+        </div>
+      </div>
+
+            {/* ═══ SCORING NOTES (collapsible) ═══ */}
       {showScoringNotes && (
         <div className="bg-dark-900/50 rounded-xl border border-purple-500/10 p-4">
           <h3 className="text-[11px] font-semibold text-purple-400 uppercase tracking-wide mb-2">{locale === 'fr' ? 'Notes de direction musicale' : 'Musical Direction Notes'}</h3>
