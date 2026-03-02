@@ -55,7 +55,7 @@ export default function DemoPage() {
   const Icon = TAB_ICONS[step.step] || Film
 
   return (
-    <div className="min-h-screen bg-dark-950">
+    <div className="min-h-screen bg-dark-950 relative"><div className="fixed inset-0 vignette pointer-events-none z-0" />
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-dark-800">
         <div className="flex items-center gap-3">
@@ -142,7 +142,7 @@ export default function DemoPage() {
       <div className="fixed bottom-0 inset-x-0 bg-dark-950 border-t border-dark-800 px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <button onClick={() => setAutoPlay(!autoPlay)}
-            className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium rounded-lg transition-colors">
+            className="flex items-center gap-2 px-4 py-2 btn-primary text-sm font-medium rounded-lg transition-colors">
             {autoPlay ? <><Pause size={16} /> Pause</> : <><Play size={16} /> Auto-play</>}
           </button>
           <div className="flex items-center gap-2">
@@ -157,7 +157,7 @@ export default function DemoPage() {
               </button>
             ) : (
               <Link href="/register"
-                className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1">
+                className="px-4 py-2 btn-primary text-sm font-medium rounded-lg transition-colors flex items-center gap-1">
                 {t.demo.ctaButton} <ArrowRight size={14} />
               </Link>
             )}
@@ -538,7 +538,7 @@ function DemoResult({ scenario }: { scenario: DemoScenario }) {
             <p className="text-white/80 text-xl font-display tracking-[0.2em]">FIN</p>
             <p className="text-white/30 text-xs mt-2 tracking-wide">{scenario.title} — Un film MISEN</p>
             <button onClick={(e) => { e.stopPropagation(); setElapsed(0); setCurrentPlan(0); setNextPlan(-1); setFadePhase('stable'); lastTimeRef.current = 0; setPlaying(true) }}
-              className="mt-5 px-5 py-2 bg-orange-600 hover:bg-orange-500 text-white text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors">
+              className="mt-5 px-5 py-2 btn-primary text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors">
               <Play size={12} fill="white" /> Rejouer
             </button>
           </div>
@@ -581,7 +581,7 @@ function DemoResult({ scenario }: { scenario: DemoScenario }) {
               className={`w-2 h-2 rounded-full transition-all duration-300 ${i === currentPlan ? 'bg-orange-500 scale-125' : i < currentPlan ? 'bg-orange-500/40' : 'bg-white/10'}`} />
           ))}
         </div>
-        <button className="px-2.5 py-1 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-medium rounded transition-colors flex items-center gap-1">
+        <button className="px-2.5 py-1 btn-primary text-[10px] font-medium rounded transition-colors flex items-center gap-1">
           <ArrowRight size={10} /> Export 4K
         </button>
       </div>
