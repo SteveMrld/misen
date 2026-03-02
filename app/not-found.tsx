@@ -3,10 +3,11 @@ import { Logo } from '@/components/ui/logo'
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-dark-950 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-dark-950 flex items-center justify-center px-4 relative">
+      <div className="fixed inset-0 vignette pointer-events-none" />
       <div className="text-center max-w-md">
         <Logo size="lg" className="mx-auto mb-8" />
-        <h1 className="text-6xl font-display font-bold text-orange-500 mb-4">404</h1>
+        <h1 className="text-6xl font-display font-bold text-gradient-copper mb-4">404</h1>
         <h2 className="text-xl font-semibold text-slate-100 mb-3">Page introuvable</h2>
         <p className="text-sm text-slate-400 mb-8">
           Cette scène n&apos;existe pas dans le storyboard. Retournez au studio.

@@ -13,6 +13,8 @@ import {
   ChevronsRight,
   Menu,
   X,
+  Film,
+  Clock,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -29,6 +31,14 @@ export function Sidebar({ userName }: SidebarProps) {
   const { t } = useI18n()
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [recentProjects, setRecentProjects] = useState<any[]>([])
+
+  // Fetch recent projects for sidebar
+  useEffect(() => {
+    fetch('/api/projects').then(r => r.json()).then((data: any) => {
+      if (Array.isArray(data)) setRecentProjects(data.slice(0, 3))
+    }).catch(() => {})
+  }, [pathname])
 
   const navigation = [
     {
@@ -103,7 +113,7 @@ export function Sidebar({ userName }: SidebarProps) {
                   )}
                 >
                   {isActive && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-orange-500 rounded-r" />
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-gradient-to-b from-orange-400 to-orange-600 rounded-r" />
                   )}
                   <Icon size={20} />
                   {(isMobile || !collapsed) && (
@@ -115,6 +125,32 @@ export function Sidebar({ userName }: SidebarProps) {
           </div>
         ))}
       </nav>
+
+      {/* Recent Projects */}
+      {(isMobile || !collapsed) && recentProjects.length > 0 && (
+        <div className="px-3 pb-3">
+          <p className="px-1 mb-2 text-overline uppercase text-slate-600 tracking-widest text-[9px]">
+            {t.common.settings === 'Settings' ? 'Recent' : 'Récents'}
+          </p>
+          <div className="space-y-0.5">
+            {recentProjects.map((p: any) => {
+              const isCurrentProject = pathname === `/project/${p.id}`
+              return (
+                <Link key={p.id} href={`/project/${p.id}`}
+                  className={cn(
+                    'flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-all text-xs truncate',
+                    isCurrentProject
+                      ? 'bg-orange-500/10 text-orange-400 border border-orange-500/15'
+                      : 'text-slate-500 hover:text-slate-300 hover:bg-dark-800'
+                  )}>
+                  <Film size={12} className={isCurrentProject ? 'text-orange-400' : 'text-slate-600'} />
+                  <span className="truncate flex-1">{p.name}</span>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Bottom section */}
       <div className="border-t border-dark-700 p-3 space-y-1">

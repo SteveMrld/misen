@@ -1,11 +1,12 @@
-import { Loader2 } from 'lucide-react'
-
 export default function DashboardLoading() {
   return (
     <div className="flex items-center justify-center py-24">
-      <div className="flex flex-col items-center gap-3">
-        <Loader2 size={32} className="text-orange-500 animate-spin" />
-        <p className="text-sm text-slate-500">Chargement du studio...</p>
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/10 flex items-center justify-center">
+          <div className="w-5 h-5 border-2 border-orange-500/30 border-t-orange-400 rounded-full animate-spin" />
+        </div>
+        <div className="h-0.5 w-32 bg-gradient-to-r from-transparent via-orange-500/40 to-transparent" />
+        <p className="text-xs text-slate-500 animate-pulse">Chargement du studio...</p>
       </div>
     </div>
   )
