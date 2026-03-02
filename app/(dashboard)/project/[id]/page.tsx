@@ -290,6 +290,32 @@ export default function ProjectPage() {
       {/* MODE SIMPLE */}
       {mode === 'simple' && (
         <div className="max-w-3xl mx-auto space-y-5">
+          {/* Pipeline Progress */}
+          <div className="bg-dark-900 rounded-xl border border-dark-700 p-4">
+            <div className="flex items-center gap-1">
+              {[
+                { label: locale === 'fr' ? 'Écriture' : 'Writing', done: !!scriptText.trim(), icon: '✏️' },
+                { label: locale === 'fr' ? 'Analyse' : 'Analysis', done: !!analysis, icon: '🔍' },
+                { label: locale === 'fr' ? 'Production' : 'Production', done: false, icon: '🎬' },
+                { label: locale === 'fr' ? 'Post-prod' : 'Post-prod', done: false, icon: '🎧' },
+                { label: 'Export', done: false, icon: '📤' },
+              ].map((step, i, arr) => (
+                <div key={i} className="flex-1 flex items-center">
+                  <div className="flex flex-col items-center flex-1">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all ${step.done ? 'bg-green-500/20 border-2 border-green-500' : i === 0 || (i === 1 && scriptText.trim()) ? 'bg-orange-500/20 border-2 border-orange-500 animate-pulse' : 'bg-dark-800 border-2 border-dark-700'}`}>
+                      {step.done ? '✓' : step.icon}
+                    </div>
+                    <span className={`text-[9px] mt-1 ${step.done ? 'text-green-400' : 'text-slate-500'}`}>{step.label}</span>
+                  </div>
+                  {i < arr.length - 1 && <div className={`h-0.5 w-full mx-1 rounded ${step.done ? 'bg-green-500/40' : 'bg-dark-700'}`} />}
+                </div>
+              ))}
+            </div>
+            {!scriptText.trim() && <p className="text-xs text-slate-500 text-center mt-3">{locale === 'fr' ? '👆 Commencez par écrire ou coller votre scénario' : '👆 Start by writing or pasting your script'}</p>}
+            {scriptText.trim() && !analysis && <p className="text-xs text-orange-400 text-center mt-3">{locale === 'fr' ? '⬇️ Lancez l\'analyse pour continuer' : '⬇️ Run analysis to continue'}</p>}
+            {analysis && <p className="text-xs text-green-400 text-center mt-3">{locale === 'fr' ? '✨ Passez en mode Expert pour accéder à tous les outils' : '✨ Switch to Expert mode to access all tools'}</p>}
+          </div>
+
           {/* AI Screenplay Assistant */}
           <ScreenplayAssistant
             onUseScript={(script: string) => setScriptText(script)}
@@ -501,7 +527,30 @@ export default function ProjectPage() {
           )}
           {tab === 'render' && analysis && <>
             <RenderPanel analysis={analysis} analysisId={analysisId} projectName={project?.name} />
-            <div className="mt-6">
+
+            {/* Export Presets */}
+            <div className="mt-4 bg-dark-900 rounded-xl border border-dark-700 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Package size={16} className="text-orange-400" />
+                <span className="text-sm text-slate-200 font-medium">{locale === 'fr' ? 'Presets d\'export' : 'Export Presets'}</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  { label: 'YouTube 1080p', res: '1920x1080', ratio: '16:9', icon: '▶' },
+                  { label: 'Instagram Reels', res: '1080x1920', ratio: '9:16', icon: '📱' },
+                  { label: locale === 'fr' ? 'Cinéma 4K' : 'Cinema 4K', res: '3840x2160', ratio: '2.39:1', icon: '🎬' },
+                  { label: locale === 'fr' ? 'Présentation' : 'Presentation', res: '1920x1080', ratio: '16:9', icon: '📊' },
+                ].map((preset, i) => (
+                  <button key={i} className="bg-dark-800 hover:bg-dark-700 border border-dark-700 hover:border-orange-500/30 rounded-lg p-3 text-left transition-all group">
+                    <span className="text-lg block mb-1">{preset.icon}</span>
+                    <span className="text-xs text-slate-200 font-medium block group-hover:text-orange-400">{preset.label}</span>
+                    <span className="text-[10px] text-slate-500 block mt-0.5">{preset.res} · {preset.ratio}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-4">
               <AssemblyPanel analysis={analysis} projectId={projectId} projectName={project?.name} />
             </div>
           </>}
