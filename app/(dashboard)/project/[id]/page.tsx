@@ -55,6 +55,7 @@ export default function ProjectPage() {
   const [stylePreset, setStylePreset] = useState('cinematique')
   const [loading, setLoading] = useState(true)
   const [analyzing, setAnalyzing] = useState(false)
+  const [showCelebration, setShowCelebration] = useState(false)
   const [saving, setSaving] = useState(false)
   const [analysis, setAnalysis] = useState<any>(null)
   const [analysisId, setAnalysisId] = useState<string | null>(null)
@@ -131,7 +132,7 @@ export default function ProjectPage() {
       const endpoint = aiMode ? 'analyze-ai' : 'analyze'
       const res = await fetch(`/api/projects/${projectId}/${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ style_preset: stylePreset }) })
       const data = await res.json()
-      if (res.ok && data.result) { setAnalysis(data.result); setAnalysisId(data.analysis_id); if (mode === 'expert') setTab('overview') }
+      if (res.ok && data.result) { setAnalysis(data.result); setAnalysisId(data.analysis_id); setShowCelebration(true); setTimeout(() => { setShowCelebration(false); if (mode === 'simple') { /* stay */ } else { setTab('overview'); setWorkspace('analysis') } }, 2500) }
       else setError(data.error || t.common.error)
     } catch { setError(t.common.error) } finally { setAnalyzing(false) }
   }
@@ -198,6 +199,27 @@ export default function ProjectPage() {
 
   return (
     <div>
+
+      {/* Analysis Celebration */}
+      {showCelebration && analysis && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center pointer-events-none">
+          <div className="absolute inset-0 bg-dark-950/60 backdrop-blur-sm" />
+          <div className="relative animate-fade-in text-center">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-orange-500/30 to-orange-600/20 border border-orange-500/30 flex items-center justify-center shadow-2xl shadow-orange-500/20">
+              <Sparkles size={32} className="text-orange-400" />
+            </div>
+            <h2 className="font-display text-2xl text-white mb-2">{locale === 'fr' ? 'Analyse terminée !' : 'Analysis complete!'}</h2>
+            <div className="flex items-center justify-center gap-4 text-sm text-slate-300 mb-3">
+              <span className="flex items-center gap-1"><Film size={14} className="text-orange-400" /> {analysis.scenes?.length || 0} {locale === 'fr' ? 'scènes' : 'scenes'}</span>
+              <span className="flex items-center gap-1"><Eye size={14} className="text-blue-400" /> {analysis.plans?.length || 0} {locale === 'fr' ? 'plans' : 'shots'}</span>
+              <span className="flex items-center gap-1"><Users size={14} className="text-purple-400" /> {analysis.characterBible?.length || 0} {locale === 'fr' ? 'personnages' : 'characters'}</span>
+            </div>
+            <div className="beam w-48 mx-auto mb-3" />
+            <p className="text-xs text-slate-500 animate-pulse">{locale === 'fr' ? 'Préparation du cockpit...' : 'Preparing cockpit...'}</p>
+          </div>
+        </div>
+      )}
+
       <ShortcutOverlay show={showShortcuts} onClose={() => setShowShortcuts(false)} />
 
       {/* Guided Tour */}
