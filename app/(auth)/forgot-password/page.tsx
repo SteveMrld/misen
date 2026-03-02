@@ -85,7 +85,7 @@ export default function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white text-sm font-medium rounded-xl transition-colors"
+              className="w-full py-2.5 btn-primary text-sm font-medium rounded-xl"
             >
               {loading ? t.common.loading : t.forgotPassword.submit}
             </button>

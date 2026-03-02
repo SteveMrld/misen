@@ -287,7 +287,7 @@ export default function ProjectPage() {
           )}
           {/* Mode toggle */}
           <div className="flex items-center gap-2 bg-dark-900 rounded-lg p-1 border border-dark-700">
-          <button onClick={() => setMode('simple')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${mode === 'simple' ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20' : 'text-slate-400 hover:text-slate-200'}`}>
+          <button onClick={() => setMode('simple')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${mode === 'simple' ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/15' : 'text-slate-400 hover:text-slate-200'}`}>
             <Wand2 size={13} /> Simple
           </button>
           <button onClick={() => setMode('expert')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${mode === 'expert' ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/20' : 'text-slate-400 hover:text-slate-200'}`}>
@@ -357,7 +357,7 @@ export default function ProjectPage() {
           </div>
 
           <button onClick={handleAnalyze} disabled={analyzing || !scriptText.trim()}
-            className="w-full py-3.5 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 disabled:from-dark-700 disabled:to-dark-700 disabled:text-slate-600 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 disabled:shadow-none">
+            className="w-full py-3.5 btn-primary disabled:bg-dark-700 disabled:text-slate-600 disabled:shadow-none disabled:opacity-40 text-white font-semibold rounded-xl flex items-center justify-center gap-2">
             {analyzing ? <><Loader2 size={18} className="animate-spin" /> {t.project.analyzing}</> : <><Brain size={18} /> {t.project.analyze}</>}
           </button>
           {error && <p className="text-xs text-red-400 text-center flex items-center justify-center gap-1"><AlertTriangle size={12} /> {error}</p>}
