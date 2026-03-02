@@ -180,7 +180,7 @@ export default function ProjectPage() {
     { key: '0', label: 'Timeline', action: () => { if(analysis) { setMode('expert'); setTab('timeline') } } },
   ])
 
-  if (loading) return <div className="flex items-center justify-center py-24"><Loader2 size={32} className="text-orange-500 animate-spin" /></div>
+  if (loading) return <div className="flex flex-col items-center justify-center py-24 gap-4"><div className="relative"><div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/10 flex items-center justify-center"><Loader2 size={24} className="text-orange-400 animate-spin" /></div></div><div className="beam w-32" /><p className="text-xs text-slate-500 animate-pulse">{locale === "fr" ? "Chargement du projet..." : "Loading project..."}</p></div>
 
   const tabs: { id: Tab; label: string; icon: any; disabled?: boolean }[] = [
     { id: 'script', label: t.project.tabs.script, icon: Film },

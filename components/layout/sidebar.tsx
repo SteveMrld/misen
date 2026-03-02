@@ -173,7 +173,7 @@ export function Sidebar({ userName }: SidebarProps) {
       {/* Mobile drawer */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-[280px] bg-dark-900 border-r border-dark-700 flex flex-col transition-transform duration-300 lg:hidden',
+          'fixed inset-y-0 left-0 z-50 w-[280px] bg-dark-900/95 backdrop-blur-xl border-r border-dark-700 flex flex-col transition-transform duration-300 lg:hidden',
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
@@ -183,7 +183,7 @@ export function Sidebar({ userName }: SidebarProps) {
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          'sticky left-0 top-0 h-screen bg-dark-900 border-r border-dark-700 flex-col z-40 transition-all duration-300 hidden lg:flex',
+          'sticky left-0 top-0 h-screen bg-dark-900/95 backdrop-blur-xl border-r border-dark-700 flex-col z-40 transition-all duration-300 hidden lg:flex',
           collapsed ? 'w-sidebar-collapsed' : 'w-sidebar'
         )}
       >

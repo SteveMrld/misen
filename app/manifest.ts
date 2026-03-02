@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     description: '13 moteurs d\'analyse × 7 modèles IA. De l\'écriture à l\'écran.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#06080D',
+    background_color: '#0A0806',
     theme_color: '#C07B2A',
     icons: [
       {

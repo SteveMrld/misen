@@ -176,7 +176,7 @@ export default function DashboardPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-24">
-          <Loader2 size={32} className="text-orange-500 animate-spin" />
+          <div className="flex flex-col items-center gap-4"><div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/10 flex items-center justify-center"><Loader2 size={24} className="text-orange-400 animate-spin" /></div><div className="h-0.5 w-32 bg-gradient-to-r from-transparent via-orange-500/60 to-transparent" /><p className="text-xs text-slate-500">Chargement...</p></div>
         </div>
       ) : projects.length === 0 ? (
         <EmptyState onNew={() => setShowNewModal(true)} />
