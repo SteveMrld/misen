@@ -123,7 +123,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
       {/* ═══ NAV ═══ */}
       <nav className="flex items-center justify-between px-6 py-4 relative z-20">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/20">
             <Play size={14} className="text-white ml-0.5" fill="white" />
           </div>
           <span className="font-display text-xl text-white tracking-tight">MISEN</span>
@@ -140,7 +140,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
           </Link>
           <LanguageToggle />
           {isLoggedIn ? (
-            <Link href="/dashboard" className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-500 rounded-xl transition-colors">
+            <Link href="/dashboard" className="btn-primary px-4 py-2 text-sm font-medium rounded-xl">
               {t.common.dashboard}
             </Link>
           ) : (
@@ -148,7 +148,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
               <Link href="/login" className="px-3 py-1.5 text-sm text-slate-400 hover:text-white transition-colors">
                 {t.nav.login}
               </Link>
-              <Link href="/register" className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-500 rounded-xl transition-colors">
+              <Link href="/register" className="btn-primary px-4 py-2 text-sm font-medium rounded-xl">
                 {t.common.getStarted}
               </Link>
             </>
@@ -160,8 +160,9 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
       <div className="flex-1 flex flex-col items-center justify-center px-6 relative">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <img src={heroBg.src} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
-          <div className="absolute inset-0 bg-gradient-to-b from-dark-950/50 via-dark-950/80 to-dark-950" />
+          <div className="absolute inset-0 bg-gradient-to-b from-dark-950/40 via-dark-950/75 to-dark-950" />
           <div className="absolute inset-0 bg-gradient-to-r from-dark-950/80 via-transparent to-dark-950/80" />
+          <div className="absolute inset-0 vignette" />
         </div>
 
         {/* Badge */}
@@ -175,7 +176,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
         {/* Headline */}
         <h1 className="relative z-10 font-display text-5xl md:text-7xl text-center text-white mb-4 tracking-tight" style={{ fontWeight: 500, lineHeight: 1.1 }}>
           De l&apos;idée<br />
-          <span className="bg-gradient-to-r from-orange-400 via-orange-500 to-amber-500 bg-clip-text text-transparent">
+          <span className="text-gradient-copper">
             à l&apos;image.
           </span>
         </h1>
@@ -192,7 +193,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
 
         {/* ═══ ACTION BOX ═══ */}
         <div className="relative z-10 w-full max-w-2xl">
-          <div className="bg-dark-900/80 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-5 shadow-2xl shadow-black/40">
+          <div className="bg-dark-900/80 backdrop-blur-xl border border-orange-500/10 rounded-2xl p-5 shadow-2xl shadow-black/40">
             <div className="flex items-center justify-between mb-4">
               <button
                 onClick={() => setShowModels(!showModels)}
@@ -239,7 +240,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
               </p>
               <button
                 onClick={handleGo}
-                className="flex items-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-500 text-white text-sm font-semibold rounded-xl transition-all shadow-lg shadow-orange-600/20 hover:shadow-orange-500/30"
+                className="btn-primary flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-xl"
               >
                 <Play size={14} fill="white" /> {isLoggedIn ? t.common.dashboard : t.common.getStarted}
               </button>
@@ -266,14 +267,14 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
       {/* ═══ USE CASES — Custom Pictos ═══ */}
       <section className="px-6 py-16 max-w-5xl mx-auto w-full">
         <h2 className="font-display text-2xl text-white text-center mb-3 tracking-tight">
-          Un outil, tous les formats
+          <span className="text-gradient-copper">Un outil, tous les formats</span>
         </h2>
         <p className="text-sm text-slate-500 text-center mb-8 max-w-lg mx-auto">
           Que vous soyez réalisateur, marketeur, enseignant ou créateur — MISEN s&apos;adapte à votre vision
         </p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {FORMATS.map((f) => (
-            <div key={f.label} className="flex items-center gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.12] transition-all group">
+            <div key={f.label} className="flex items-center gap-3 p-4 rounded-xl bg-dark-900/50 border border-dark-700 hover:border-orange-500/20 hover:bg-dark-900/80 transition-all group">
               <div className="w-12 h-12 flex-shrink-0 relative">
                 <Image src={f.icon} alt={f.label} fill className="object-contain" />
               </div>
@@ -288,14 +289,14 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
 
       {/* ═══ HOW IT WORKS — Custom Pictos ═══ */}
       <section className="px-6 py-16 max-w-4xl mx-auto w-full">
-        <h2 className="font-display text-2xl text-white text-center mb-10 tracking-tight">Comment ça marche</h2>
+        <h2 className="font-display text-2xl text-white text-center mb-10 tracking-tight"><span className="text-gradient-copper">Comment ça marche</span></h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {STEPS.map((s) => (
             <div key={s.step} className="group text-center">
               <div className="w-20 h-20 mx-auto relative mb-4">
                 <Image src={s.icon} alt={s.title} fill className="object-contain" />
               </div>
-              <div className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-orange-500 mb-2">
+              <div className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-orange-400 mb-2">
                 {s.step}
               </div>
               <h3 className="text-base font-semibold text-white mb-1.5">{s.title}</h3>
@@ -308,7 +309,7 @@ export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
       {/* ═══ VISUAL SHOWCASE — 3 SCENARIOS ═══ */}
       <section className="px-6 py-16 max-w-5xl mx-auto w-full">
         <h2 className="font-display text-2xl text-white text-center mb-3 tracking-tight">
-          Des résultats cinématiques
+          <span className="text-gradient-copper">Des résultats cinématiques</span>
         </h2>
         <p className="text-sm text-slate-500 text-center mb-8">
           Chaque plan est assigné au modèle IA optimal — voici 3 projets générés par MISEN
