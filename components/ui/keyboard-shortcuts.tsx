@@ -79,24 +79,24 @@ export function ShortcutOverlay({ show, onClose }: { show: boolean; onClose: () 
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100]" onClick={onClose}>
-      <div className="bg-dark-900 border border-dark-700 rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-lg flex items-center justify-center z-[100]" onClick={onClose}>
+      <div className="bg-dark-900 border border-dark-700 rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-2xl shadow-black/60" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-display text-slate-100">Raccourcis clavier</h2>
+          <h2 className="text-lg font-display text-gradient-copper">Raccourcis clavier</h2>
           <button onClick={onClose} className="p-1.5 rounded-md hover:bg-dark-800">
             <X size={18} className="text-slate-400" />
           </button>
         </div>
         {Object.entries(groups).map(([group, items]) => (
           <div key={group} className="mb-5">
-            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">{group}</h3>
+            <h3 className="text-[11px] font-bold text-orange-400/60 uppercase tracking-wider mb-2">{group}</h3>
             <div className="space-y-1.5">
               {items.map(({ keys, label }) => (
                 <div key={keys} className="flex items-center justify-between py-1">
                   <span className="text-sm text-slate-300">{label}</span>
                   <div className="flex items-center gap-1">
                     {keys.split('+').map((k, i) => (
-                      <kbd key={i} className="px-2 py-0.5 bg-dark-800 border border-dark-600 rounded text-[11px] text-slate-400 font-mono min-w-[24px] text-center">
+                      <kbd key={i} className="px-2 py-0.5 bg-dark-800 border border-dark-600 rounded-md text-[11px] text-orange-400/80 font-mono min-w-[24px] text-center shadow-sm shadow-dark-950">
                         {k}
                       </kbd>
                     ))}
