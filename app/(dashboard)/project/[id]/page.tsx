@@ -404,7 +404,26 @@ export default function ProjectPage() {
             </div>
             {!scriptText.trim() && <p className="text-xs text-slate-500 text-center mt-3">{locale === 'fr' ? '👆 Commencez par écrire ou coller votre scénario' : '👆 Start by writing or pasting your script'}</p>}
             {scriptText.trim() && !analysis && <p className="text-xs text-orange-400 text-center mt-3">{locale === 'fr' ? '⬇️ Lancez l\'analyse pour continuer' : '⬇️ Run analysis to continue'}</p>}
-            {analysis && <p className="text-xs text-green-400 text-center mt-3">{locale === 'fr' ? '✨ Passez en mode Expert pour accéder à tous les outils' : '✨ Switch to Expert mode to access all tools'}</p>}
+            {analysis && (
+              <div className="mt-4 space-y-3">
+                <div className="beam w-full" />
+                <div className="flex items-center gap-4 justify-center">
+                  <span className="flex items-center gap-1.5 text-xs text-green-400"><Film size={12} /> {analysis.scenes?.length || 0} {locale === 'fr' ? 'scènes' : 'scenes'}</span>
+                  <span className="flex items-center gap-1.5 text-xs text-blue-400"><Eye size={12} /> {analysis.plans?.length || 0} {locale === 'fr' ? 'plans' : 'shots'}</span>
+                  <span className="flex items-center gap-1.5 text-xs text-purple-400"><Users size={12} /> {analysis.characterBible?.length || 0} {locale === 'fr' ? 'personnages' : 'characters'}</span>
+                </div>
+                <div className="flex items-center justify-center gap-2">
+                  <button onClick={() => { setMode('expert'); setWorkspace('analysis'); setTab('overview') }}
+                    className="btn-primary px-4 py-2 text-xs font-medium rounded-lg flex items-center gap-1.5">
+                    <Sparkles size={12} /> {locale === 'fr' ? 'Explorer le cockpit' : 'Explore cockpit'}
+                  </button>
+                  <button onClick={() => { setMode('expert'); setWorkspace('production'); setTab('storyboard') }}
+                    className="px-4 py-2 bg-dark-800 hover:bg-dark-700 border border-dark-600 text-slate-300 text-xs font-medium rounded-lg flex items-center gap-1.5">
+                    <Camera size={12} /> Storyboard
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* AI Screenplay Assistant */}
