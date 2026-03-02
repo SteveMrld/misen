@@ -678,58 +678,105 @@ export default function ProjectPage() {
               </div>
             </div>
           )}
-          {tab === 'render' && analysis && <>
-            <RenderPanel analysis={analysis} analysisId={analysisId} projectName={project?.name} />
+          {tab === 'render' && analysis && <DeliverPage analysis={analysis} analysisId={analysisId} projectId={projectId} projectName={project?.name} locale={locale} />}
+        </div>
+      )}
+    </div>
+  )
+}
 
-            {/* Export Presets */}
-            <div className="mt-4 bg-dark-900 rounded-xl border border-dark-700 p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Package size={16} className="text-orange-400" />
-                <span className="text-sm text-slate-200 font-medium">{locale === 'fr' ? 'Presets d\'export' : 'Export Presets'}</span>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {[
-                  { label: 'YouTube 1080p', res: '1920x1080', ratio: '16:9', icon: '▶' },
-                  { label: 'Instagram Reels', res: '1080x1920', ratio: '9:16', icon: '📱' },
-                  { label: locale === 'fr' ? 'Cinéma 4K' : 'Cinema 4K', res: '3840x2160', ratio: '2.39:1', icon: '🎬' },
-                  { label: locale === 'fr' ? 'Présentation' : 'Presentation', res: '1920x1080', ratio: '16:9', icon: '📊' },
-                ].map((preset, i) => (
-                  <button key={i} className="bg-dark-800 hover:bg-dark-700 border border-dark-700 hover:border-orange-500/30 rounded-lg p-3 text-left transition-all group">
-                    <span className="text-lg block mb-1">{preset.icon}</span>
-                    <span className="text-xs text-slate-200 font-medium block group-hover:text-orange-400">{preset.label}</span>
-                    <span className="text-[10px] text-slate-500 block mt-0.5">{preset.res} · {preset.ratio}</span>
-                  </button>
-                ))}
-              </div>
+// ═══ Unified Deliver Page ═══
+function DeliverPage({ analysis, analysisId, projectId, projectName, locale }: { analysis: any; analysisId: string | null; projectId: string; projectName?: string; locale: string }) {
+  const [deliverTab, setDeliverTab] = useState<'generate' | 'assemble' | 'presets' | 'history'>('generate')
+  const fr = locale === 'fr'
+  const tabs = [
+    { id: 'generate' as const, label: fr ? 'Générer' : 'Generate', icon: '⚡' },
+    { id: 'assemble' as const, label: fr ? 'Assembler' : 'Assemble', icon: '🎬' },
+    { id: 'presets' as const, label: fr ? 'Formats' : 'Formats', icon: '📐' },
+    { id: 'history' as const, label: fr ? 'Historique' : 'History', icon: '📋' },
+  ]
+  return (
+    <div className="space-y-4">
+      {/* Deliver header */}
+      <div className="bg-dark-900 rounded-xl border border-dark-700 p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500/15 to-orange-500/15 border border-green-500/15 flex items-center justify-center">
+              <Package size={18} className="text-green-400" />
             </div>
+            <div>
+              <h2 className="text-sm font-bold text-slate-200 font-display">{fr ? 'Livraison' : 'Deliver'}</h2>
+              <p className="text-[10px] text-slate-500">{fr ? 'Générer, assembler, exporter votre film' : 'Generate, assemble, export your film'}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            {tabs.map(t => (
+              <button key={t.id} onClick={() => setDeliverTab(t.id)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${deliverTab === t.id ? 'bg-gradient-to-r from-orange-500/15 to-green-500/10 text-orange-300 border border-orange-500/20' : 'text-slate-500 hover:text-slate-300'}`}>
+                <span className="mr-1">{t.icon}</span> {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="h-px bg-gradient-to-r from-transparent via-orange-500/20 to-transparent" />
+      </div>
 
-            <div className="mt-4">
-              <AssemblyPanel analysis={analysis} projectId={projectId} projectName={project?.name} />
-            </div>
+      {/* Tab content */}
+      {deliverTab === 'generate' && (
+        <RenderPanel analysis={analysis} analysisId={analysisId} projectName={projectName} />
+      )}
 
-            {/* Export History */}
-            <div className="mt-4 bg-dark-900 rounded-xl border border-dark-700 p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Clock size={16} className="text-slate-400" />
-                <span className="text-sm text-slate-200 font-medium">{locale === 'fr' ? 'Historique d\'export' : 'Export History'}</span>
+      {deliverTab === 'assemble' && (
+        <AssemblyPanel analysis={analysis} projectId={projectId} projectName={projectName} />
+      )}
+
+      {deliverTab === 'presets' && (
+        <div className="bg-dark-900 rounded-xl border border-dark-700 p-4">
+          <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-3">{fr ? 'Formats d\'export' : 'Export Formats'}</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: 'YouTube 1080p', res: '1920×1080', ratio: '16:9', icon: '▶', color: 'border-red-500/20 hover:border-red-500/40' },
+              { label: 'Instagram Reels', res: '1080×1920', ratio: '9:16', icon: '📱', color: 'border-pink-500/20 hover:border-pink-500/40' },
+              { label: fr ? 'Cinéma 4K' : 'Cinema 4K', res: '3840×2160', ratio: '2.39:1', icon: '🎬', color: 'border-orange-500/20 hover:border-orange-500/40' },
+              { label: fr ? 'Présentation' : 'Presentation', res: '1920×1080', ratio: '16:9', icon: '📊', color: 'border-blue-500/20 hover:border-blue-500/40' },
+              { label: 'TikTok', res: '1080×1920', ratio: '9:16', icon: '🎵', color: 'border-cyan-500/20 hover:border-cyan-500/40' },
+              { label: 'X / Twitter', res: '1280×720', ratio: '16:9', icon: '🐦', color: 'border-sky-500/20 hover:border-sky-500/40' },
+              { label: 'LinkedIn', res: '1920×1080', ratio: '16:9', icon: '💼', color: 'border-blue-600/20 hover:border-blue-600/40' },
+              { label: fr ? 'Carré' : 'Square', res: '1080×1080', ratio: '1:1', icon: '⬛', color: 'border-purple-500/20 hover:border-purple-500/40' },
+            ].map((preset, i) => (
+              <button key={i} className={`bg-dark-800/50 hover:bg-dark-800 border rounded-xl p-4 text-left transition-all group ${preset.color}`}>
+                <span className="text-2xl block mb-2">{preset.icon}</span>
+                <span className="text-xs text-slate-200 font-medium block group-hover:text-orange-400 transition-colors">{preset.label}</span>
+                <span className="text-[10px] text-slate-500 block mt-1">{preset.res}</span>
+                <span className="text-[9px] text-slate-600">{preset.ratio}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {deliverTab === 'history' && (
+        <div className="bg-dark-900 rounded-xl border border-dark-700 p-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Clock size={16} className="text-slate-400" />
+            <span className="text-sm text-slate-200 font-medium">{fr ? 'Historique d\'export' : 'Export History'}</span>
+          </div>
+          <div className="space-y-2">
+            {[
+              { date: new Date().toLocaleDateString(fr ? 'fr-FR' : 'en-US'), type: 'JSON', size: '2.4 KB', icon: '📋', status: '✓' },
+            ].map((ex, i) => (
+              <div key={i} className="flex items-center gap-3 px-3 py-2.5 bg-dark-800/50 rounded-lg border border-dark-700/50 hover:border-dark-600 transition-colors">
+                <span className="text-sm">{ex.icon}</span>
+                <div className="flex-1">
+                  <span className="text-xs text-slate-300 font-medium">{ex.type}</span>
+                  <span className="text-[10px] text-slate-500 ml-2">{ex.size}</span>
+                </div>
+                <span className="text-green-400 text-xs">{ex.status}</span>
+                <span className="text-[10px] text-slate-500">{ex.date}</span>
               </div>
-              <div className="space-y-2">
-                {[
-                  { date: new Date().toLocaleDateString(locale === 'fr' ? 'fr-FR' : 'en-US'), type: 'JSON', size: '2.4 KB', icon: '📋' },
-                ].map((ex, i) => (
-                  <div key={i} className="flex items-center gap-3 px-3 py-2 bg-dark-800/50 rounded-lg border border-dark-700/50">
-                    <span className="text-sm">{ex.icon}</span>
-                    <div className="flex-1">
-                      <span className="text-xs text-slate-300">{ex.type}</span>
-                      <span className="text-[10px] text-slate-500 ml-2">{ex.size}</span>
-                    </div>
-                    <span className="text-[10px] text-slate-500">{ex.date}</span>
-                  </div>
-                ))}
-                <p className="text-[10px] text-slate-600 text-center mt-2">{locale === 'fr' ? 'L\'historique se remplit au fur et à mesure de vos exports' : 'History fills as you export'}</p>
-              </div>
-            </div>
-          </>}
+            ))}
+          </div>
+          <p className="text-[9px] text-slate-600 text-center mt-3">{fr ? 'L\'historique se remplit au fur et à mesure de vos exports' : 'History fills as you export'}</p>
         </div>
       )}
     </div>
