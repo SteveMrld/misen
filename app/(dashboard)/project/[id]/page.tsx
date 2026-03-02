@@ -31,6 +31,7 @@ const DEMO_IMAGES = [
 ]
 import { CompareButton } from '@/components/ui/compare-panel'
 import { useKeyboardShortcuts, ShortcutOverlay } from '@/components/ui/keyboard-shortcuts'
+import { GuidedTour, useProjectTour } from '@/components/ui/guided-tour'
 import { OverviewCockpit } from '@/components/ui/overview-cockpit'
 import { CharacterReferenceCard, getCharacterRefImages, injectCharacterRefsInPrompt } from '@/components/ui/character-reference'
 import { TemplateSelector } from '@/components/ui/template-selector'
@@ -64,6 +65,7 @@ export default function ProjectPage() {
   const [workspace, setWorkspace] = useState<Workspace>('writing')
   const [showAllTabs, setShowAllTabs] = useState(false)
   const [cmdPalette, setCmdPalette] = useState(false)
+  const [showTour, setShowTour] = useState(false)
   const [cmdQuery, setCmdQuery] = useState('')
   const cmdRef = useRef<HTMLInputElement>(null)
 
@@ -155,6 +157,8 @@ export default function ProjectPage() {
     } catch {}
   }
 
+  const tourSteps = useProjectTour({ setMode, setWorkspace, setTab, hasAnalysis: !!analysis })
+
   useKeyboardShortcuts([
     { key: '?', label: t.project.shortcuts.shortcuts, action: () => setShowShortcuts(s => !s) },
     { key: 'k', ctrl: true, label: 'Command palette', action: () => { setCmdPalette(true); setTimeout(() => cmdRef.current?.focus(), 50) } },
@@ -195,6 +199,15 @@ export default function ProjectPage() {
   return (
     <div>
       <ShortcutOverlay show={showShortcuts} onClose={() => setShowShortcuts(false)} />
+
+      {/* Guided Tour */}
+      {showTour && (
+        <GuidedTour
+          steps={tourSteps}
+          onComplete={() => setShowTour(false)}
+          onSkip={() => setShowTour(false)}
+        />
+      )}
       {/* COMMAND PALETTE */}
       {cmdPalette && (
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]" onClick={() => setCmdPalette(false)}>
@@ -256,6 +269,9 @@ export default function ProjectPage() {
           {/* Export menu */}
           {analysis && (
             <div className="relative">
+              <button onClick={() => setShowTour(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-lg text-xs font-medium text-orange-400 hover:text-orange-300 hover:bg-orange-500/15 transition-colors">
+                <Sparkles size={12} /> {locale === 'fr' ? 'Visite guidée' : 'Guided tour'}
+              </button>
               <button onClick={() => setShowExportMenu(!showExportMenu)} className="flex items-center gap-1.5 px-3 py-1.5 bg-dark-900 border border-dark-700 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors">
                 <Download size={13} /> Export
               </button>
@@ -352,11 +368,11 @@ export default function ProjectPage() {
                 </button>
               </div>
             </div>
-            <textarea value={scriptText} onChange={(e: any) => setScriptText(e.target.value)} placeholder={t.project.scriptPlaceholder} rows={12}
+            <textarea value={scriptText} onChange={(e: any) => setScriptText(e.target.value)} data-tour="script-editor" placeholder={t.project.scriptPlaceholder} rows={12}
               className="w-full p-4 bg-transparent text-sm text-slate-200 placeholder:text-slate-600 resize-none focus:outline-none font-mono leading-relaxed" />
           </div>
 
-          <button onClick={handleAnalyze} disabled={analyzing || !scriptText.trim()}
+          <button data-tour="analyze-button" onClick={handleAnalyze} disabled={analyzing || !scriptText.trim()}
             className="w-full py-3.5 btn-primary disabled:bg-dark-700 disabled:text-slate-600 disabled:shadow-none disabled:opacity-40 text-white font-semibold rounded-xl flex items-center justify-center gap-2">
             {analyzing ? <><Loader2 size={18} className="animate-spin" /> {t.project.analyzing}</> : <><Brain size={18} /> {t.project.analyze}</>}
           </button>
@@ -404,7 +420,7 @@ export default function ProjectPage() {
           {!showAllTabs ? (
             <div className="mb-5 space-y-2">
               {/* 5 Workspaces bar */}
-              <div className="flex gap-1 bg-dark-900 rounded-xl p-1.5 border border-dark-700">
+              <div data-tour="workspace-bar" className="flex gap-1 bg-dark-900 rounded-xl p-1.5 border border-dark-700">
                 {([
                   { id: 'writing' as Workspace, label: t.project.workspaces.writing, icon: Film, tabs: ['script'], status: scriptText.trim() ? (scriptText.length > 100 ? 'done' : 'partial') : 'empty' },
                   { id: 'analysis' as Workspace, label: t.project.workspaces.analysis, icon: Brain, tabs: ['overview', 'analyse', 'copilot'], status: analysis ? 'done' : scriptText.trim() ? 'ready' : 'locked' },
@@ -463,7 +479,7 @@ export default function ProjectPage() {
                   </button>
                 ))}
                 <button onClick={() => setShowAllTabs(false)}
-                  className="px-2 py-2 rounded-lg text-orange-400 hover:text-orange-300 hover:bg-white/5 transition-all ml-1"
+                  className="px-2 py-2 rounded-lg text-orange-400 hover:text-orange-300 hover:bg-white/5 transition-all ml-1" data-tour="shortcuts-button"
                   title={t.project.workspaces.allTabs}>
                   <Layers size={14} />
                 </button>
@@ -1215,7 +1231,7 @@ function AR({ analysis, analysisId, userKeys, projectId }: { analysis: any; anal
 
           {/* Filmstrip */}
           <div className="px-4 pt-3">
-            <div className="flex gap-0.5 h-10 rounded-lg overflow-hidden bg-dark-800 overflow-x-auto scrollbar-hide">
+            <div data-tour="mini-timeline" className="flex gap-0.5 h-10 rounded-lg overflow-hidden bg-dark-800 overflow-x-auto scrollbar-hide">
               {plans.map((plan: any, i: number) => {
                 const emotion = (plan.emotion || 'neutre').toLowerCase()
                 const emotionColors: Record<string, string> = { tension: '#ef4444', tristesse: '#6366f1', joie: '#f59e0b', peur: '#8b5cf6', nostalgie: '#a78bfa', amour: '#ec4899', mystere: '#06b6d4', neutre: '#64748b', sadness: '#6366f1', joy: '#f59e0b', fear: '#8b5cf6', love: '#ec4899', mystery: '#06b6d4', determination: '#f97316', neutral: '#64748b' }

@@ -70,7 +70,7 @@ export function OverviewCockpit({ analysis, projectName, onNavigate }: OverviewC
   return (
     <div className="space-y-5">
       {/* ═══ KPI Cards ═══ */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div data-tour="cockpit-kpis" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <KPI icon={Film} label={t.project.cockpit.totalScenes} value={scenes.length} color="text-orange-500" onClick={() => onNavigate?.('analyse')} />
         <KPI icon={Eye} label={t.project.cockpit.totalShots} value={plans.length} color="text-blue-400" onClick={() => onNavigate?.('analyse')} />
         <KPI icon={DollarSign} label={t.project.cockpit.totalBudget} value={`${costTotal.toFixed(2)}`} color="text-green-400" onClick={() => onNavigate?.("analyse")} />
