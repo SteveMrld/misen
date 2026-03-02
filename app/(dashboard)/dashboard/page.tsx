@@ -211,7 +211,7 @@ function EmptyState({ onNew }: { onNew: () => void }) {
   const { t, locale } = useI18n()
   return (
     <div className="flex flex-col items-center justify-center py-20">
-      <div className="mb-6 w-48 h-48 rounded-2xl overflow-hidden opacity-70">
+      <div className="mb-6 w-48 h-48 rounded-2xl overflow-hidden opacity-70 shadow-2xl shadow-black/40">
         <img src={emptyProjectsImg.src} alt={t.dashboard.createFirst} className="w-full h-full object-cover" />
       </div>
       <h3 className="text-xl font-display text-slate-200 mb-2">{t.dashboard.createFirst}</h3>
@@ -260,7 +260,7 @@ function ProjectCard({ project, onClick, onDelete, onExport }: {
             className="w-full"
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-dark-900 via-dark-900/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-dark-850 via-dark-850/30 to-transparent" />
         <div className="absolute top-3 right-3"><span className={status.class}>{status.label}</span></div>
         <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity">
           <div className="relative">
@@ -283,7 +283,7 @@ function ProjectCard({ project, onClick, onDelete, onExport }: {
       </div>
       {/* Info */}
       <div className="p-4 pt-2">
-        <h3 className="text-sm font-medium text-slate-100 truncate group-hover:text-orange-400 transition-colors">
+        <h3 className="text-sm font-medium text-slate-100 truncate group-hover:text-orange-300 transition-colors">
           {project.name}
         </h3>
         <div className="flex items-center justify-between mt-3">
@@ -325,8 +325,8 @@ function NewProjectModal({ onClose, onCreated }: {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={onClose}>
-      <div className="bg-dark-900 border border-dark-700 rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 w-full sm:max-w-md max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={onClose}>
+      <div className="bg-dark-900 border border-dark-700/80 rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 w-full sm:max-w-md max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/50" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-h4 text-slate-100">{t.dashboard.newProject}</h2>
           <button onClick={onClose} className="btn-ghost p-1.5 rounded-md">

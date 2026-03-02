@@ -791,6 +791,17 @@ function SPC({ plan, index, analysisId, userKeys, projectId }: { plan: any; inde
 // ═══ Script Tab ═══
 function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, saving, analyzing, error, handleSave, handleAnalyze, loadDemo, loadTemplate, aiMode, setAiMode }: any) {
   const { t, locale } = useI18n()
+  const [dragOver, setDragOver] = useState(false)
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault(); setDragOver(false)
+    const file = e.dataTransfer.files[0]
+    if (!file) return
+    if (file.name.match(/\.(txt|fountain|fdx|md)$/i)) {
+      const reader = new FileReader()
+      reader.onload = (ev) => { if (ev.target?.result) setScriptText(ev.target.result as string) }
+      reader.readAsText(file)
+    }
+  }, [setScriptText])
   // Live script parsing for preview
   const scriptPreview = useMemo(() => {
     if (!scriptText.trim()) return { scenes: [], chars: [], duration: 0 }
@@ -817,7 +828,7 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
   }, [scriptText])
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" onDragOver={(e) => { e.preventDefault(); setDragOver(true) }} onDragLeave={() => setDragOver(false)} onDrop={handleDrop}>
       {/* AI Screenplay Assistant */}
       <ScreenplayAssistant
         onUseScript={(script: string) => setScriptText(script)}
@@ -827,7 +838,18 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
       {/* Template Selector */}
       <TemplateSelector onUseTemplate={loadTemplate} />
 
-      {/* Split-view: Editor + Live Preview */}
+      {/* Split-view: Editor + Live Preview (drag-drop zone) */}
+      {dragOver && (
+        <div className="fixed inset-0 z-50 bg-dark-950/80 backdrop-blur-md flex items-center justify-center pointer-events-none">
+          <div className="text-center animate-fade-in">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-orange-500/15 border-2 border-dashed border-orange-500/40 flex items-center justify-center">
+              <Upload size={32} className="text-orange-400" />
+            </div>
+            <p className="text-lg font-display text-white">{locale === 'fr' ? 'Déposez votre fichier' : 'Drop your file'}</p>
+            <p className="text-xs text-slate-500 mt-1">.txt · .fountain · .fdx · .md</p>
+          </div>
+        </div>
+      )}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Editor (2/3) */}
         <div className="lg:col-span-2 bg-dark-900 rounded-xl border border-dark-700">
