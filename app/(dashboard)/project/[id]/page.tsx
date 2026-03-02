@@ -552,7 +552,40 @@ export default function ProjectPage() {
             </div>
           )}
           {tab === 'script' && <ScriptTab scriptText={scriptText} setScriptText={setScriptText} stylePreset={stylePreset} setStylePreset={setStylePreset} saving={saving} analyzing={analyzing} error={error} handleSave={handleSave} handleAnalyze={handleAnalyze} loadDemo={loadDemo} loadTemplate={loadTemplate} aiMode={aiMode} setAiMode={setAiMode} />}
-          {tab === 'overview' && analysis && <OverviewCockpit analysis={analysis} projectName={project?.name} onNavigate={(tab: string) => setTab(tab as Tab)} />}
+          {tab === 'overview' && analysis && <>
+            {/* Film Summary Card */}
+            <div className="bg-dark-900 rounded-xl border border-dark-700 overflow-hidden mb-4">
+              <div className="relative px-6 py-5">
+                {/* Cinematic gradient background */}
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-500/[0.04] via-transparent to-purple-500/[0.03]" />
+                <div className="absolute inset-0 vignette opacity-50" />
+                <div className="relative flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Film size={14} className="text-orange-400" />
+                      <span className="text-overline text-slate-500 uppercase tracking-widest">{locale === 'fr' ? 'Aperçu du projet' : 'Project Overview'}</span>
+                    </div>
+                    <h2 className="font-display text-2xl text-white mb-1">{project?.name || 'Untitled'}</h2>
+                    <p className="text-xs text-slate-400 max-w-lg leading-relaxed">{analysis.synopsis || analysis.logline || (locale === 'fr' ? 'Aucun synopsis détecté' : 'No synopsis detected')}</p>
+                    <div className="flex items-center gap-4 mt-3">
+                      <span className="text-[10px] text-slate-500 flex items-center gap-1"><Film size={10} className="text-orange-400" /> {analysis.scenes?.length || 0} {locale === 'fr' ? 'scènes' : 'scenes'}</span>
+                      <span className="text-[10px] text-slate-500 flex items-center gap-1"><Eye size={10} className="text-blue-400" /> {analysis.plans?.length || 0} {locale === 'fr' ? 'plans' : 'shots'}</span>
+                      <span className="text-[10px] text-slate-500 flex items-center gap-1"><Users size={10} className="text-purple-400" /> {analysis.characterBible?.length || 0} {locale === 'fr' ? 'personnages' : 'characters'}</span>
+                      <span className="text-[10px] text-slate-500 flex items-center gap-1"><Clock size={10} className="text-green-400" /> ~{Math.round((analysis.plans?.length || 0) * 4)}s</span>
+                    </div>
+                  </div>
+                  {/* Genre / Mood tags */}
+                  <div className="flex flex-wrap gap-1 max-w-[200px] justify-end">
+                    {(analysis.genre ? [analysis.genre] : []).concat(analysis.moods?.slice(0, 3) || []).map((tag: string, i: number) => (
+                      <span key={i} className="px-2 py-0.5 rounded-lg bg-dark-800 border border-dark-700 text-[9px] text-slate-400">{tag}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="beam w-full mt-4" />
+              </div>
+            </div>
+            <OverviewCockpit analysis={analysis} projectName={project?.name} onNavigate={(tab: string) => setTab(tab as Tab)} />
+          </>}
           {tab === 'analyse' && analysis && <AR analysis={analysis} analysisId={analysisId} userKeys={userKeys} projectId={projectId} />}
           {tab === 'storyboard' && analysis && <VisualStoryboard analysis={analysis} projectId={projectId} projectName={project?.name} />}
           {tab === 'timeline' && analysis && <TL analysis={analysis} projectName={project?.name} />}
