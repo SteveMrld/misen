@@ -46,29 +46,35 @@ export function ShortcutOverlay({ show, onClose }: { show: boolean; onClose: () 
   const groups: Record<string, { keys: string; label: string }[]> = {
     'Navigation': [
       { keys: '?', label: 'Afficher les raccourcis' },
+      { keys: '⌘+K', label: 'Command palette' },
       { keys: 'Esc', label: 'Fermer / Retour' },
-      { keys: 'N', label: 'Nouveau projet' },
-      { keys: 'D', label: 'Charger la démo' },
+      { keys: 'E', label: 'Basculer Simple / Expert' },
     ],
-    'Éditeur': [
-      { keys: '⌘+S', label: 'Sauvegarder le script' },
+    'Workspaces': [
+      { keys: '1', label: 'Ecriture (Script)' },
+      { keys: '2', label: 'Analyse (Vue d\'ensemble)' },
+      { keys: '3', label: 'Production (Storyboard)' },
+      { keys: '4', label: 'Post-production (Sous-titres)' },
+      { keys: '5', label: 'Export (Rendu)' },
+    ],
+    'Onglets (tous onglets)': [
+      { keys: '6', label: 'Copilote IA' },
+      { keys: '7', label: 'Medias' },
+      { keys: '8', label: 'Voix off' },
+      { keys: '9', label: 'Musique IA' },
+      { keys: '0', label: 'Timeline' },
+    ],
+    'Editeur': [
+      { keys: '⌘+S', label: 'Sauvegarder' },
       { keys: '⌘+Enter', label: 'Lancer l\'analyse' },
-      { keys: 'E', label: 'Basculer Simple ↔ Expert' },
+      { keys: 'N', label: 'Nouveau projet' },
+      { keys: 'D', label: 'Charger la demo' },
     ],
-    'Onglets Expert': [
-      { keys: '1', label: 'Script' },
-      { keys: '2', label: 'Analyse' },
-      { keys: '3', label: 'Timeline' },
-      { keys: '4', label: 'Copilote IA' },
-      { keys: '5', label: 'Média bank' },
-      { keys: '6', label: 'Sous-titres' },
-      { keys: '7', label: 'Voix off' },
-    ],
-    'Timeline': [
+    'Player & Timeline': [
       { keys: 'Space', label: 'Play / Pause' },
-      { keys: '←', label: 'Reculer 2s' },
-      { keys: '→', label: 'Avancer 5s' },
-      { keys: 'Home', label: 'Début' },
+      { keys: 'J', label: 'Reculer (NLE)' },
+      { keys: 'K', label: 'Pause (NLE)' },
+      { keys: 'L', label: 'Avancer (NLE)' },
     ],
   }
 

@@ -81,7 +81,6 @@ export default function ProjectPage() {
   const [aiMode, setAiMode] = useState(false)
 
   // Keyboard shortcuts — defined after handlers
-  const tabKeys: Tab[] = ['script', 'overview', 'analyse', 'storyboard', 'timeline', 'copilot', 'media', 'subtitles', 'voiceover', 'score', 'render']
 
   useEffect(() => {
     if (!projectId) return
@@ -163,7 +162,18 @@ export default function ProjectPage() {
     { key: 'e', label: t.project.shortcuts.mode, action: () => setMode(m => m === 'simple' ? 'expert' : 'simple') },
     { key: 's', ctrl: true, label: t.project.shortcuts.save, action: handleSave },
     { key: 'Enter', ctrl: true, label: t.project.analyze, action: handleAnalyze },
-    ...tabKeys.map((t, i) => ({ key: String(i + 1), label: t, action: () => { setMode('expert'); setTab(t) } })),
+    // Workspace shortcuts (1-5)
+    { key: '1', label: 'Writing', action: () => { setMode('expert'); setWorkspace('writing'); setTab('script') } },
+    { key: '2', label: 'Analysis', action: () => { if(analysis) { setMode('expert'); setWorkspace('analysis'); setTab('overview') } } },
+    { key: '3', label: 'Production', action: () => { if(analysis) { setMode('expert'); setWorkspace('production'); setTab('storyboard') } } },
+    { key: '4', label: 'Post-prod', action: () => { if(analysis) { setMode('expert'); setWorkspace('postprod'); setTab('subtitles') } } },
+    { key: '5', label: 'Export', action: () => { if(analysis) { setMode('expert'); setWorkspace('export'); setTab('render') } } },
+    // Extended tab shortcuts (6-0)
+    { key: '6', label: 'Copilot', action: () => { if(analysis) { setMode('expert'); setTab('copilot') } } },
+    { key: '7', label: 'Media', action: () => { if(analysis) { setMode('expert'); setTab('media') } } },
+    { key: '8', label: 'Voiceover', action: () => { if(analysis) { setMode('expert'); setTab('voiceover') } } },
+    { key: '9', label: 'Score', action: () => { if(analysis) { setMode('expert'); setTab('score') } } },
+    { key: '0', label: 'Timeline', action: () => { if(analysis) { setMode('expert'); setTab('timeline') } } },
   ])
 
   if (loading) return <div className="flex items-center justify-center py-24"><Loader2 size={32} className="text-orange-500 animate-spin" /></div>
