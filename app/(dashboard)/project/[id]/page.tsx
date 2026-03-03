@@ -33,6 +33,7 @@ import { CompareButton } from '@/components/ui/compare-panel'
 import { useKeyboardShortcuts, ShortcutOverlay } from '@/components/ui/keyboard-shortcuts'
 import { GuidedTour, useProjectTour } from '@/components/ui/guided-tour'
 import { CinematicPlayer } from '@/components/ui/cinematic-player'
+import { DragDropProvider, Draggable, DropZone } from '@/components/ui/drag-drop-context'
 import { useToast } from '@/components/ui/toast'
 import { OverviewCockpit } from '@/components/ui/overview-cockpit'
 import { CharacterReferenceCard, getCharacterRefImages, injectCharacterRefsInPrompt } from '@/components/ui/character-reference'
@@ -203,6 +204,7 @@ export default function ProjectPage() {
   ]
 
   return (
+    <DragDropProvider>
     <div>
 
       
@@ -682,6 +684,7 @@ export default function ProjectPage() {
         </div>
       )}
     </div>
+    </DragDropProvider>
   )
 }
 
@@ -1003,7 +1006,7 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
   }, [scriptText])
 
   return (
-    <div className="space-y-4" onDragOver={(e) => { e.preventDefault(); setDragOver(true) }} onDragLeave={() => setDragOver(false)} onDrop={handleDrop}>
+    <DropZone accept={['media', 'file', 'reference']} onDrop={(item) => { if (item.data?.text) setScriptText((prev: string) => prev + '\n' + item.data.text) }} label={locale === 'fr' ? 'Ajouter au scénario' : 'Add to script'}><div className="space-y-4" onDragOver={(e) => { e.preventDefault(); setDragOver(true) }} onDragLeave={() => setDragOver(false)} onDrop={handleDrop}>
       {/* AI Screenplay Assistant */}
       <ScreenplayAssistant
         onUseScript={(script: string) => setScriptText(script)}
@@ -1138,7 +1141,7 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
           : <><Play size={18} /> {aiMode ? (locale === 'fr' ? "Lancer l'analyse IA" : 'Run AI Analysis') : (locale === 'fr' ? "Lancer l'analyse" : 'Run Analysis')}</>}
       </button>
       {error && <p className="text-xs text-red-400 text-center flex items-center justify-center gap-1"><AlertTriangle size={12} /> {error}</p>}
-    </div>
+    </div></DropZone>
   )
 }
 
@@ -1227,7 +1230,7 @@ function MB({ analysis, projectId, projectName }: { analysis: any; projectId: st
     </div>
     {sugs.length>0&&res.length===0&&<div className="flex items-center gap-2 mb-4 flex-wrap"><span className="text-xs text-slate-500">Suggestions :</span>{sugs.map((s:string,i:number)=><button key={i} onClick={()=>{setQ(s);srch(s)}} className="px-2 py-1 bg-dark-800 hover:bg-dark-700 border border-dark-700 rounded text-xs text-slate-300">{s}</button>)}</div>}
     {err&&<div className="p-3 mb-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-xs text-yellow-400">{err}</div>}
-    {res.length>0 ? <div className="grid grid-cols-2 md:grid-cols-3 gap-3">{res.map((r:any)=><div key={r.id} className="relative group rounded-lg overflow-hidden border border-dark-700"><img src={r.thumbnail||r.url} alt={r.title} className="w-full aspect-video object-cover bg-dark-800" loading="lazy" /><div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2"><p className="text-[10px] text-white truncate">{r.title} • {r.source}</p></div></div>)}</div>
+    {res.length>0 ? <div className="grid grid-cols-2 md:grid-cols-3 gap-3">{res.map((r:any)=><Draggable key={r.id} item={{ type: 'media', data: { url: r.thumbnail || r.url, title: r.title }, label: r.title || 'Media' }}><div className="relative group rounded-lg overflow-hidden border border-dark-700"><img src={r.thumbnail||r.url} alt={r.title} className="w-full aspect-video object-cover bg-dark-800" loading="lazy" /><div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2"><p className="text-[10px] text-white truncate">{r.title} • {r.source}</p></div></div></Draggable>)}</div>
       : !ld && <div className="p-12 bg-dark-900 rounded-xl border border-dark-700 text-center"><Image size={36} className="text-slate-700 mx-auto mb-3" /><p className="text-sm text-slate-400">Recherchez des références visuelles</p></div>}
   </div>)
 }
@@ -1284,6 +1287,7 @@ function TL({ analysis, projectName }: { analysis: any; projectName?: string }) 
     </div>
 
     {/* Multi-track area */}
+    <DropZone accept={['shot', 'media']} onDrop={(item) => { /* future: reorder/insert */ }} label={fr ? 'Ajouter à la timeline' : 'Add to timeline'}>
     <div className="bg-dark-900 rounded-xl border border-dark-700 overflow-hidden">
       <div className="overflow-x-auto p-3">
         <div className="relative" style={{ minWidth: Math.max(plans.length * 100, 600) }}>
@@ -1388,7 +1392,7 @@ function TL({ analysis, projectName }: { analysis: any; projectName?: string }) 
           </div>
         </div>
       </div>
-    </div>
+    </div></DropZone>
   </div>)
 }
 
