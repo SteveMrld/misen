@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useI18n } from '@/lib/i18n'
 import { LanguageToggle } from '@/components/ui/language-toggle'
@@ -70,13 +70,25 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
     setCurrentHero(Math.floor(Math.random() * HERO_SCENES.length))
   }, [])
 
-  // Hero rotation every 12s
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentHero(prev => (prev + 1) % HERO_SCENES.length)
-    }, 12000)
-    return () => clearInterval(interval)
+  // Hero rotation: advance when current video ends
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([])
+  const onVideoEnd = useCallback(() => {
+    setCurrentHero(prev => (prev + 1) % HERO_SCENES.length)
   }, [])
+
+  // When currentHero changes, play the new video from start
+  useEffect(() => {
+    const vid = videoRefs.current[currentHero]
+    if (vid) {
+      vid.currentTime = 0
+      vid.play().catch(() => {})
+    }
+    // Safety fallback if video fails to trigger onEnded
+    const fallback = setTimeout(() => {
+      setCurrentHero(prev => (prev + 1) % HERO_SCENES.length)
+    }, 8000)
+    return () => clearTimeout(fallback)
+  }, [currentHero])
 
   // Parallax
   useEffect(() => {
@@ -141,11 +153,12 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
             }}
           >
             <video
+              ref={el => { videoRefs.current[i] = el }}
               src={scene.video}
-              autoPlay
+              autoPlay={i === 0}
               muted
-              loop
               playsInline
+              onEnded={currentHero === i ? onVideoEnd : undefined}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           </div>
