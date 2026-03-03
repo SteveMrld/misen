@@ -25,3 +25,4 @@ const nextConfig = {
 }
 
 module.exports = nextConfig
+// V14.0 Landing Light Premium — Tue Mar  3 09:13:10 UTC 2026
