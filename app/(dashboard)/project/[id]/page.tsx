@@ -70,6 +70,7 @@ export default function ProjectPage() {
   const [showAllTabs, setShowAllTabs] = useState(false)
   const [cmdPalette, setCmdPalette] = useState(false)
   const [showTour, setShowTour] = useState(false)
+  const [demoHotspots, setDemoHotspots] = useState(true)
   const { toast } = useToast()
   const [cmdQuery, setCmdQuery] = useState('')
   const cmdRef = useRef<HTMLInputElement>(null)
@@ -463,7 +464,7 @@ export default function ProjectPage() {
               className="w-full p-4 bg-transparent text-sm text-slate-200 placeholder:text-slate-600 resize-none focus:outline-none font-mono leading-relaxed" />
           </div>
 
-          <button data-tour="analyze-button" onClick={handleAnalyze} disabled={analyzing || !scriptText.trim()}
+          <button data-tour="analyze-button" onClick={() => { setDemoHotspots(false); handleAnalyze() }} disabled={analyzing || !scriptText.trim()}
             className="w-full py-3.5 btn-primary disabled:bg-dark-700 disabled:text-slate-600 disabled:shadow-none disabled:opacity-40 text-white font-semibold rounded-xl flex items-center justify-center gap-2">
             {analyzing ? <><Loader2 size={18} className="animate-spin" /> {t.project.analyzing}</> : <><Brain size={18} /> {t.project.analyze}</>}
           </button>
@@ -947,6 +948,13 @@ function SPC({ plan, index, analysisId, userKeys, projectId }: { plan: any; inde
             <span className="text-[10px] text-slate-500">{plan?.shotType}</span>
             {plan?.cameraMove && plan.cameraMove !== 'fixe' && <span className="text-[10px] text-cyan-400/60">{plan.cameraMove}</span>}
             <CompareButton plan={plan} />
+            <button onClick={() => {
+              const alt = (prompt || '').replace(/cinematic/gi, 'documentary-style').replace(/golden hour/gi, 'blue hour').replace(/slow motion/gi, 'real-time')
+              const variant = alt !== prompt ? alt : prompt + ', alternative angle, different color palette'
+              navigator.clipboard.writeText(`[A] ${prompt}\n\n[B] ${variant}`)
+            }} className="px-1.5 py-0.5 text-[9px] text-amber-400/70 hover:text-amber-300 bg-amber-400/5 hover:bg-amber-400/10 rounded border border-amber-400/10 transition-all">
+              A/B
+            </button>
           </div>
           <p className="text-[11px] text-slate-400 leading-relaxed font-mono line-clamp-2">{prompt || '—'}</p>
           {isGenerating && (
@@ -1723,6 +1731,8 @@ function PC({ plan, index, analysisId, userKeys, characters }: { plan: any; inde
   const [expanded, setExpanded] = useState(false)
   const [editingPrompt, setEditingPrompt] = useState(false)
   const [editedPrompt, setEditedPrompt] = useState('')
+  const [variantB, setVariantB] = useState('')
+  const [showAB, setShowAB] = useState(false)
   const prompt = plan?.finalPrompt || plan?.basePrompt || ''; const mid=(plan?.modelId||'kling').toLowerCase(); const mc=getModelColor(mid)
   const studio = getModelStudio(mid); const canGenerate = userKeys.has(studio.provider)
   const [status, setStatus] = useState<string>('idle')
