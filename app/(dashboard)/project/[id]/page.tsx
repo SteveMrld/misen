@@ -7,10 +7,11 @@ import {
   Film, Eye, DollarSign, Shield, Users, TrendingUp, Camera, Zap, Copy, Check,
   Subtitles, Mic, Clock, Download, Volume2, Pause, SkipForward, SkipBack,
   Sparkles, Image, Search, RefreshCw, Wand2, SlidersHorizontal, Keyboard, ExternalLink, Music2
-, Layers, Package, Headphones, Upload } from 'lucide-react'
+, Layers, Package, Headphones, Upload, GitBranch } from 'lucide-react'
 import { StoryboardSVG } from '@/components/ui/storyboard-svg'
 import { ModelBadge, getModelColor, ModelLegend } from '@/components/ui/model-badge'
 import { ScreenplayAssistant } from '@/components/ui/screenplay-assistant'
+import { FlowCanvas } from '@/components/ui/flow-canvas'
 import { useI18n } from '@/lib/i18n'
 
 // Demo images for Render panel
@@ -41,9 +42,10 @@ import { TemplateSelector } from '@/components/ui/template-selector'
 import { VisualStoryboard } from '@/components/ui/visual-storyboard'
 import { AssemblyPanel } from '@/components/ui/assembly-panel'
 import { ScorePanel } from '@/components/ui/score-panel'
+import { FlowCanvas } from '@/components/ui/flow-canvas'
 
 type Mode = 'simple' | 'expert'
-type Tab = 'script' | 'overview' | 'analyse' | 'storyboard' | 'timeline' | 'copilot' | 'media' | 'subtitles' | 'voiceover' | 'score' | 'render'
+type Tab = 'script' | 'overview' | 'analyse' | 'storyboard' | 'timeline' | 'copilot' | 'media' | 'subtitles' | 'voiceover' | 'score' | 'render' | 'flow' | 'flow'
 type Workspace = 'writing' | 'analysis' | 'production' | 'postprod' | 'export'
 
 function fmt(s: number) { return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` }
@@ -77,10 +79,11 @@ export default function ProjectPage() {
 
   // Sync workspace when tab changes
   const tabToWorkspace: Record<Tab, Workspace> = {
-    script: 'writing', overview: 'analysis', analyse: 'analysis', copilot: 'analysis',
+    script: 'writing', overview: 'analysis', analyse: 'analysis', copilot: 'analysis', flow: 'analysis',
     storyboard: 'production', timeline: 'production', media: 'production',
     subtitles: 'postprod', voiceover: 'postprod', score: 'postprod',
     render: 'export',
+    flow: 'production',
   }
   useEffect(() => { setWorkspace(tabToWorkspace[tab]) }, [tab])
 
@@ -201,6 +204,7 @@ export default function ProjectPage() {
     { id: 'subtitles', label: t.project.tabs.subtitles, icon: Subtitles, disabled: !analysis },
     { id: 'voiceover', label: t.project.tabs.voiceover, icon: Mic, disabled: !analysis },
     { id: 'score', label: t.project.tabs.score, icon: Music2, disabled: !analysis },
+    { id: 'flow', label: t.project.tabs.flow, icon: GitBranch, disabled: !analysis },
     { id: 'render', label: t.project.tabs.render, icon: Play, disabled: !analysis },
   ]
 
@@ -681,7 +685,12 @@ export default function ProjectPage() {
               </div>
             </div>
           )}
-          {tab === 'render' && analysis && <DeliverPage analysis={analysis} analysisId={analysisId} projectId={projectId} projectName={project?.name} locale={locale} />}
+                    {tab === 'flow' && analysis && (
+            <div style={{ height: 'calc(100vh - 200px)', background: '#0B0F14', borderRadius: 12, overflow: 'hidden' }}>
+              <FlowCanvas analysis={analysis} mode={mode} />
+            </div>
+          )}
+{tab === 'render' && analysis && <DeliverPage analysis={analysis} analysisId={analysisId} projectId={projectId} projectName={project?.name} locale={locale} />}
         </div>
       )}
     </div>

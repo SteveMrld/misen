@@ -336,6 +336,7 @@ export const en: Dictionary = {
       render: 'Render',
       storyboard: 'Storyboard',
       score: 'AI Score',
+      flow: 'Pipeline',
     },
     workspaces: {
       writing: "Writing",

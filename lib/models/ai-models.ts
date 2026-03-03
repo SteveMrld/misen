@@ -17,6 +17,10 @@ export const AI_MODELS: Record<AIModelId, AIModelConfig> = {
     audioGen: 3, speed: 6, costPer10s: 0.10,
     supportsNegativePrompt: true, supportsImageToVideo: true,
     supportsCameraPath: true, maxResolution: '4K',
+    company: 'Kuaishou', country: 'CN', headquarters: 'Beijing',
+    dataHosting: ['CN'], rgpdCompliant: false,
+    openSource: false, localDeployable: false,
+    sovereigntyScore: 3,
   },
   'runway4.5': {
     id: 'runway4.5', name: 'Runway', version: 'Gen-4.5',
@@ -28,6 +32,10 @@ export const AI_MODELS: Record<AIModelId, AIModelConfig> = {
     audioGen: 5, speed: 7, costPer10s: 0.15,
     supportsNegativePrompt: true, supportsImageToVideo: true,
     supportsCameraPath: true, maxResolution: '4K',
+    company: 'Runway AI', country: 'US', headquarters: 'New York',
+    dataHosting: ['US'], rgpdCompliant: true,
+    openSource: false, localDeployable: false,
+    sovereigntyScore: 6,
   },
   'sora2': {
     id: 'sora2', name: 'Sora', version: '2',
@@ -39,6 +47,10 @@ export const AI_MODELS: Record<AIModelId, AIModelConfig> = {
     audioGen: 7, speed: 5, costPer10s: 0.20,
     supportsNegativePrompt: true, supportsImageToVideo: true,
     supportsCameraPath: false, maxResolution: '1080p',
+    company: 'OpenAI', country: 'US', headquarters: 'San Francisco',
+    dataHosting: ['US'], rgpdCompliant: true,
+    openSource: false, localDeployable: false,
+    sovereigntyScore: 6,
   },
   'veo3.1': {
     id: 'veo3.1', name: 'Veo', version: '3.1',
@@ -50,6 +62,10 @@ export const AI_MODELS: Record<AIModelId, AIModelConfig> = {
     audioGen: 9, speed: 7, costPer10s: 0.12,
     supportsNegativePrompt: true, supportsImageToVideo: false,
     supportsCameraPath: false, maxResolution: '1080p',
+    company: 'Google DeepMind', country: 'US', headquarters: 'Mountain View',
+    dataHosting: ['US', 'EU'], rgpdCompliant: true,
+    openSource: false, localDeployable: false,
+    sovereigntyScore: 7,
   },
   'seedance2': {
     id: 'seedance2', name: 'Seedance', version: '2.0',
@@ -61,6 +77,10 @@ export const AI_MODELS: Record<AIModelId, AIModelConfig> = {
     audioGen: 7, speed: 9, costPer10s: 0.05,
     supportsNegativePrompt: true, supportsImageToVideo: true,
     supportsCameraPath: false, maxResolution: '1080p',
+    company: 'ByteDance', country: 'CN', headquarters: 'Beijing',
+    dataHosting: ['CN', 'US'], rgpdCompliant: false,
+    openSource: false, localDeployable: false,
+    sovereigntyScore: 3,
   },
   'wan2.5': {
     id: 'wan2.5', name: 'Wan', version: '2.5',
@@ -72,6 +92,10 @@ export const AI_MODELS: Record<AIModelId, AIModelConfig> = {
     audioGen: 3, speed: 8, costPer10s: 0.08,
     supportsNegativePrompt: false, supportsImageToVideo: true,
     supportsCameraPath: true, maxResolution: '1080p',
+    company: 'Alibaba Cloud', country: 'CN', headquarters: 'Hangzhou',
+    dataHosting: ['CN'], rgpdCompliant: false,
+    openSource: true, localDeployable: true,
+    sovereigntyScore: 5,
   },
   'hailuo2.3': {
     id: 'hailuo2.3', name: 'Hailuo', version: '2.3',
@@ -83,6 +107,10 @@ export const AI_MODELS: Record<AIModelId, AIModelConfig> = {
     audioGen: 4, speed: 7, costPer10s: 0.07,
     supportsNegativePrompt: false, supportsImageToVideo: true,
     supportsCameraPath: false, maxResolution: '1080p',
+    company: 'MiniMax', country: 'CN', headquarters: 'Shanghai',
+    dataHosting: ['CN'], rgpdCompliant: false,
+    openSource: false, localDeployable: false,
+    sovereigntyScore: 3,
   },
 };
 

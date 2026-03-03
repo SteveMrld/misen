@@ -28,6 +28,11 @@ export interface AIModelConfig {
   audioGen: number; speed: number; costPer10s: number;
   supportsNegativePrompt: boolean; supportsImageToVideo: boolean;
   supportsCameraPath: boolean; maxResolution: string;
+  // Sovereignty & Infrastructure (Module 2)
+  company: string; country: string; headquarters: string;
+  dataHosting: string[]; rgpdCompliant: boolean;
+  openSource: boolean; localDeployable: boolean;
+  sovereigntyScore: number; // 1-10
 }
 
 export interface DialogueLine { personnage: string; texte: string; didascalie?: string; }

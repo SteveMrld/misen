@@ -336,6 +336,7 @@ export const fr: Dictionary = {
       render: 'Rendu',
       storyboard: 'Storyboard',
       score: 'Musique IA',
+      flow: 'Pipeline',
     },
     workspaces: {
       writing: "Ecriture",

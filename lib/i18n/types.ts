@@ -244,6 +244,7 @@ export interface Dictionary {
       render: string
       storyboard: string
       score: string
+      flow: string
     }
     workspaces: {
       writing: string
