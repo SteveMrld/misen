@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { X } from 'lucide-react'
+import { useI18n } from '@/lib/i18n'
 
 type Shortcut = {
   key: string
@@ -41,40 +42,42 @@ export function useKeyboardShortcuts(shortcuts: Shortcut[], enabled = true) {
 
 // Shortcut help overlay
 export function ShortcutOverlay({ show, onClose }: { show: boolean; onClose: () => void }) {
+  const { locale } = useI18n()
+  const fr = locale === 'fr'
   if (!show) return null
 
   const groups: Record<string, { keys: string; label: string }[]> = {
-    'Navigation': [
-      { keys: '?', label: 'Afficher les raccourcis' },
+    [fr ? 'Navigation' : 'Navigation']: [
+      { keys: '?', label: fr ? 'Afficher les raccourcis' : 'Show shortcuts' },
       { keys: '⌘+K', label: 'Command palette' },
-      { keys: 'Esc', label: 'Fermer / Retour' },
-      { keys: 'E', label: 'Basculer Simple / Expert' },
+      { keys: 'Esc', label: fr ? 'Fermer / Retour' : 'Close / Back' },
+      { keys: 'E', label: fr ? 'Basculer Simple / Expert' : 'Toggle Simple / Expert' },
     ],
-    'Workspaces': [
-      { keys: '1', label: 'Ecriture (Script)' },
-      { keys: '2', label: 'Analyse (Vue d\'ensemble)' },
-      { keys: '3', label: 'Production (Storyboard)' },
-      { keys: '4', label: 'Post-production (Sous-titres)' },
-      { keys: '5', label: 'Export (Rendu)' },
+    [fr ? 'Workspaces' : 'Workspaces']: [
+      { keys: '1', label: fr ? 'Écriture (Script)' : 'Writing (Script)' },
+      { keys: '2', label: fr ? 'Analyse (Vue d\'ensemble)' : 'Analysis (Overview)' },
+      { keys: '3', label: fr ? 'Production (Storyboard)' : 'Production (Storyboard)' },
+      { keys: '4', label: fr ? 'Post-production (Sous-titres)' : 'Post-production (Subtitles)' },
+      { keys: '5', label: fr ? 'Export (Rendu)' : 'Export (Render)' },
     ],
-    'Onglets (tous onglets)': [
-      { keys: '6', label: 'Copilote IA' },
-      { keys: '7', label: 'Medias' },
-      { keys: '8', label: 'Voix off' },
-      { keys: '9', label: 'Musique IA' },
+    [fr ? 'Onglets (tous onglets)' : 'Tabs (all tabs)']: [
+      { keys: '6', label: fr ? 'Copilote IA' : 'AI Copilot' },
+      { keys: '7', label: fr ? 'Médias' : 'Media' },
+      { keys: '8', label: fr ? 'Voix off' : 'Voiceover' },
+      { keys: '9', label: fr ? 'Musique IA' : 'AI Music' },
       { keys: '0', label: 'Timeline' },
     ],
-    'Editeur': [
-      { keys: '⌘+S', label: 'Sauvegarder' },
+    [fr ? 'Éditeur' : 'Editor']: [
+      { keys: '⌘+S', label: fr ? 'Sauvegarder' : 'Save' },
       { keys: '⌘+Enter', label: 'Lancer l\'analyse' },
-      { keys: 'N', label: 'Nouveau projet' },
-      { keys: 'D', label: 'Charger la demo' },
+      { keys: 'N', label: fr ? 'Nouveau projet' : 'New project' },
+      { keys: 'D', label: fr ? 'Charger la démo' : 'Load demo' },
     ],
-    'Player & Timeline': [
+    ['Player & Timeline']: [
       { keys: 'Space', label: 'Play / Pause' },
-      { keys: 'J', label: 'Reculer (NLE)' },
+      { keys: 'J', label: fr ? 'Reculer (NLE)' : 'Backward (NLE)' },
       { keys: 'K', label: 'Pause (NLE)' },
-      { keys: 'L', label: 'Avancer (NLE)' },
+      { keys: 'L', label: fr ? 'Avancer (NLE)' : 'Forward (NLE)' },
     ],
   }
 
@@ -82,7 +85,7 @@ export function ShortcutOverlay({ show, onClose }: { show: boolean; onClose: () 
     <div className="fixed inset-0 bg-black/80 backdrop-blur-lg flex items-center justify-center z-[100]" onClick={onClose}>
       <div className="bg-dark-900 border border-dark-700 rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-2xl shadow-black/60" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-display text-gradient-copper">Raccourcis clavier</h2>
+          <h2 className="text-lg font-display text-gradient-copper">{fr ? 'Raccourcis clavier' : 'Keyboard Shortcuts'}</h2>
           <button onClick={onClose} className="p-1.5 rounded-md hover:bg-dark-800">
             <X size={18} className="text-slate-400" />
           </button>
@@ -106,7 +109,7 @@ export function ShortcutOverlay({ show, onClose }: { show: boolean; onClose: () 
             </div>
           </div>
         ))}
-        <p className="text-[11px] text-slate-600 text-center mt-4">Appuyez <kbd className="px-1.5 py-0.5 bg-dark-800 border border-dark-600 rounded text-[10px] text-slate-400 font-mono">?</kbd> à tout moment</p>
+        <p className="text-[11px] text-slate-600 text-center mt-4">{fr ? 'Appuyez' : 'Press'} <kbd className="px-1.5 py-0.5 bg-dark-800 border border-dark-600 rounded text-[10px] text-slate-400 font-mono">?</kbd> {fr ? ' à tout moment' : ' anytime'}</p>
       </div>
     </div>
   )

@@ -1048,7 +1048,7 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
               <button onClick={loadDemo} className="px-2 py-1 bg-dark-800 hover:bg-dark-700 border border-dark-600 rounded-lg text-xs text-slate-400">{t.common.demo}</button>
             </div>
             <button onClick={handleSave} disabled={saving} className="flex items-center gap-1 px-3 py-1.5 bg-dark-800 hover:bg-dark-700 border border-dark-600 rounded-lg text-xs text-slate-300">
-              {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />} Sauvegarder
+              {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />} {locale === 'fr' ? 'Sauvegarder' : 'Save'}
             </button>
           </div>
           <textarea value={scriptText} onChange={(e: any) => setScriptText(e.target.value)} placeholder={t.project.scriptPlaceholder} rows={20}
