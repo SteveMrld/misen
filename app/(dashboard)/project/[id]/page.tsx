@@ -42,10 +42,9 @@ import { TemplateSelector } from '@/components/ui/template-selector'
 import { VisualStoryboard } from '@/components/ui/visual-storyboard'
 import { AssemblyPanel } from '@/components/ui/assembly-panel'
 import { ScorePanel } from '@/components/ui/score-panel'
-import { FlowCanvas } from '@/components/ui/flow-canvas'
 
 type Mode = 'simple' | 'expert'
-type Tab = 'script' | 'overview' | 'analyse' | 'storyboard' | 'timeline' | 'copilot' | 'media' | 'subtitles' | 'voiceover' | 'score' | 'render' | 'flow' | 'flow'
+type Tab = 'script' | 'overview' | 'analyse' | 'storyboard' | 'timeline' | 'copilot' | 'media' | 'subtitles' | 'voiceover' | 'score' | 'render' | 'flow'
 type Workspace = 'writing' | 'analysis' | 'production' | 'postprod' | 'export'
 
 function fmt(s: number) { return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` }
@@ -79,11 +78,10 @@ export default function ProjectPage() {
 
   // Sync workspace when tab changes
   const tabToWorkspace: Record<Tab, Workspace> = {
-    script: 'writing', overview: 'analysis', analyse: 'analysis', copilot: 'analysis', flow: 'analysis',
-    storyboard: 'production', timeline: 'production', media: 'production',
+    script: 'writing', overview: 'analysis', analyse: 'analysis', copilot: 'analysis',
+    storyboard: 'production', timeline: 'production', media: 'production', flow: 'production',
     subtitles: 'postprod', voiceover: 'postprod', score: 'postprod',
     render: 'export',
-    flow: 'production',
   }
   useEffect(() => { setWorkspace(tabToWorkspace[tab]) }, [tab])
 
