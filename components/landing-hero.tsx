@@ -1,526 +1,448 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useI18n } from '@/lib/i18n'
 import { LanguageToggle } from '@/components/ui/language-toggle'
-
-// Background
-import heroBg from '@/public/images/hero_bg.png'
-
-// Scenario 1 — Le Poids des cendres (court-métrage)
-import sc1Fleuve from '@/public/images/sc1_fleuve.jpg'
-import sc1Portrait from '@/public/images/sc1_portrait.jpg'
-import sc1Pont from '@/public/images/sc1_pont.jpg'
-import sc1Couloir from '@/public/images/sc1_couloir.jpg'
-
-// Scenario 2 — Odyssée (pub parfum)
-import sc2Desert from '@/public/images/sc2_desert.jpg'
-import sc2Sable from '@/public/images/sc2_sable.jpg'
-import sc2Flacon from '@/public/images/sc2_flacon.jpg'
-import sc2Visage from '@/public/images/sc2_visage.jpg'
-import sc2Desert2 from '@/public/images/sc2_desert2.jpg'
-import sc2Falaise from '@/public/images/sc2_falaise.jpg'
-
-// Scenario 3 — Pixel (vidéo éducative)
-import sc3Oeil from '@/public/images/sc3_oeil.jpg'
-import sc3Ville from '@/public/images/sc3_ville.jpg'
-import sc3Code from '@/public/images/sc3_homme_ecran.jpg'
-import sc3Silhouette from '@/public/images/sc3_silhouette.jpg'
-
-// Custom pictos — Formats (Set A)
-import iconCourtMetrage from '@/public/images/icon_court_metrage.png'
-import iconPublicite from '@/public/images/icon_publicite.png'
-import iconDocumentaire from '@/public/images/icon_documentaire.png'
-import iconClipMusical from '@/public/images/icon_clip_musical.png'
-import iconBd from '@/public/images/icon_bd.png'
-import iconEducatif from '@/public/images/icon_educatif.png'
-
-// Custom pictos — Steps (Set B)
-import iconStepImaginez from '@/public/images/icon_step_imaginez.png'
-import iconStepAnalysez from '@/public/images/icon_step_analysez.png'
-import iconStepOrchestrez from '@/public/images/icon_step_orchestrez.png'
-import iconStepGenerez from '@/public/images/icon_step_generez.png'
-
-// Custom pictos — Engines (Set C)
-import iconEngIntentParser from '@/public/images/icon_eng_intent_parser.png'
-import iconEngScenarist from '@/public/images/icon_eng_scenarist.png'
-import iconEngStoryTracker from '@/public/images/icon_eng_story_tracker.png'
-import iconEngShotEvaluator from '@/public/images/icon_eng_shot_evaluator.png'
-import iconEngCrispifier from '@/public/images/icon_eng_crispifier.png'
-import iconEngHumanAlign from '@/public/images/icon_eng_human_align.png'
-import iconEngCamera from '@/public/images/icon_eng_camera.png'
-import iconEngAudioTracker from '@/public/images/icon_eng_audio_tracker.png'
-import iconEngCameraControl from '@/public/images/icon_eng_camera_control.png'
-import iconEngStyleGuard from '@/public/images/icon_eng_style_guard.png'
-import iconEngStyleGuard2 from '@/public/images/icon_eng_style_guard2.png'
-import iconEngColorHarmonizer from '@/public/images/icon_eng_color_harmonizer.png'
-import iconEngMotionFlow from '@/public/images/icon_eng_motion_flow.png'
-
 import {
-  Play, ArrowRight, Brain, ChevronDown, Wand2, Check
+  Play, ArrowRight, ChevronDown, Sparkles, Film, Wand2, Check,
+  Layers, Zap, Eye, Music, Camera, Globe
 } from 'lucide-react'
 
+// ═══════════════════════════════════════════════════════════
+// VIDEO HERO SYSTEM — 6 rotating backgrounds
+// Replace gradient placeholders with <video> when files are ready
+// ═══════════════════════════════════════════════════════════
+
+const HERO_SCENES = [
+  { id: 'cinema', gradient: 'linear-gradient(135deg, #1a0e05 0%, #3d1f0a 30%, #0d0d1a 70%, #1a0e05 100%)', label: 'Cinéma' },
+  { id: 'pub', gradient: 'linear-gradient(135deg, #120a20 0%, #2d1b4e 30%, #0d0d1a 70%, #120a20 100%)', label: 'Publicité' },
+  { id: 'animation', gradient: 'linear-gradient(135deg, #051a1a 0%, #0d3d3d 30%, #0d0d1a 70%, #051a1a 100%)', label: 'Animation' },
+  { id: 'docu', gradient: 'linear-gradient(135deg, #0a1a0a 0%, #1a3d1a 30%, #0d0d1a 70%, #0a1a0a 100%)', label: 'Documentaire' },
+  { id: 'clip', gradient: 'linear-gradient(135deg, #1a050f 0%, #3d0a1f 30%, #0d0d1a 70%, #1a050f 100%)', label: 'Clip musical' },
+  { id: 'bd', gradient: 'linear-gradient(135deg, #1a0f05 0%, #3d2a0a 30%, #0d0d1a 70%, #1a0f05 100%)', label: 'BD & Motion' },
+]
+
+const SHOWCASE_SCENES = [
+  { id: 'sc_desert', bg: 'linear-gradient(135deg, #92400e, #78350f)', title: 'Desert Epic', desc: 'Plan large, lumière dorée' },
+  { id: 'sc_urban', bg: 'linear-gradient(135deg, #334155, #1e293b)', title: 'Urban Noir', desc: 'Rue nocturne, néons, pluie' },
+  { id: 'sc_ocean', bg: 'linear-gradient(135deg, #0369a1, #1e3a5f)', title: 'Deep Blue', desc: 'Plongée sous-marine' },
+  { id: 'sc_forest', bg: 'linear-gradient(135deg, #065f46, #064e3b)', title: 'Forest Mist', desc: 'Forêt brumeuse, lumière filtrée' },
+  { id: 'sc_space', bg: 'linear-gradient(135deg, #312e81, #1e1b4b)', title: 'Cosmic', desc: 'Nébuleuse stellaire' },
+  { id: 'sc_portrait', bg: 'linear-gradient(135deg, #44403c, #292524)', title: 'Portrait', desc: 'Gros plan cinématique' },
+]
+
 const MODELS = [
-  { id: 'kling3', name: 'Kling 3.0', color: '#3B82F6', tag: 'Réalisme' },
-  { id: 'runway4.5', name: 'Runway Gen-4.5', color: '#8B5CF6', tag: 'Style' },
-  { id: 'sora2', name: 'Sora 2', color: '#EC4899', tag: 'VFX' },
-  { id: 'veo3.1', name: 'Veo 3.1', color: '#10B981', tag: 'Dialogue' },
-  { id: 'seedance2', name: 'Seedance 2.0', color: '#14B8A6', tag: 'Mouvement' },
-  { id: 'wan2.5', name: 'Wan 2.5', color: '#6366F1', tag: 'Animation' },
-  { id: 'hailuo2.3', name: 'Hailuo 2.3', color: '#D946EF', tag: 'Cohérence' },
+  { name: 'Kling 3.0', color: '#3B82F6', specialty: 'Réalisme physique' },
+  { name: 'Runway Gen-4.5', color: '#8B5CF6', specialty: 'Direction artistique' },
+  { name: 'Sora 2', color: '#EC4899', specialty: 'Effets visuels' },
+  { name: 'Veo 3.1', color: '#10B981', specialty: 'Dialogues synchronisés' },
+  { name: 'Seedance 2.0', color: '#14B8A6', specialty: 'Mouvement organique' },
+  { name: 'Wan 2.5', color: '#6366F1', specialty: 'Animation stylisée' },
+  { name: 'Hailuo 2.3', color: '#D946EF', specialty: 'Cohérence temporelle' },
 ]
 
-const FORMATS = [
-  { label: 'Court-métrage', desc: 'Fiction, drame, comédie', icon: iconCourtMetrage },
-  { label: 'Publicité', desc: 'Spot 15s, 30s, 60s', icon: iconPublicite },
-  { label: 'Documentaire', desc: 'Narration, interviews', icon: iconDocumentaire },
-  { label: 'Clip musical', desc: 'Storytelling visuel', icon: iconClipMusical },
-  { label: 'Bande dessinée', desc: 'Cases, storyboard', icon: iconBd },
-  { label: 'Vidéo éducative', desc: 'Tutos, e-learning', icon: iconEducatif },
+const ENGINES_SHORT = [
+  'Intent Parser', 'Scénariste', 'Story Tracker', 'Shot Evaluator',
+  'Crispifier', 'Human Align', 'Camera Control', 'Audio Tracker',
+  'Style Guard', 'Color Harmonizer', 'Motion Flow', 'Score Composer', 'Video Assembly',
 ]
 
-const STEPS = [
-  { step: '01', title: 'Imaginez', desc: "Décrivez votre idée — l'assistant IA vous aide à construire le scénario", icon: iconStepImaginez },
-  { step: '02', title: 'Analysez', desc: '13 moteurs décomposent chaque plan, personnage, émotion et cadrage', icon: iconStepAnalysez },
-  { step: '03', title: 'Orchestrez', desc: 'Storyboard, timeline, copilote IA — peaufinez chaque détail', icon: iconStepOrchestrez },
-  { step: '04', title: 'Générez', desc: 'Le meilleur modèle IA est sélectionné pour chaque plan', icon: iconStepGenerez },
+const USE_CASES = [
+  { icon: Film, title: 'Court-métrage', desc: "Du script à l'écran en quelques heures" },
+  { icon: Sparkles, title: 'Publicité', desc: 'Spots 15s, 30s, 60s prêts à diffuser' },
+  { icon: Camera, title: 'Documentaire', desc: 'Narration, interviews, B-roll généré' },
+  { icon: Music, title: 'Clip musical', desc: 'Storytelling visuel synchronisé' },
+  { icon: Layers, title: 'BD & Motion', desc: 'Planches, storyboards animés' },
+  { icon: Globe, title: 'Éducatif', desc: 'Capsules pédagogiques immersives' },
 ]
 
-const ENGINES = [
-  { name: 'Intent Parser', icon: iconEngIntentParser },
-  { name: 'Scénariste', icon: iconEngScenarist },
-  { name: 'Story Tracker', icon: iconEngStoryTracker },
-  { name: 'Shot Evaluator', icon: iconEngShotEvaluator },
-  { name: 'Crispifier', icon: iconEngCrispifier },
-  { name: 'Human Align', icon: iconEngHumanAlign },
-  { name: 'Camera', icon: iconEngCamera },
-  { name: 'Audio Tracker', icon: iconEngAudioTracker },
-  { name: 'Camera Control', icon: iconEngCameraControl },
-  { name: 'Style Guard', icon: iconEngStyleGuard },
-  { name: 'Style Sentinel', icon: iconEngStyleGuard2 },
-  { name: 'Color Harmonizer', icon: iconEngColorHarmonizer },
-  { name: 'Motion Flow', icon: iconEngMotionFlow },
-]
+// ═══════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ═══════════════════════════════════════════════════════════
 
-export function LandingHero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
-  const router = useRouter()
-  const { t } = useI18n()
-  const [selectedModel, setSelectedModel] = useState(0)
-  const [showModels, setShowModels] = useState(false)
-  const [showEngines, setShowEngines] = useState(false)
-  const [scriptPreview, setScriptPreview] = useState('')
-  const model = MODELS[selectedModel]
+export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
+  const { t, locale } = useI18n()
+  const [currentHero, setCurrentHero] = useState(0)
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [scrollY, setScrollY] = useState(0)
+  const fr = locale === 'fr'
 
-  const handleGo = () => {
-    router.push(isLoggedIn ? '/dashboard' : '/register')
-  }
+  // Random start
+  useEffect(() => {
+    setCurrentHero(Math.floor(Math.random() * HERO_SCENES.length))
+  }, [])
+
+  // Hero rotation every 12s
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsTransitioning(true)
+      setTimeout(() => {
+        setCurrentHero(prev => (prev + 1) % HERO_SCENES.length)
+        setTimeout(() => setIsTransitioning(false), 600)
+      }, 600)
+    }, 12000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Parallax
+  useEffect(() => {
+    const onScroll = () => setScrollY(window.scrollY)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   return (
-    <div className="min-h-screen bg-dark-950 flex flex-col">
+    <div className="landing-light">
       {/* ═══ NAV ═══ */}
-      <nav className="flex items-center justify-between px-6 py-4 relative z-20">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/20">
-            <Play size={14} className="text-white ml-0.5" fill="white" />
+      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', background: 'rgba(255,255,255,0.72)', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #C56A2D, #A35520)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(197,106,45,0.2)' }}>
+              <Play size={13} color="white" fill="white" style={{ marginLeft: 1 }} />
+            </div>
+            <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 20, color: '#0F1115', letterSpacing: '-0.02em', fontWeight: 700 }}>MISEN</span>
+          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }} className="hidden md:flex">
+            {[
+              { href: '#pipeline', label: 'Pipeline' },
+              { href: '#showcase', label: fr ? 'Créations' : 'Showcase' },
+              { href: '#models', label: fr ? 'Modèles IA' : 'AI Models' },
+              { href: '#usecases', label: fr ? 'Cas d\'usage' : 'Use cases' },
+            ].map(l => (
+              <a key={l.href} href={l.href} style={{ fontSize: 13, color: 'rgba(15,17,21,0.5)', fontWeight: 500, textDecoration: 'none', transition: 'color 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#0F1115')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(15,17,21,0.5)')}
+              >{l.label}</a>
+            ))}
           </div>
-          <span className="font-display text-xl text-white tracking-tight">MISEN</span>
-        </div>
-        <div className="flex items-center gap-1 sm:gap-3">
-          <Link href="/demo" className="px-2 sm:px-3 py-1.5 text-sm text-slate-400 hover:text-white transition-colors">
-            {t.nav.demo}
-          </Link>
-          <Link href="/pricing" className="px-2 sm:px-3 py-1.5 text-sm text-slate-400 hover:text-white transition-colors">
-            {t.nav.pricing}
-          </Link>
-          <Link href="/contact" className="hidden sm:block px-2 sm:px-3 py-1.5 text-sm text-slate-400 hover:text-white transition-colors">
-            {t.nav.contact}
-          </Link>
-          <LanguageToggle />
-          {isLoggedIn ? (
-            <Link href="/dashboard" className="btn-primary px-4 py-2 text-sm font-medium rounded-xl">
-              {t.common.dashboard}
-            </Link>
-          ) : (
-            <>
-              <Link href="/login" className="px-3 py-1.5 text-sm text-slate-400 hover:text-white transition-colors">
-                {t.nav.login}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <LanguageToggle />
+            {isLoggedIn ? (
+              <Link href="/dashboard" style={{ height: 36, padding: '0 20px', borderRadius: 99, background: '#C56A2D', color: 'white', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}>
+                Dashboard <ArrowRight size={14} />
               </Link>
-              <Link href="/register" className="btn-primary px-4 py-2 text-sm font-medium rounded-xl">
-                {t.common.getStarted}
-              </Link>
-            </>
-          )}
+            ) : (
+              <>
+                <Link href="/login" style={{ fontSize: 13, color: 'rgba(15,17,21,0.5)', fontWeight: 500, textDecoration: 'none' }}>
+                  {t.common.login}
+                </Link>
+                <Link href="/register" style={{ height: 36, padding: '0 20px', borderRadius: 99, background: '#0F1115', color: 'white', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}>
+                  {t.common.getStarted}
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </nav>
 
-      {/* ═══ HERO ═══ */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 relative">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <img src={heroBg.src} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
-          <div className="absolute inset-0 bg-gradient-to-b from-dark-950/40 via-dark-950/75 to-dark-950" />
-          <div className="absolute inset-0 bg-gradient-to-r from-dark-950/80 via-transparent to-dark-950/80" />
-          <div className="absolute inset-0 vignette" />
-        </div>
+      {/* ═══ HERO — VIDEO BACKGROUND ═══ */}
+      <section style={{ position: 'relative', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        {HERO_SCENES.map((scene, i) => (
+          <div
+            key={scene.id}
+            style={{
+              position: 'absolute', inset: 0,
+              background: scene.gradient,
+              opacity: currentHero === i && !isTransitioning ? 1 : 0,
+              transition: 'opacity 1.2s ease-in-out',
+            }}
+          />
+        ))}
 
-        {/* Badge */}
-        <div className="relative z-10 mb-6">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] backdrop-blur-sm">
-            <span className="text-[10px] font-bold tracking-wider text-orange-400 bg-orange-500/20 px-2 py-0.5 rounded">NEW</span>
-            <span className="text-sm text-slate-300">Assistant IA + 13 moteurs + 7 modèles vidéo</span>
+        {/* Light overlay */}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(255,255,255,0.45), rgba(255,255,255,0.2), rgba(246,247,249,0.7))' }} />
+
+        {/* Content */}
+        <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', maxWidth: 800, margin: '0 auto', padding: '0 24px', transform: `translateY(${scrollY * 0.12}px)` }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 16px', borderRadius: 99, background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(12px)', border: '1px solid rgba(0,0,0,0.05)', marginBottom: 32, fontSize: 12, color: 'rgba(15,17,21,0.45)', fontWeight: 500 }}>
+            <span style={{ width: 6, height: 6, borderRadius: 99, background: '#C56A2D', animation: 'pulse-dot 2s ease-in-out infinite' }} />
+            {HERO_SCENES[currentHero]?.label || 'Cinéma'} — {fr ? 'Généré par MISEN' : 'Generated by MISEN'}
           </div>
-        </div>
 
-        {/* Headline */}
-        <h1 className="relative z-10 font-display text-5xl md:text-7xl text-center text-white mb-4 tracking-tight" style={{ fontWeight: 500, lineHeight: 1.1 }}>
-          De l&apos;idée<br />
-          <span className="text-gradient-copper">
-            à l&apos;image.
-          </span>
-        </h1>
+          <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 'clamp(2.8rem, 6.5vw, 5.5rem)', lineHeight: 1.05, letterSpacing: '-0.03em', color: '#0F1115', marginBottom: 24, fontWeight: 700 }}>
+            {fr ? 'Du scénario' : 'From script'}<br />
+            <span style={{ background: 'linear-gradient(135deg, #C56A2D, #D4974A, #C56A2D)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              {fr ? "à l'écran" : 'to screen'}
+            </span>
+          </h1>
 
-        {/* NEW Subtitle — la vraie promesse */}
-        <p className="relative z-10 text-base md:text-lg text-slate-400 text-center max-w-2xl mb-10 leading-relaxed">
-          Court-métrage, publicité, documentaire, clip, BD, vidéo éducative
-          — décrivez votre vision, MISEN écrit le scénario, analyse chaque plan avec 13 moteurs
-          et sélectionne le meilleur modèle IA parmi 7 pour chaque image.
-          <span className="block mt-2 text-slate-300 font-medium">
-            Pas un seul outil — le bon outil, à chaque plan.
-          </span>
-        </p>
+          <p style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)', color: 'rgba(15,17,21,0.45)', maxWidth: 560, margin: '0 auto 40px', lineHeight: 1.7, fontWeight: 300 }}>
+            {fr
+              ? "MISEN orchestre 13 moteurs d'analyse et 7 modèles IA pour transformer vos scénarios en productions cinématographiques."
+              : 'MISEN orchestrates 13 analysis engines and 7 AI models to transform your screenplays into cinematic productions.'
+            }
+          </p>
 
-        {/* ═══ ACTION BOX ═══ */}
-        <div className="relative z-10 w-full max-w-2xl">
-          <div className="bg-dark-900/80 backdrop-blur-xl border border-orange-500/10 rounded-2xl p-5 shadow-2xl shadow-black/40">
-            <div className="flex items-center justify-between mb-4">
-              <button
-                onClick={() => setShowModels(!showModels)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-colors"
-              >
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: model.color }} />
-                <span className="text-sm font-medium text-white">{model.name}</span>
-                <span className="text-[10px] px-1.5 py-0.5 bg-white/[0.06] text-slate-400 rounded">{model.tag}</span>
-                <ChevronDown size={14} className="text-slate-500" />
-              </button>
-              <div className="flex items-center gap-3 text-[11px] text-slate-500">
-                <span className="flex items-center gap-1"><Wand2 size={11} className="text-orange-500/60" /> Assistant IA</span>
-                <span className="flex items-center gap-1"><Brain size={11} /> 13 moteurs</span>
-              </div>
-            </div>
-
-            {showModels && (
-              <div className="mb-4 grid grid-cols-2 gap-1.5 p-2 bg-dark-800/50 rounded-xl border border-dark-700">
-                {MODELS.map((m, i) => (
-                  <button
-                    key={m.id}
-                    onClick={() => { setSelectedModel(i); setShowModels(false) }}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors ${i === selectedModel ? 'bg-white/[0.08] text-white' : 'hover:bg-white/[0.04] text-slate-400'}`}
-                  >
-                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: m.color }} />
-                    <span className="text-xs font-medium">{m.name}</span>
-                    <span className="text-[9px] text-slate-600 ml-auto">{m.tag}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-
-            <textarea
-              value={scriptPreview}
-              onChange={(e) => setScriptPreview(e.target.value)}
-              placeholder="Décrivez votre idée ou collez votre scénario..."
-              rows={3}
-              className="w-full bg-transparent text-sm text-slate-200 placeholder:text-slate-600 resize-none focus:outline-none leading-relaxed"
-            />
-
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.05]">
-              <p className="text-[11px] text-slate-600">
-                Pas de scénario ? L&apos;assistant IA vous guide · Gratuit
-              </p>
-              <button
-                onClick={handleGo}
-                className="btn-primary flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-xl"
-              >
-                <Play size={14} fill="white" /> {isLoggedIn ? t.common.dashboard : t.common.getStarted}
-              </button>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+            <Link href={isLoggedIn ? '/dashboard' : '/register'} className="landing-cta-primary">
+              {fr ? 'Commencer gratuitement' : 'Start for free'} <ArrowRight size={16} />
+            </Link>
+            <Link href="/demo" className="landing-cta-secondary">
+              <Play size={14} color="#C56A2D" fill="#C56A2D" /> {fr ? 'Voir la démo' : 'Watch demo'}
+            </Link>
           </div>
-        </div>
 
-        {/* ═══ STATS ═══ */}
-        <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-3 mt-10 w-full max-w-2xl">
-          {[
-            { value: '∞', label: 'Formats' },
-            { value: '13', label: 'Moteurs IA' },
-            { value: '7', label: 'Modèles vidéo' },
-            { value: '<10s', label: 'Par analyse' },
-          ].map((s) => (
-            <div key={s.label} className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3 text-center">
-              <p className="text-2xl font-display font-bold text-white">{s.value}</p>
-              <p className="text-[11px] text-slate-400 mt-0.5">{s.label}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ═══ USE CASES — Custom Pictos ═══ */}
-      <section className="px-6 py-16 max-w-5xl mx-auto w-full">
-        <h2 className="font-display text-2xl text-white text-center mb-3 tracking-tight">
-          <span className="text-gradient-copper">Un outil, tous les formats</span>
-        </h2>
-        <p className="text-sm text-slate-500 text-center mb-8 max-w-lg mx-auto">
-          Que vous soyez réalisateur, marketeur, enseignant ou créateur — MISEN s&apos;adapte à votre vision
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {FORMATS.map((f) => (
-            <div key={f.label} className="flex items-center gap-3 p-4 rounded-xl bg-dark-900/50 border border-dark-700 hover:border-orange-500/20 hover:bg-dark-900/80 transition-all group">
-              <div className="w-12 h-12 flex-shrink-0 relative">
-                <Image src={f.icon} alt={f.label} fill className="object-contain" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-white">{f.label}</p>
-                <p className="text-[11px] text-slate-500 mt-0.5">{f.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ═══ HOW IT WORKS — Custom Pictos ═══ */}
-      <section className="px-6 py-16 max-w-4xl mx-auto w-full">
-        <h2 className="font-display text-2xl text-white text-center mb-10 tracking-tight"><span className="text-gradient-copper">Comment ça marche</span></h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {STEPS.map((s) => (
-            <div key={s.step} className="group text-center">
-              <div className="w-20 h-20 mx-auto relative mb-4">
-                <Image src={s.icon} alt={s.title} fill className="object-contain" />
-              </div>
-              <div className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-orange-400 mb-2">
-                {s.step}
-              </div>
-              <h3 className="text-base font-semibold text-white mb-1.5">{s.title}</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">{s.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ═══ VISUAL SHOWCASE — 3 SCENARIOS ═══ */}
-      <section className="px-6 py-16 max-w-5xl mx-auto w-full">
-        <h2 className="font-display text-2xl text-white text-center mb-3 tracking-tight">
-          <span className="text-gradient-copper">Des résultats cinématiques</span>
-        </h2>
-        <p className="text-sm text-slate-500 text-center mb-8">
-          Chaque plan est assigné au modèle IA optimal — voici 3 projets générés par MISEN
-        </p>
-
-        {/* Scenario tabs */}
-        {(() => {
-          const scenarios = [
-            {
-              id: 'cendres',
-              title: 'Le Poids des cendres',
-              genre: 'Court-métrage · Drame',
-              shots: [
-                { src: sc1Fleuve.src, label: 'Plan large · Fleuve', model: 'Kling 3.0', color: '#3B82F6' },
-                { src: sc1Portrait.src, label: 'Gros plan · Portrait', model: 'Veo 3.1', color: '#10B981' },
-                { src: sc1Pont.src, label: 'Plan large · Pont', model: 'Sora 2', color: '#EC4899' },
-                { src: sc1Couloir.src, label: 'Intérieur · Couloir', model: 'Kling 3.0', color: '#3B82F6' },
-              ],
-            },
-            {
-              id: 'odyssee',
-              title: 'Odyssée',
-              genre: 'Publicité · Parfum luxe',
-              shots: [
-                { src: sc2Desert.src, label: 'Désert · Silhouette', model: 'Kling 3.0', color: '#3B82F6' },
-                { src: sc2Sable.src, label: 'Insert · Sable doré', model: 'Runway Gen-4.5', color: '#8B5CF6' },
-                { src: sc2Visage.src, label: 'Gros plan · Visage', model: 'Veo 3.1', color: '#10B981' },
-                { src: sc2Falaise.src, label: 'Falaise · Étoiles', model: 'Wan 2.5', color: '#6366F1' },
-              ],
-            },
-            {
-              id: 'pixel',
-              title: 'Pixel',
-              genre: 'Vidéo éducative · IA',
-              shots: [
-                { src: sc3Oeil.src, label: 'Macro · Œil', model: 'Veo 3.1', color: '#10B981' },
-                { src: sc3Ville.src, label: 'Aérien · Ville', model: 'Kling 3.0', color: '#3B82F6' },
-                { src: sc3Code.src, label: 'Plan moyen · Écran', model: 'Runway Gen-4.5', color: '#8B5CF6' },
-                { src: sc3Silhouette.src, label: 'Contre-jour · Data', model: 'Sora 2', color: '#EC4899' },
-              ],
-            },
-          ]
-
-          return (
-            <div>
-              {/* Tab buttons */}
-              <div className="flex justify-center gap-2 mb-6">
-                {scenarios.map((s, i) => (
-                  <button
-                    key={s.id}
-                    onClick={() => {
-                      const el = document.getElementById(`scenario-${s.id}`)
-                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
-                    }}
-                    className="px-4 py-2 rounded-lg text-xs font-medium border border-white/[0.08] hover:border-orange-500/50 hover:text-orange-400 text-slate-400 transition-all"
-                  >
-                    <span className="text-white/80">{s.title}</span>
-                    <span className="ml-1.5 text-slate-600">·</span>
-                    <span className="ml-1.5">{s.genre.split('·')[0].trim()}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Scenarios */}
-              <div className="space-y-10">
-                {scenarios.map((s) => (
-                  <div key={s.id} id={`scenario-${s.id}`}>
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-                      <div className="text-center">
-                        <p className="text-xs font-medium text-orange-400 tracking-wider uppercase">{s.genre}</p>
-                        <p className="text-sm text-white/70 font-display mt-0.5">« {s.title} »</p>
-                      </div>
-                      <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {s.shots.map((shot) => (
-                        <div key={shot.label} className="group relative rounded-xl overflow-hidden border border-white/[0.06] hover:border-white/[0.15] transition-all">
-                          <img src={shot.src} alt={shot.label} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-500" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                          <div className="absolute bottom-0 left-0 right-0 p-3">
-                            <p className="text-[11px] text-white font-medium">{shot.label}</p>
-                            <div className="flex items-center gap-1.5 mt-1">
-                              <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: shot.color }} />
-                              <span className="text-[9px] text-slate-400">{shot.model}</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )
-        })()}
-      </section>
-
-      {/* ═══ MODELS ═══ */}
-      <section className="px-6 py-16 max-w-5xl mx-auto w-full">
-        <h2 className="font-display text-2xl text-white text-center mb-3 tracking-tight">
-          7 modèles IA orchestrés
-        </h2>
-        <p className="text-sm text-slate-500 text-center mb-8">
-          MISEN met en compétition chaque modèle et sélectionne le meilleur pour chaque plan
-        </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { name: 'Kling 3.0', tag: 'Réalisme · Physique', color: '#3B82F6', desc: 'Mouvements naturels, textures réalistes' },
-            { name: 'Runway Gen-4.5', tag: 'Style · Contrôle', color: '#8B5CF6', desc: 'Direction artistique précise' },
-            { name: 'Sora 2', tag: 'VFX · Émotion', color: '#EC4899', desc: 'Effets visuels, scènes complexes' },
-            { name: 'Veo 3.1', tag: 'Dialogue · Audio', color: '#10B981', desc: 'Lip sync, voix intégrées' },
-            { name: 'Seedance 2.0', tag: 'Mouvement · Corps', color: '#14B8A6', desc: 'Danse, sport, action' },
-            { name: 'Wan 2.5', tag: 'Animation · Caméra', color: '#6366F1', desc: 'Mouvements de caméra fluides' },
-            { name: 'Hailuo 2.3', tag: 'Cohérence', color: '#D946EF', desc: 'Personnages persistants' },
-          ].map((m) => (
-            <div key={m.name} className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.12] transition-all group">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: m.color }} />
-                <span className="text-sm font-medium text-white">{m.name}</span>
-              </div>
-              <p className="text-[10px] font-medium mb-1" style={{ color: m.color }}>{m.tag}</p>
-              <p className="text-[11px] text-slate-500">{m.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ═══ 13 ENGINES — Custom Pictos ═══ */}
-      <section className="px-6 py-16 max-w-5xl mx-auto w-full">
-        <div className="text-center mb-8">
-          <h2 className="font-display text-2xl text-white mb-3 tracking-tight">13 moteurs d&apos;analyse</h2>
-          <p className="text-sm text-slate-500 max-w-lg mx-auto">Chaque scène passe au crible de moteurs spécialisés qui travaillent en synergie</p>
-        </div>
-        <button onClick={() => setShowEngines(!showEngines)} className="mx-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] text-sm text-slate-400 hover:text-white transition-all mb-4">
-          {showEngines ? 'Masquer' : 'Voir'} les 13 moteurs <ChevronDown size={14} className={`transition-transform ${showEngines ? 'rotate-180' : ''}`} />
-        </button>
-        {showEngines && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 animate-fade-in">
-            {ENGINES.map((e) => (
-              <div key={e.name} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.1] transition-colors group">
-                <div className="w-6 h-6 flex-shrink-0 relative opacity-60 group-hover:opacity-100 transition-opacity">
-                  <Image src={e.icon} alt={e.name} fill className="object-contain" />
-                </div>
-                <span className="text-xs text-slate-400 group-hover:text-slate-200 transition-colors">{e.name}</span>
+          {/* Stats */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 48, marginTop: 56 }}>
+            {[
+              { n: '13', l: fr ? 'Moteurs' : 'Engines' },
+              { n: '7', l: fr ? 'Modèles IA' : 'AI Models' },
+              { n: '4K', l: fr ? 'Résolution' : 'Resolution' },
+              { n: '<10s', l: fr ? 'Analyse' : 'Analysis' },
+            ].map(s => (
+              <div key={s.l} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 28, color: '#0F1115', letterSpacing: '-0.02em' }}>{s.n}</span>
+                <span style={{ fontSize: 12, color: 'rgba(15,17,21,0.3)', fontWeight: 500 }}>{s.l}</span>
               </div>
             ))}
           </div>
-        )}
+        </div>
+
+        <div style={{ position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)', opacity: 0.3 }} className="animate-bounce">
+          <ChevronDown size={20} color="#0F1115" />
+        </div>
+      </section>
+
+      {/* ═══ PIPELINE ═══ */}
+      <section id="pipeline" className="landing-section" style={{ background: '#F6F7F9' }}>
+        <div className="landing-container">
+          <div style={{ textAlign: 'center', marginBottom: 80 }}>
+            <p className="landing-label" style={{ color: '#C56A2D' }}>Pipeline</p>
+            <h2 className="landing-h2">{fr ? 'Quatre étapes. Un film.' : 'Four steps. One film.'}</h2>
+            <p className="landing-subtitle">{fr ? "De l'écriture à l'export, MISEN guide chaque phase." : 'From writing to export, MISEN guides every phase.'}</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
+            {[
+              { step: '01', icon: Wand2, title: fr ? 'Imaginez' : 'Imagine', desc: fr ? 'Écrivez ou importez votre scénario.' : 'Write or import your screenplay.' },
+              { step: '02', icon: Eye, title: fr ? 'Analysez' : 'Analyze', desc: fr ? '13 moteurs dissèquent chaque scène.' : '13 engines dissect every scene.' },
+              { step: '03', icon: Layers, title: fr ? 'Orchestrez' : 'Orchestrate', desc: fr ? 'Storyboard IA, timeline 5 pistes, musique.' : 'AI storyboard, 5-track timeline, music.' },
+              { step: '04', icon: Zap, title: fr ? 'Générez' : 'Generate', desc: fr ? '7 modèles IA, assembly auto, export.' : '7 AI models, auto assembly, export.' },
+            ].map(s => (
+              <div key={s.step} className="landing-card">
+                <span style={{ fontSize: 11, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, color: 'rgba(197,106,45,0.35)', letterSpacing: '0.08em' }}>{s.step}</span>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: '#F6F7F9', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 16, marginBottom: 20 }}>
+                  <s.icon size={20} color="#C56A2D" strokeWidth={1.5} />
+                </div>
+                <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 20, color: '#0F1115', marginBottom: 8, letterSpacing: '-0.02em' }}>{s.title}</h3>
+                <p style={{ fontSize: 14, color: 'rgba(15,17,21,0.4)', lineHeight: 1.6 }}>{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ SHOWCASE ═══ */}
+      <section id="showcase" className="landing-section" style={{ background: '#FFFFFF' }}>
+        <div className="landing-container">
+          <div style={{ textAlign: 'center', marginBottom: 80 }}>
+            <p className="landing-label" style={{ color: '#6C4DFF' }}>Showcase</p>
+            <h2 className="landing-h2">{fr ? 'Ce que MISEN peut créer' : 'What MISEN can create'}</h2>
+            <p className="landing-subtitle">{fr ? 'Chaque style, chaque ambiance — en quelques minutes.' : 'Every style, every mood — in minutes.'}</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
+            {SHOWCASE_SCENES.map(scene => (
+              <div key={scene.id} className="landing-video-card" style={{ aspectRatio: '16/9', borderRadius: 16, overflow: 'hidden', position: 'relative', cursor: 'pointer' }}>
+                {/* Replace with <video src={`/videos/${scene.id}.webm`} autoPlay muted loop playsInline /> */}
+                <div style={{ position: 'absolute', inset: 0, background: scene.bg }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent)' }} />
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 20 }}>
+                  <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'white', fontSize: 18, letterSpacing: '-0.02em' }}>{scene.title}</h3>
+                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 2 }}>{scene.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ MODELS ═══ */}
+      <section id="models" className="landing-section" style={{ background: '#F6F7F9' }}>
+        <div className="landing-container">
+          <div style={{ textAlign: 'center', marginBottom: 80 }}>
+            <p className="landing-label" style={{ color: '#6C4DFF' }}>{fr ? 'Écosystème IA' : 'AI Ecosystem'}</p>
+            <h2 className="landing-h2">{fr ? '7 modèles. Le meilleur pour chaque plan.' : '7 models. The best for every shot.'}</h2>
+            <p className="landing-subtitle">{fr ? 'MISEN sélectionne automatiquement le modèle optimal.' : 'MISEN automatically selects the optimal model.'}</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
+            {MODELS.map(m => (
+              <div key={m.name} className="landing-card" style={{ textAlign: 'center', padding: 24 }}>
+                <div style={{ width: 48, height: 48, borderRadius: 12, margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${m.color}12` }}>
+                  <span style={{ fontSize: 18, fontWeight: 700, color: m.color }}>{m.name.charAt(0)}</span>
+                </div>
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#0F1115', marginBottom: 4, letterSpacing: '-0.01em' }}>{m.name}</p>
+                <p style={{ fontSize: 11, color: 'rgba(15,17,21,0.35)' }}>{m.specialty}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 64, textAlign: 'center' }}>
+            <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(15,17,21,0.2)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 16 }}>
+              {fr ? 'Propulsé par 13 moteurs d\'analyse' : 'Powered by 13 analysis engines'}
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 8, maxWidth: 700, margin: '0 auto' }}>
+              {ENGINES_SHORT.map(e => (
+                <span key={e} style={{ padding: '6px 12px', borderRadius: 99, background: 'white', border: '1px solid rgba(0,0,0,0.04)', fontSize: 11, color: 'rgba(15,17,21,0.4)', fontWeight: 500 }}>{e}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ USE CASES ═══ */}
+      <section id="usecases" className="landing-section" style={{ background: '#FFFFFF' }}>
+        <div className="landing-container">
+          <div style={{ textAlign: 'center', marginBottom: 80 }}>
+            <p className="landing-label" style={{ color: '#C56A2D' }}>{fr ? "Cas d'usage" : 'Use cases'}</p>
+            <h2 className="landing-h2">{fr ? 'Un studio pour chaque histoire' : 'A studio for every story'}</h2>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
+            {USE_CASES.map(uc => (
+              <div key={uc.title} className="landing-usecase">
+                <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(197,106,45,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <uc.icon size={20} color="#C56A2D" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 18, color: '#0F1115', marginBottom: 6, letterSpacing: '-0.02em' }}>{uc.title}</h3>
+                  <p style={{ fontSize: 14, color: 'rgba(15,17,21,0.4)', lineHeight: 1.6 }}>{uc.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ FINAL CTA ═══ */}
+      <section style={{ padding: '128px 24px', background: '#0F1115', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 600, height: 400, background: 'rgba(197,106,45,0.08)', borderRadius: '50%', filter: 'blur(120px)' }} />
+        <div style={{ position: 'absolute', bottom: 0, right: '25%', width: 300, height: 300, background: 'rgba(108,77,255,0.06)', borderRadius: '50%', filter: 'blur(100px)' }} />
+        <div style={{ position: 'relative', zIndex: 10, maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
+          <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 'clamp(2rem, 4vw, 3.5rem)', color: 'white', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 24 }}>
+            {fr ? 'Prêt à créer ?' : 'Ready to create?'}
+          </h2>
+          <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 18, marginBottom: 40, lineHeight: 1.7 }}>
+            {fr ? 'Rejoignez les créateurs qui transforment leurs idées en productions cinématographiques.' : 'Join creators turning ideas into cinematic productions.'}
+          </p>
+          <Link href={isLoggedIn ? '/dashboard' : '/register'} style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8, height: 56, padding: '0 40px', borderRadius: 99, fontSize: 16, fontWeight: 600, color: 'white', textDecoration: 'none',
+            background: 'linear-gradient(135deg, #C56A2D, #D4974A, #C56A2D)', boxShadow: '0 4px 24px rgba(197,106,45,0.3)',
+          }}>
+            {fr ? 'Commencer maintenant' : 'Start now'} <ArrowRight size={18} />
+          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, marginTop: 56, fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>
+            <span>{fr ? 'Gratuit pour commencer' : 'Free to start'}</span>
+            <span style={{ width: 4, height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.1)' }} />
+            <span>{fr ? 'Aucune carte requise' : 'No credit card'}</span>
+            <span style={{ width: 4, height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.1)' }} />
+            <span>RGPD</span>
+          </div>
+        </div>
       </section>
 
       {/* ═══ PRICING ═══ */}
-      <section className="px-6 py-16 max-w-4xl mx-auto w-full">
-        <h2 className="font-display text-2xl text-white text-center mb-10 tracking-tight">Tarifs simples</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[
-            { name: 'Free', price: '0€', desc: '3 projets · Prompts illimités', features: ["13 moteurs d'analyse", 'Assistant IA (3 req/mois)', 'Prompts optimisés par plan', 'Mode Simple', 'Export JSON'] },
-            { name: 'Pro', price: '29€', desc: '20 projets · Mode Expert', features: ['Tout Free +', 'Assistant IA (30 req/mois)', 'Mode Expert complet', 'Timeline & Copilote IA', 'Génération intégrée (vos clés)'], glow: true },
-            { name: 'Studio', price: '79€', desc: 'Illimité · API · Support', features: ['Tout Pro +', 'Assistant IA illimité', 'Projets illimités', 'API access', 'Support dédié'] },
-          ].map((p) => (
-            <div key={p.name} className={`rounded-2xl p-6 border transition-all ${p.glow ? 'bg-orange-500/[0.04] border-orange-500/25 shadow-lg shadow-orange-500/10' : 'bg-white/[0.02] border-white/[0.06]'}`}>
-              <span className={`text-xs font-bold tracking-wider ${p.glow ? 'text-orange-400' : 'text-slate-500'}`}>{p.name.toUpperCase()}</span>
-              <div className="mt-3 mb-1">
-                <span className="font-display text-3xl text-white">{p.price}</span>
-                <span className="text-sm text-slate-500">/mois</span>
+      <section className="landing-section" style={{ background: '#F6F7F9' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 24px' }}>
+          <div style={{ textAlign: 'center', marginBottom: 64 }}>
+            <p className="landing-label" style={{ color: '#C56A2D' }}>Tarifs</p>
+            <h2 className="landing-h2">{fr ? 'Simple et transparent' : 'Simple and transparent'}</h2>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
+            {[
+              { name: 'Free', price: '0€', desc: fr ? '3 projets' : '3 projects', features: fr ? ['13 moteurs d\'analyse', 'Assistant IA (3/mois)', 'Mode Simple', 'Export JSON'] : ['13 analysis engines', 'AI Assistant (3/mo)', 'Simple Mode', 'JSON Export'], hl: false },
+              { name: 'Pro', price: '29€', desc: fr ? '20 projets' : '20 projects', features: fr ? ['Tout Free +', 'Assistant IA (30/mois)', 'Mode Expert complet', 'Timeline & Copilote', 'Génération intégrée'] : ['Everything Free +', 'AI Assistant (30/mo)', 'Full Expert Mode', 'Timeline & Copilot', 'Built-in Gen'], hl: true },
+              { name: 'Studio', price: '79€', desc: fr ? 'Illimité' : 'Unlimited', features: fr ? ['Tout Pro +', 'IA illimitée', 'Projets illimités', 'API access', 'Support dédié'] : ['Everything Pro +', 'Unlimited AI', 'Unlimited Projects', 'API Access', 'Priority Support'], hl: false },
+            ].map(p => (
+              <div key={p.name} className="landing-card" style={{ padding: 28, transform: p.hl ? 'scale(1.02)' : undefined, border: p.hl ? '1px solid rgba(197,106,45,0.2)' : undefined, boxShadow: p.hl ? '0 8px 32px rgba(197,106,45,0.06)' : undefined }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: p.hl ? '#C56A2D' : 'rgba(15,17,21,0.25)' }}>{p.name.toUpperCase()}</span>
+                  {p.hl && <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', color: '#C56A2D', background: 'rgba(197,106,45,0.08)', padding: '2px 8px', borderRadius: 99 }}>POPULAIRE</span>}
+                </div>
+                <div style={{ marginBottom: 4 }}>
+                  <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 40, color: '#0F1115', letterSpacing: '-0.02em' }}>{p.price}</span>
+                  <span style={{ fontSize: 14, color: 'rgba(15,17,21,0.25)' }}>/mois</span>
+                </div>
+                <p style={{ fontSize: 13, color: 'rgba(15,17,21,0.3)', marginBottom: 24 }}>{p.desc}</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
+                  {p.features.map(f => (
+                    <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: 'rgba(15,17,21,0.55)' }}>
+                      <Check size={14} color={p.hl ? '#C56A2D' : 'rgba(15,17,21,0.12)'} /> {f}
+                    </div>
+                  ))}
+                </div>
+                <Link href="/register" style={{
+                  display: 'block', textAlign: 'center', padding: '12px 0', borderRadius: 12, fontSize: 14, fontWeight: 600, textDecoration: 'none',
+                  background: p.hl ? '#0F1115' : '#F6F7F9', color: p.hl ? 'white' : 'rgba(15,17,21,0.5)',
+                }}>
+                  {p.hl ? (fr ? 'Commencer' : 'Get started') : (fr ? 'Essayer' : 'Try it')}
+                </Link>
               </div>
-              <p className="text-xs text-slate-500 mb-5">{p.desc}</p>
-              <div className="space-y-2 mb-6">
-                {p.features.map((f) => (
-                  <div key={f} className="flex items-center gap-2 text-xs text-slate-300">
-                    <Check size={12} className={p.glow ? 'text-orange-500' : 'text-slate-600'} /> {f}
-                  </div>
-                ))}
-              </div>
-              <Link href="/register" className={`block text-center py-2.5 rounded-xl text-sm font-medium transition-colors ${p.glow ? 'btn-primary text-white' : 'bg-white/[0.05] hover:bg-white/[0.08] text-slate-300'}`}>
-                {p.glow ? t.common.getStarted : t.common.tryDemo}
-              </Link>
-            </div>
-          ))}
-        </div>
-        <div className="text-center mt-6">
-          <Link href="/pricing" className="text-sm text-orange-400 hover:text-orange-300 transition-colors inline-flex items-center gap-1">
-            Comparer les plans en détail <ArrowRight size={14} />
-          </Link>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ═══ FOOTER ═══ */}
-      <footer className="px-6 py-8 relative">
-        <div className="beam w-full mb-6" />
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
-                <Play size={10} className="text-white ml-0.5" fill="white" />
-              </div>
-              <span className="font-display text-base text-gradient-copper">MISEN</span>
+      <footer style={{ padding: '40px 24px', background: 'white', borderTop: '1px solid rgba(0,0,0,0.04)' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #C56A2D, #A35520)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Play size={11} color="white" fill="white" style={{ marginLeft: 1 }} />
             </div>
-            <p className="text-[11px] text-slate-600 mt-1">Mise en Scène Numérique — par Steve Moradel</p>
+            <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 18, color: '#0F1115', letterSpacing: '-0.02em', fontWeight: 700 }}>MISEN</span>
+            <span style={{ fontSize: 11, color: 'rgba(15,17,21,0.2)', marginLeft: 4 }}>Mise en Scène Numérique</span>
           </div>
-          <div className="flex items-center gap-5 text-xs text-slate-600">
-            <Link href="/demo" className="hover:text-slate-300 transition-colors">Démo</Link>
-            <Link href="/pricing" className="hover:text-slate-300 transition-colors">Tarifs</Link>
-            <Link href="/login" className="hover:text-slate-300 transition-colors">{t.common.login}</Link>
-            <Link href="/legal/cgu" className="hover:text-slate-300 transition-colors">CGU</Link>
-            <Link href="/legal/cgv" className="hover:text-slate-300 transition-colors">CGV</Link>
-            <Link href="/legal/privacy" className="hover:text-slate-300 transition-colors">Confidentialité</Link>
-            <Link href="/legal/mentions" className="hover:text-slate-300 transition-colors">Mentions légales</Link>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24, fontSize: 12, color: 'rgba(15,17,21,0.25)', fontWeight: 500 }}>
+            {[
+              { href: '/demo', label: 'Démo' },
+              { href: '/pricing', label: 'Tarifs' },
+              { href: '/login', label: t.common.login },
+              { href: '/legal/cgu', label: 'CGU' },
+              { href: '/legal/cgv', label: 'CGV' },
+              { href: '/legal/privacy', label: 'Confidentialité' },
+              { href: '/legal/mentions', label: 'Mentions légales' },
+            ].map(l => (
+              <Link key={l.href} href={l.href} style={{ color: 'inherit', textDecoration: 'none' }}>{l.label}</Link>
+            ))}
           </div>
+          <p style={{ fontSize: 11, color: 'rgba(15,17,21,0.15)' }}>© 2026 Steve Moradel — Jabrilia Éditions</p>
         </div>
       </footer>
+
+      {/* ═══ SCOPED STYLES ═══ */}
+      <style jsx global>{`
+        .landing-light { background: #F6F7F9; color: #0F1115; min-height: 100vh; }
+        .landing-section { padding: 128px 24px; }
+        .landing-container { max-width: 1200px; margin: 0 auto; }
+        .landing-label { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 16px; }
+        .landing-h2 { font-family: 'Playfair Display', Georgia, serif; font-size: clamp(2rem, 4vw, 3.5rem); color: #0F1115; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 20px; }
+        .landing-subtitle { color: rgba(15,17,21,0.35); font-size: 18px; max-width: 520px; margin: 0 auto; line-height: 1.7; }
+        .landing-card {
+          padding: 32px; border-radius: 16px; background: white; border: 1px solid rgba(0,0,0,0.04);
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .landing-card:hover { border-color: rgba(197,106,45,0.15); box-shadow: 0 8px 32px rgba(197,106,45,0.04); transform: translateY(-2px); }
+        .landing-usecase { display: flex; align-items: flex-start; gap: 20px; padding: 24px; border-radius: 16px; transition: background 0.3s; }
+        .landing-usecase:hover { background: #F6F7F9; }
+        .landing-video-card { transition: transform 0.4s cubic-bezier(0.4,0,0.2,1); }
+        .landing-video-card:hover { transform: scale(1.02); }
+        .landing-cta-primary {
+          display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 32px;
+          border-radius: 99px; background: #0F1115; color: white; font-size: 15px; font-weight: 600;
+          text-decoration: none; transition: all 0.3s; box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        .landing-cta-primary:hover { background: rgba(15,17,21,0.8); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+        .landing-cta-secondary {
+          display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 32px;
+          border-radius: 99px; background: rgba(255,255,255,0.8); backdrop-filter: blur(8px);
+          border: 1px solid rgba(0,0,0,0.06); color: #0F1115; font-size: 15px; font-weight: 600;
+          text-decoration: none; transition: all 0.3s;
+        }
+        .landing-cta-secondary:hover { background: white; transform: translateY(-2px); }
+        @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+        @media (max-width: 768px) {
+          .landing-section { padding: 80px 16px; }
+          .hidden { display: none !important; }
+        }
+      `}</style>
     </div>
   )
 }
