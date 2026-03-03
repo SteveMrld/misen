@@ -15,21 +15,19 @@ import {
 // ═══════════════════════════════════════════════════════════
 
 const HERO_SCENES = [
-  { id: 'cinema', gradient: 'linear-gradient(135deg, #1a0e05 0%, #3d1f0a 30%, #0d0d1a 70%, #1a0e05 100%)', label: 'Cinéma' },
-  { id: 'pub', gradient: 'linear-gradient(135deg, #120a20 0%, #2d1b4e 30%, #0d0d1a 70%, #120a20 100%)', label: 'Publicité' },
-  { id: 'animation', gradient: 'linear-gradient(135deg, #051a1a 0%, #0d3d3d 30%, #0d0d1a 70%, #051a1a 100%)', label: 'Animation' },
-  { id: 'docu', gradient: 'linear-gradient(135deg, #0a1a0a 0%, #1a3d1a 30%, #0d0d1a 70%, #0a1a0a 100%)', label: 'Documentaire' },
-  { id: 'clip', gradient: 'linear-gradient(135deg, #1a050f 0%, #3d0a1f 30%, #0d0d1a 70%, #1a050f 100%)', label: 'Clip musical' },
-  { id: 'bd', gradient: 'linear-gradient(135deg, #1a0f05 0%, #3d2a0a 30%, #0d0d1a 70%, #1a0f05 100%)', label: 'BD & Motion' },
+  { id: 'cinema', video: '/videos/hero_cybercity.mp4', label: 'Cinéma' },
+  { id: 'pub', video: '/videos/hero_car.mp4', label: 'Publicité' },
+  { id: 'animation', video: '/videos/hero_animation.mp4', label: 'Animation' },
+  { id: 'portrait', video: '/videos/hero_portrait.mp4', label: 'Portrait' },
+  { id: 'clip', video: '/videos/hero_desert.mp4', label: 'Clip musical' },
+  { id: 'action', video: '/videos/hero_action.mp4', label: 'Action' },
 ]
 
 const SHOWCASE_SCENES = [
-  { id: 'sc_desert', bg: 'linear-gradient(135deg, #92400e, #78350f)', title: 'Desert Epic', desc: 'Plan large, lumière dorée' },
-  { id: 'sc_urban', bg: 'linear-gradient(135deg, #334155, #1e293b)', title: 'Urban Noir', desc: 'Rue nocturne, néons, pluie' },
-  { id: 'sc_ocean', bg: 'linear-gradient(135deg, #0369a1, #1e3a5f)', title: 'Deep Blue', desc: 'Plongée sous-marine' },
-  { id: 'sc_forest', bg: 'linear-gradient(135deg, #065f46, #064e3b)', title: 'Forest Mist', desc: 'Forêt brumeuse, lumière filtrée' },
-  { id: 'sc_space', bg: 'linear-gradient(135deg, #312e81, #1e1b4b)', title: 'Cosmic', desc: 'Nébuleuse stellaire' },
-  { id: 'sc_portrait', bg: 'linear-gradient(135deg, #44403c, #292524)', title: 'Portrait', desc: 'Gros plan cinématique' },
+  { id: 'sc_dance', video: '/videos/show_dance.mp4', title: 'Clip musical', desc: 'Danseur, jeux de lumière' },
+  { id: 'sc_studio', video: '/videos/show_studio.mp4', title: 'Behind the Scenes', desc: 'Plateau de tournage' },
+  { id: 'sc_abstract', video: '/videos/show_abstract.mp4', title: 'Motion Design', desc: 'Formes lumineuses abstraites' },
+  { id: 'sc_perfume', video: '/videos/show_perfume.mp4', title: 'Publicité Luxe', desc: 'Produit, particules dorées' },
 ]
 
 const MODELS = [
@@ -64,7 +62,6 @@ const USE_CASES = [
 export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
   const { t, locale } = useI18n()
   const [currentHero, setCurrentHero] = useState(0)
-  const [isTransitioning, setIsTransitioning] = useState(false)
   const [scrollY, setScrollY] = useState(0)
   const fr = locale === 'fr'
 
@@ -76,11 +73,7 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
   // Hero rotation every 12s
   useEffect(() => {
     const interval = setInterval(() => {
-      setIsTransitioning(true)
-      setTimeout(() => {
-        setCurrentHero(prev => (prev + 1) % HERO_SCENES.length)
-        setTimeout(() => setIsTransitioning(false), 600)
-      }, 600)
+      setCurrentHero(prev => (prev + 1) % HERO_SCENES.length)
     }, 12000)
     return () => clearInterval(interval)
   }, [])
@@ -143,11 +136,19 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
             key={scene.id}
             style={{
               position: 'absolute', inset: 0,
-              background: scene.gradient,
-              opacity: currentHero === i && !isTransitioning ? 1 : 0,
+              opacity: currentHero === i ? 1 : 0,
               transition: 'opacity 1.2s ease-in-out',
             }}
-          />
+          >
+            <video
+              src={scene.video}
+              autoPlay
+              muted
+              loop
+              playsInline
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          </div>
         ))}
 
         {/* Light overlay */}
@@ -243,8 +244,14 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
             {SHOWCASE_SCENES.map(scene => (
               <div key={scene.id} className="landing-video-card" style={{ aspectRatio: '16/9', borderRadius: 16, overflow: 'hidden', position: 'relative', cursor: 'pointer' }}>
-                {/* Replace with <video src={`/videos/${scene.id}.webm`} autoPlay muted loop playsInline /> */}
-                <div style={{ position: 'absolute', inset: 0, background: scene.bg }} />
+                <video
+                  src={scene.video}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent)' }} />
                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 20 }}>
                   <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'white', fontSize: 18, letterSpacing: '-0.02em' }}>{scene.title}</h3>
