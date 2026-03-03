@@ -1,13 +1,11 @@
 /** @type {import('next').NextConfig} */
-// Build: 2026-02-28 — force clean Vercel deploy
 const nextConfig = {
   reactStrictMode: true,
   images: {
     unoptimized: true,
   },
-  // Ensure static assets are properly cached
   generateBuildId: async () => {
-    return 'v7-build-' + Date.now()
+    return 'v14-' + Date.now()
   },
   async headers() {
     return [
@@ -25,6 +23,3 @@ const nextConfig = {
 }
 
 module.exports = nextConfig
-// V14.0 Landing Light Premium — Tue Mar  3 09:13:10 UTC 2026
-// V14.0 rebuild 1772529528
-// rebuild 1772529685

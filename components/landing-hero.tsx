@@ -33,13 +33,13 @@ const SHOWCASE_SCENES = [
 ]
 
 const MODELS = [
-  { name: 'Kling 3.0', color: '#3B82F6', specialty: 'Réalisme physique' },
-  { name: 'Runway Gen-4.5', color: '#8B5CF6', specialty: 'Direction artistique' },
-  { name: 'Sora 2', color: '#EC4899', specialty: 'Effets visuels' },
-  { name: 'Veo 3.1', color: '#10B981', specialty: 'Dialogues synchronisés' },
-  { name: 'Seedance 2.0', color: '#14B8A6', specialty: 'Mouvement organique' },
-  { name: 'Wan 2.5', color: '#6366F1', specialty: 'Animation stylisée' },
-  { name: 'Hailuo 2.3', color: '#D946EF', specialty: 'Cohérence temporelle' },
+  { name: 'Kling 3.0', color: '#3B82F6', specialty: 'Réalisme physique', logo: '/images/models/kling.svg' },
+  { name: 'Runway Gen-4.5', color: '#8B5CF6', specialty: 'Direction artistique', logo: '/images/models/runway.svg' },
+  { name: 'Sora 2', color: '#EC4899', specialty: 'Effets visuels', logo: '/images/models/sora.svg' },
+  { name: 'Veo 3.1', color: '#10B981', specialty: 'Dialogues synchronisés', logo: '/images/models/veo.svg' },
+  { name: 'Seedance 2.0', color: '#14B8A6', specialty: 'Mouvement organique', logo: '/images/models/seedance.svg' },
+  { name: 'Wan 2.5', color: '#6366F1', specialty: 'Animation stylisée', logo: '/images/models/wan.svg' },
+  { name: 'Hailuo 2.3', color: '#D946EF', specialty: 'Cohérence temporelle', logo: '/images/models/hailuo.svg' },
 ]
 
 const ENGINES_SHORT = [
@@ -267,9 +267,13 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
             {MODELS.map(m => (
               <div key={m.name} className="landing-card" style={{ textAlign: 'center', padding: 24 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 12, margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${m.color}12` }}>
-                  <span style={{ fontSize: 18, fontWeight: 700, color: m.color }}>{m.name.charAt(0)}</span>
-                </div>
+                <img
+                  src={m.logo}
+                  alt={m.name}
+                  width={48}
+                  height={48}
+                  style={{ borderRadius: 12, margin: '0 auto 16px', display: 'block' }}
+                />
                 <p style={{ fontSize: 13, fontWeight: 600, color: '#0F1115', marginBottom: 4, letterSpacing: '-0.01em' }}>{m.name}</p>
                 <p style={{ fontSize: 11, color: 'rgba(15,17,21,0.35)' }}>{m.specialty}</p>
               </div>
