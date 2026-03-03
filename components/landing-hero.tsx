@@ -168,7 +168,7 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
             </span>
           </h1>
 
-          <p style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)', color: 'rgba(15,17,21,0.45)', maxWidth: 560, margin: '0 auto 40px', lineHeight: 1.7, fontWeight: 300 }}>
+          <p style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)', color: 'rgba(15,17,21,0.75)', maxWidth: 560, margin: '0 auto 40px', lineHeight: 1.7, fontWeight: 400, textShadow: '0 1px 8px rgba(255,255,255,0.6)' }}>
             {fr
               ? "MISEN orchestre 13 moteurs d'analyse et 7 modèles IA pour transformer vos scénarios en productions cinématographiques."
               : 'MISEN orchestrates 13 analysis engines and 7 AI models to transform your screenplays into cinematic productions.'
@@ -185,16 +185,16 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
           </div>
 
           {/* Stats */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 48, marginTop: 56 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', gap: 48, marginTop: 56 }}>
             {[
               { n: '13', l: fr ? 'Moteurs' : 'Engines' },
               { n: '7', l: fr ? 'Modèles IA' : 'AI Models' },
               { n: '4K', l: fr ? 'Résolution' : 'Resolution' },
               { n: '<10s', l: fr ? 'Analyse' : 'Analysis' },
             ].map(s => (
-              <div key={s.l} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 28, color: '#0F1115', letterSpacing: '-0.02em' }}>{s.n}</span>
-                <span style={{ fontSize: 12, color: 'rgba(15,17,21,0.3)', fontWeight: 500 }}>{s.l}</span>
+              <div key={s.l} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, minWidth: 70 }}>
+                <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 28, color: '#0F1115', letterSpacing: '-0.02em', lineHeight: 1 }}>{s.n}</span>
+                <span style={{ fontSize: 12, color: 'rgba(15,17,21,0.4)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3 }}>{s.l}</span>
               </div>
             ))}
           </div>
