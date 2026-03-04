@@ -36,6 +36,47 @@ export async function POST(request: NextRequest) {
     case 'checkout.session.completed': {
       const session = event.data.object as any;
       const userId = session.metadata?.user_id;
+      const type = session.metadata?.type;
+
+      // ─── Credit Pack Purchase (one-time) ───
+      if (type === 'credit_purchase' && userId) {
+        const credits = parseInt(session.metadata?.credits || '0', 10);
+        const packId = session.metadata?.pack_id || 'unknown';
+
+        if (credits > 0) {
+          // Upsert user_credits (create if not exists, add balance)
+          const { data: existing } = await supabase
+            .from('user_credits')
+            .select('balance')
+            .eq('user_id', userId)
+            .single();
+
+          if (existing) {
+            await supabase
+              .from('user_credits')
+              .update({ balance: existing.balance + credits })
+              .eq('user_id', userId);
+          } else {
+            await supabase
+              .from('user_credits')
+              .insert({ user_id: userId, balance: credits });
+          }
+
+          // Log transaction
+          await supabase
+            .from('credit_transactions')
+            .insert({
+              user_id: userId,
+              amount: credits,
+              type: 'purchase',
+              description: `Pack ${packId} — ${credits} crédits`,
+              stripe_session_id: session.id,
+            });
+        }
+        break;
+      }
+
+      // ─── Subscription Purchase ───
       const subId = session.subscription as string;
 
       if (userId && subId) {

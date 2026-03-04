@@ -87,6 +87,7 @@ export default function ProjectPage() {
 
   const [showExportMenu, setShowExportMenu] = useState(false)
   const [userKeys, setUserKeys] = useState<Set<string>>(new Set())
+  const [creditBalance, setCreditBalance] = useState<number>(0)
   const [aiMode, setAiMode] = useState(false)
 
   // Keyboard shortcuts — defined after handlers
@@ -115,6 +116,10 @@ export default function ProjectPage() {
         setUserKeys(providers)
       })
       .catch(() => {})
+    // Fetch MISEN credit balance
+    fetch('/api/credits').then(r => r.ok ? r.json() : null).then(d => {
+      if (d?.balance != null) setCreditBalance(d.balance)
+    }).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -582,7 +587,7 @@ export default function ProjectPage() {
                 </div>
                 <div className="divide-y divide-dark-700/50">
                   {(analysis.plans || []).slice(0, 30).map((plan: any, i: number) => (
-                    <SPC key={i} plan={plan} index={i} analysisId={analysisId} userKeys={userKeys} projectId={projectId} />
+                    <SPC key={i} plan={plan} index={i} analysisId={analysisId} userKeys={userKeys} projectId={projectId} creditBalance={creditBalance} onCreditsUsed={(n: number) => setCreditBalance(b => b - n)} />
                   ))}
                 </div>
               </div>
@@ -704,7 +709,7 @@ export default function ProjectPage() {
             </div>
             <OverviewCockpit analysis={analysis} projectName={project?.name} onNavigate={(tab: string) => setTab(tab as Tab)} />
           </>}
-          {tab === 'analyse' && analysis && <AR analysis={analysis} analysisId={analysisId} userKeys={userKeys} projectId={projectId} />}
+          {tab === 'analyse' && analysis && <AR analysis={analysis} analysisId={analysisId} userKeys={userKeys} projectId={projectId} creditBalance={creditBalance} onCreditsUsed={(n: number) => setCreditBalance(b => b - n)} />}
           {tab === 'storyboard' && analysis && <VisualStoryboard analysis={analysis} projectId={projectId} projectName={project?.name} />}
           {tab === 'timeline' && analysis && <>
             {/* Cinematic Player */}
@@ -903,7 +908,7 @@ const MODEL_URLS: Record<string, { name: string; url: string; provider: string }
 const getModelStudio = (mid: string) => MODEL_URLS[mid.toLowerCase()] || MODEL_URLS['kling']
 
 // ═══ Simple Plan Card ═══
-function SPC({ plan, index, analysisId, userKeys, projectId }: { plan: any; index: number; analysisId?: string | null; userKeys: Set<string>; projectId?: string }) {
+function SPC({ plan, index, analysisId, userKeys, projectId, creditBalance, onCreditsUsed }: { plan: any; index: number; analysisId?: string | null; userKeys: Set<string>; projectId?: string; creditBalance?: number; onCreditsUsed?: (n: number) => void }) {
   const { t, locale } = useI18n()
   const [copied, setCopied] = useState(false)
   const [status, setStatus] = useState<'idle'|'processing'|'polling'|'completed'|'failed'>('idle')
@@ -972,6 +977,51 @@ function SPC({ plan, index, analysisId, userKeys, projectId }: { plan: any; inde
     } catch (e: any) { setStatus('failed'); setError(e.message) }
   }
 
+  // Generate using MISEN credits (server-side keys)
+  const generateWithCredits = async () => {
+    if (!projectId) return
+    setStatus('processing'); setProgress(0); setError(null)
+    try {
+      const r = await fetch('/api/generate-credits', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: studio.provider, prompt,
+          negativePrompt: plan?.negativePrompt,
+          duration: plan?.estimatedDuration || 5,
+          aspectRatio: '16:9', projectId, shotId: `plan-${index}`,
+        }),
+      })
+      const data = await r.json()
+      if (!r.ok) {
+        if (r.status === 402) {
+          setStatus('failed'); setError(locale === 'fr' ? `Crédits insuffisants (${data.balance}/${data.required})` : `Insufficient credits (${data.balance}/${data.required})`)
+        } else if (r.status === 503) {
+          setStatus('failed'); setError(locale === 'fr' ? `${studio.name} non disponible via crédits MISEN` : `${studio.name} not available via MISEN credits`)
+        } else {
+          setStatus('failed'); setError(data.error || 'Erreur')
+        }
+        return
+      }
+      onCreditsUsed?.(data.creditsUsed || 1)
+      setStatus('polling')
+      let tick = 0
+      pollRef.current = setInterval(async () => {
+        tick++; setProgress(prev => Math.min(prev + 2 + Math.random() * 3, 92))
+        try {
+          const sr = await fetch(`/api/generate/status?jobId=${data.jobId}`)
+          if (!sr.ok) return
+          const sd = await sr.json()
+          if (sd.status === 'completed') { clearInterval(pollRef.current!); setProgress(100); setVideoUrl(sd.resultUrl || sd.thumbnailUrl); setStatus('completed') }
+          else if (sd.status === 'failed') { clearInterval(pollRef.current!); setStatus('failed'); setError(sd.errorMessage || 'Échec') }
+          if (sd.progress) setProgress(sd.progress)
+        } catch {}
+        if (tick > 150) { clearInterval(pollRef.current!); setStatus('failed'); setError('Timeout') }
+      }, 2000)
+    } catch (e: any) { setStatus('failed'); setError(e.message) }
+  }
+
+  const hasCredits = (creditBalance || 0) > 0
+
   useEffect(() => { return () => { if (pollRef.current) clearInterval(pollRef.current) } }, [])
   const isGenerating = status === 'processing' || status === 'polling'
 
@@ -1031,12 +1081,30 @@ function SPC({ plan, index, analysisId, userKeys, projectId }: { plan: any; inde
                 </span>
               )}
               {/* Option 3: MISEN credits (Pro/Studio) → Generate without user key */}
-              {!canGenerate && (
+              {!canGenerate && status === 'idle' && (
                 <button onClick={() => {
-                  // For now, redirect to pricing — in production this calls MISEN's pooled API
-                  window.open('/settings?tab=usage', '_self')
+                  if (hasCredits) { generateWithCredits() }
+                  else { window.open('/settings?tab=usage', '_self') }
                 }} className="px-2.5 py-1 bg-gradient-to-r from-violet-600/20 to-violet-500/20 hover:from-violet-600/30 hover:to-violet-500/30 text-violet-300 text-[10px] font-medium rounded flex items-center gap-1 border border-violet-500/20 transition-colors">
-                  <Sparkles size={10} /> {locale === 'fr' ? 'Crédits MISEN' : 'MISEN credits'}
+                  <Sparkles size={10} /> {hasCredits
+                    ? (locale === 'fr' ? `Générer (${creditBalance} cr.)` : `Generate (${creditBalance} cr.)`)
+                    : (locale === 'fr' ? 'Acheter des crédits' : 'Buy credits')}
+                </button>
+              )}
+              {!canGenerate && (status === 'processing' || status === 'polling') && (
+                <span className="flex items-center gap-1.5 text-violet-400 text-[10px]">
+                  <Loader2 size={10} className="animate-spin" /> {locale === 'fr' ? 'Génération...' : 'Generating...'}
+                </span>
+              )}
+              {!canGenerate && status === 'completed' && (
+                <span className="px-2 py-0.5 bg-green-500/10 text-green-400 text-[10px] rounded flex items-center gap-1">
+                  <Check size={10} /> {t.common.success}
+                </span>
+              )}
+              {!canGenerate && status === 'failed' && (
+                <button onClick={() => hasCredits ? generateWithCredits() : window.open('/settings?tab=usage', '_self')}
+                  className="px-2 py-1 bg-red-500/10 text-red-400 text-[10px] rounded flex items-center gap-1 hover:bg-red-500/20">
+                  <AlertTriangle size={10} /> Retry
                 </button>
               )}
               {/* Option 1: Copy prompt + Open platform in one click */}
@@ -1577,7 +1645,7 @@ function VO({ projectId, projectName }: { projectId: string; projectName?: strin
 }
 
 // ═══ Analysis Results ═══
-function AR({ analysis, analysisId, userKeys, projectId }: { analysis: any; analysisId?: string | null; userKeys: Set<string>; projectId: string }) {
+function AR({ analysis, analysisId, userKeys, projectId, creditBalance, onCreditsUsed }: { analysis: any; analysisId?: string | null; userKeys: Set<string>; projectId: string; creditBalance?: number; onCreditsUsed?: (n: number) => void }) {
   const { t, locale } = useI18n()
   try {
     const scenes=analysis?.scenes||[]; const plans=analysis?.plans||[]; const tension=analysis?.tension; const chars=analysis?.characterBible||[]
@@ -1812,7 +1880,7 @@ function AR({ analysis, analysisId, userKeys, projectId }: { analysis: any; anal
                   <button onClick={() => toggleSelect(realIndex)} className={`mt-3 w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-all ${selectedPlans.has(realIndex) ? 'bg-orange-500 border-orange-500 text-white' : 'border-dark-600 hover:border-dark-500'}`}>
                     {selectedPlans.has(realIndex) && <Check size={10} />}
                   </button>
-                  <div className="flex-1"><PC plan={p} index={realIndex} analysisId={analysisId} userKeys={userKeys} characters={chars} /></div>
+                  <div className="flex-1"><PC plan={p} index={realIndex} analysisId={analysisId} userKeys={userKeys} characters={chars} creditBalance={creditBalance} onCreditsUsed={onCreditsUsed} /></div>
                 </div>
               )
             })}
@@ -1837,7 +1905,7 @@ function Sec({ icon: I, title, color, children, open: so = true }: { icon: any; 
     {o && <div className="px-4 pb-3">{children}</div>}
   </div>)
 }
-function PC({ plan, index, analysisId, userKeys, characters }: { plan: any; index: number; analysisId?: string | null; userKeys: Set<string>; characters?: any[] }) {
+function PC({ plan, index, analysisId, userKeys, characters, creditBalance, onCreditsUsed }: { plan: any; index: number; analysisId?: string | null; userKeys: Set<string>; characters?: any[]; creditBalance?: number; onCreditsUsed?: (n: number) => void }) {
   const { t, locale } = useI18n()
   const [copied, setCopied] = useState(false)
   const [expanded, setExpanded] = useState(false)
@@ -1852,6 +1920,8 @@ function PC({ plan, index, analysisId, userKeys, characters }: { plan: any; inde
   const emotion = (plan?.emotion || 'neutre').toLowerCase()
   const eColor = emotionColors[emotion] || '#64748b'
   const gen = async () => { if(!analysisId||!canGenerate)return;setStatus('processing'); try{const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({analysisId,planIndex:index,sceneIndex:plan?.sceneIndex||0,modelId:plan?.modelId,prompt:editedPrompt||prompt,negativePrompt:plan?.negativePrompt})});setStatus(r.ok?'completed':'failed')}catch{setStatus('failed')} }
+  const hasCredits = (creditBalance || 0) > 0
+  const genWithCredits = async () => { setStatus('processing'); try{const r=await fetch('/api/generate-credits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider:studio.provider,prompt:editedPrompt||prompt,negativePrompt:plan?.negativePrompt,duration:plan?.estimatedDuration||5,aspectRatio:'16:9',projectId:analysisId,shotId:`plan-${index}`})});const d=await r.json();if(!r.ok){setStatus('failed');return};onCreditsUsed?.(d.creditsUsed||1);setStatus('completed')}catch{setStatus('failed')} }
   return (<div className="card overflow-hidden hover:border-dark-600 transition-all">
     {/* Compact row — always visible */}
     <button onClick={() => setExpanded(!expanded)} className="w-full flex items-center gap-3 p-2.5 text-left hover:bg-white/[0.02] transition-colors">
@@ -2003,7 +2073,10 @@ function PC({ plan, index, analysisId, userKeys, characters }: { plan: any; inde
           {canGenerate && status==='completed' && <span className="flex items-center gap-1.5 text-green-400 text-[10px]"><Check size={12} />{locale === 'fr' ? 'Terminé' : 'Done'}</span>}
           {canGenerate && status==='failed' && <button onClick={gen} className="px-3 py-1.5 bg-red-500/10 text-red-400 text-[10px] rounded-lg flex items-center gap-1.5 border border-red-500/20"><AlertTriangle size={10} /> Retry</button>}
           {/* Option 3: MISEN credits (Pro/Studio) */}
-          {!canGenerate && <button onClick={() => window.open('/settings?tab=usage', '_self')} className="px-3 py-1.5 bg-gradient-to-r from-violet-600/20 to-violet-500/20 hover:from-violet-600/30 hover:to-violet-500/30 text-violet-300 text-[10px] font-medium rounded-lg flex items-center gap-1.5 border border-violet-500/20 transition-colors"><Sparkles size={10} /> {locale === 'fr' ? 'Crédits MISEN' : 'MISEN credits'}</button>}
+          {!canGenerate && status==='idle' && <button onClick={() => hasCredits ? genWithCredits() : window.open('/settings?tab=usage', '_self')} className="px-3 py-1.5 bg-gradient-to-r from-violet-600/20 to-violet-500/20 hover:from-violet-600/30 hover:to-violet-500/30 text-violet-300 text-[10px] font-medium rounded-lg flex items-center gap-1.5 border border-violet-500/20 transition-colors"><Sparkles size={10} /> {hasCredits ? (locale === 'fr' ? `Générer (${creditBalance} cr.)` : `Generate (${creditBalance} cr.)`) : (locale === 'fr' ? 'Acheter des crédits' : 'Buy credits')}</button>}
+          {!canGenerate && status==='processing' && <span className="flex items-center gap-1.5 text-violet-400 text-[10px]"><Loader2 size={12} className="animate-spin" />{locale === 'fr' ? 'Génération...' : 'Generating...'}</span>}
+          {!canGenerate && status==='completed' && <span className="flex items-center gap-1.5 text-green-400 text-[10px]"><Check size={12} />{locale === 'fr' ? 'Terminé' : 'Done'}</span>}
+          {!canGenerate && status==='failed' && <button onClick={() => hasCredits ? genWithCredits() : window.open('/settings?tab=usage', '_self')} className="px-3 py-1.5 bg-red-500/10 text-red-400 text-[10px] rounded-lg flex items-center gap-1.5 border border-red-500/20"><AlertTriangle size={10} /> Retry</button>}
           {/* Option 1: Copy + Open platform */}
           {!canGenerate && <button onClick={()=>{navigator.clipboard.writeText(editedPrompt||prompt);setCopied(true);setTimeout(()=>setCopied(false),2000);window.open(studio.url,'_blank')}}
             className="px-3 py-1.5 bg-orange-600/10 hover:bg-orange-600/20 text-orange-400 text-[10px] rounded-lg flex items-center gap-1.5 border border-orange-500/20">

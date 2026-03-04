@@ -44,3 +44,36 @@ export const PLANS = {
 } as const;
 
 export type PlanId = keyof typeof PLANS;
+
+// ─── Credit Packs (one-time purchase) ───
+export const CREDIT_PACKS = {
+  starter: {
+    id: 'starter',
+    name: 'Starter',
+    credits: 50,
+    price: 9.99,
+    priceId: process.env.STRIPE_CREDITS_STARTER_ID || '',
+    perCredit: 0.20,
+    popular: false,
+  },
+  creator: {
+    id: 'creator',
+    name: 'Creator',
+    credits: 150,
+    price: 24.99,
+    priceId: process.env.STRIPE_CREDITS_CREATOR_ID || '',
+    perCredit: 0.17,
+    popular: true,
+  },
+  studio: {
+    id: 'studio_pack',
+    name: 'Studio',
+    credits: 500,
+    price: 69.99,
+    priceId: process.env.STRIPE_CREDITS_STUDIO_ID || '',
+    perCredit: 0.14,
+    popular: false,
+  },
+} as const;
+
+export type CreditPackId = keyof typeof CREDIT_PACKS;
