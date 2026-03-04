@@ -7,7 +7,7 @@ import {
   Film, Eye, DollarSign, Shield, Users, TrendingUp, Camera, Zap, Copy, Check,
   Subtitles, Mic, Clock, Download, Volume2, Pause, SkipForward, SkipBack,
   Sparkles, Image, Search, RefreshCw, Wand2, SlidersHorizontal, Keyboard, ExternalLink, Music2
-, Layers, Package, Headphones, Upload, GitBranch } from 'lucide-react'
+, Layers, Package, Headphones, Upload, GitBranch, Cpu } from 'lucide-react'
 import { StoryboardSVG } from '@/components/ui/storyboard-svg'
 import { ModelBadge, getModelColor, ModelLegend } from '@/components/ui/model-badge'
 import { ScreenplayAssistant } from '@/components/ui/screenplay-assistant'
@@ -491,6 +491,44 @@ export default function ProjectPage() {
                 <St icon={Film} label={t.demo.shotsDetected.split(' ')[0]} value={analysis.scenes?.length || 0} /><St icon={Eye} label={t.demo.shotsDetected} value={analysis.plans?.length || 0} />
                 <St icon={DollarSign} label={t.demo.estimatedBudget} value={`$${(analysis.costTotal || 0).toFixed(2)}`} /><St icon={Shield} label="Continuity" value={`${analysis.continuity?.score || 0}%`} />
               </div>
+
+              {/* Engine Intelligence Report */}
+              {analysis.engineInsights && (
+                <div className="bg-dark-900 rounded-2xl border border-dark-700 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-dark-700 flex items-center justify-between">
+                    <div className="flex items-center gap-2"><Cpu size={16} className="text-violet-400" /><span className="text-sm font-medium text-slate-200">{locale === 'fr' ? '13 moteurs — Rapport d\'intelligence' : '13 engines — Intelligence Report'}</span></div>
+                    <span className="text-[10px] text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full font-semibold">{(analysis.engineInsights as any[]).filter((e: any) => e.status === 'done').length}/13 {locale === 'fr' ? 'actifs' : 'active'}</span>
+                  </div>
+                  <div className="divide-y divide-dark-700/30">
+                    {(analysis.engineInsights as any[]).map((eng: any, i: number) => (
+                      <div key={i} className="px-4 py-2.5 flex items-start gap-3 hover:bg-dark-800/50 transition-colors">
+                        <span className="text-base mt-0.5 shrink-0">{eng.icon}</span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-slate-200">{eng.engine}</span>
+                            <span className={`w-1.5 h-1.5 rounded-full ${eng.status === 'done' ? 'bg-green-400' : eng.status === 'warn' ? 'bg-yellow-400' : 'bg-slate-600'}`} />
+                          </div>
+                          <p className="text-[11px] text-slate-400 mt-0.5">{eng.insight}</p>
+                          {eng.detail && <p className="text-[10px] text-slate-600 mt-0.5">{eng.detail}</p>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {analysis.stats && (
+                    <div className="px-4 py-3 border-t border-dark-700 bg-dark-800/30">
+                      <div className="flex flex-wrap gap-3">
+                        {Object.entries((analysis.stats as any).modelDistribution || {}).map(([modelId, count]: [string, any]) => (
+                          <div key={modelId} className="flex items-center gap-1.5 bg-dark-900 rounded-lg px-2.5 py-1 border border-dark-700">
+                            <span className="w-2 h-2 rounded-full" style={{ background: modelId === 'kling3' ? '#3B82F6' : modelId === 'runway4.5' ? '#8B5CF6' : modelId === 'sora2' ? '#EC4899' : modelId === 'veo3.1' ? '#10B981' : modelId === 'seedance2' ? '#F59E0B' : modelId === 'wan2.5' ? '#06B6D4' : '#6366F1' }} />
+                            <span className="text-[10px] text-slate-300 font-medium">{modelId.replace(/[0-9.]/g, '').trim()}</span>
+                            <span className="text-[10px] text-orange-400 font-bold">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="bg-dark-900 rounded-2xl border border-dark-700 overflow-hidden">
                 <div className="px-4 py-3 border-b border-dark-700 flex items-center justify-between">
                   <div className="flex items-center gap-2"><Camera size={16} className="text-orange-500" /><span className="text-sm font-medium text-slate-200">{locale === 'fr' ? 'Plans & Prompts' : 'Shots & Prompts'}</span></div>

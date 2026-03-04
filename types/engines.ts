@@ -152,12 +152,18 @@ export interface ScriptStats {
 }
 export interface ParserResult { scenes: ParsedScene[]; personnages: string[]; stats: ScriptStats; }
 
+export interface EngineInsight {
+  engine: string; icon: string; status: 'done' | 'warn' | 'skip'; insight: string; detail: string;
+}
+
 export interface AnalysisResult {
   scenes: ParsedScene[]; plans: Plan[]; characters: string[];
   tension: TensionResult; memory: MemoryResult;
   compliance: ComplianceResult; continuity: ContinuityResult;
   characterBible: CharacterBibleEntry[]; styleBible: StyleBibleResult;
   costTotal: number; costByModel: Record<AIModelId, number>; costByScene: number[];
+  engineInsights?: EngineInsight[];
+  stats?: { uniqueModels: number; modelDistribution: Record<string, number>; dialogueScenes: number; totalDialogues: number; dominantEmotion: string; hasFlashbacks: boolean };
   // V10 AI Enrichment (optional — only present when analyze-ai is used)
   aiEnriched?: boolean;
   aiError?: string;
