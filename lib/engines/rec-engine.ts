@@ -94,19 +94,24 @@ export function recEngineV2(input: RecInput): RecResult {
 
   // Veo excelle en dialogue — Audio natif confirmé (Google I/O, Gemini API docs)
   if (input.hasDialogue && input.dialogueLength > 0) {
-    scores['veo3.1'] = Math.min(100, scores['veo3.1'] + 15);
+    scores['veo3.1'] = Math.min(100, scores['veo3.1'] + 20);
     tips.push('Veo 3.1 — audio natif (dialogues + SFX synchronisés, source: Gemini API docs)');
   }
 
   // Sora pour les scènes expressives — VFX leader (Arena.ai Elo ranking)
   if (input.intensity > 60 && input.emotion !== 'neutre') {
-    scores['sora2'] = Math.min(100, scores['sora2'] + 10);
+    scores['sora2'] = Math.min(100, scores['sora2'] + 15);
     tips.push('Sora 2 — plans expressifs haute émotion (Arena.ai top Elo)');
+  }
+  // Sora also strong for VFX-heavy scenes
+  if (input.needsVFX) {
+    scores['sora2'] = Math.min(100, scores['sora2'] + 12);
+    tips.push('Sora 2 — VFX cinématiques (leader Arena.ai)');
   }
 
   // Seedance architecture unifiée audio-vidéo (ByteDance Seed docs)
   if (input.camera !== 'fixe' && !input.hasDialogue) {
-    scores['seedance2'] = Math.min(100, scores['seedance2'] + 12);
+    scores['seedance2'] = Math.min(100, scores['seedance2'] + 15);
     tips.push('Seedance 2.0 — mouvement pur, architecture unifiée (source: seed.bytedance.com)');
   }
   // Seedance aussi pour dialogue grâce à audio natif
@@ -151,13 +156,24 @@ export function recEngineV2(input: RecInput): RecResult {
 
   // Runway pour le style + contrôle géométrique (Gen-4.5: I2V, keyframes, V2V)
   if (input.isFlashback) {
-    scores['runway4.5'] = Math.min(100, scores['runway4.5'] + 10);
+    scores['runway4.5'] = Math.min(100, scores['runway4.5'] + 15);
     tips.push('Runway Gen-4.5 — rendu stylisé flashback (modes contrôle I2V/keyframes)');
+  }
+  // Runway pour style range et direction artistique
+  if (input.cadrage === 'GP' || input.cadrage === 'TGP') {
+    scores['runway4.5'] = Math.min(100, scores['runway4.5'] + 10);
+    tips.push('Runway Gen-4.5 — direction artistique portraits/gros plans');
   }
   // Runway pour vitesse/bas coût social (Annexe 1-C expert grid)
   if (input.duree <= 4 && !input.needsVFX && !input.hasDialogue) {
-    scores['runway4.5'] = Math.min(100, scores['runway4.5'] + 8);
+    scores['runway4.5'] = Math.min(100, scores['runway4.5'] + 10);
     tips.push('Runway Gen-4.5 — vitesse/bas coût optimal pour contenu court (TTFT/Throughput)');
+  }
+
+  // Wan for camera path + animation style
+  if (input.camera === 'drone' || input.camera === 'crane') {
+    scores['wan2.5'] = Math.min(100, scores['wan2.5'] + 12);
+    tips.push('Wan 2.5 — trajectoire caméra drone/crane (camera path natif)');
   }
 
   // Multi-personnages → Seedance/Veo (Annexe 1-C: cohérence)

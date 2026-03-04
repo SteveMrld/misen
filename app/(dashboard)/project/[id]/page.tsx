@@ -138,7 +138,7 @@ export default function ProjectPage() {
       const endpoint = aiMode ? 'analyze-ai' : 'analyze'
       const res = await fetch(`/api/projects/${projectId}/${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ style_preset: stylePreset }) })
       const data = await res.json()
-      if (res.ok && data.result) { setAnalysis(data.result); setAnalysisId(data.analysis_id); toast(locale === 'fr' ? 'Analyse terminée — ' + (data.result.plans?.length || 0) + ' plans détectés' : 'Analysis complete — ' + (data.result.plans?.length || 0) + ' shots detected', 'success'); setShowCelebration(true); setTimeout(() => { setShowCelebration(false); if (mode === 'simple') { /* stay */ } else { setTab('overview'); setWorkspace('analysis') } }, 2500) }
+      if (res.ok && data.result) { setAnalysis(data.result); setAnalysisId(data.analysis_id); toast(locale === 'fr' ? 'Analyse terminée — ' + (data.result.plans?.length || 0) + ' plans détectés' : 'Analysis complete — ' + (data.result.plans?.length || 0) + ' shots detected', 'success'); setShowCelebration(true) }
       else setError(data.error || t.common.error)
     } catch { setError(t.common.error) } finally { setAnalyzing(false) }
   }
@@ -255,20 +255,33 @@ export default function ProjectPage() {
 
       {/* Analysis Celebration */}
       {showCelebration && analysis && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center pointer-events-none">
-          <div className="absolute inset-0 bg-dark-950/60 backdrop-blur-sm" />
-          <div className="relative animate-fade-in text-center">
+        <div className="fixed inset-0 z-[150] flex items-center justify-center">
+          <div className="absolute inset-0 bg-dark-950/70 backdrop-blur-sm" onClick={() => setShowCelebration(false)} />
+          <div className="relative animate-fade-in text-center max-w-sm mx-4">
             <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-orange-500/30 to-orange-600/20 border border-orange-500/30 flex items-center justify-center shadow-2xl shadow-orange-500/20">
               <Sparkles size={32} className="text-orange-400" />
             </div>
             <h2 className="font-display text-2xl text-white mb-2">{locale === 'fr' ? 'Analyse terminée !' : 'Analysis complete!'}</h2>
-            <div className="flex items-center justify-center gap-4 text-sm text-slate-300 mb-3">
+            <div className="flex items-center justify-center gap-4 text-sm text-slate-300 mb-4">
               <span className="flex items-center gap-1"><Film size={14} className="text-orange-400" /> {analysis.scenes?.length || 0} {locale === 'fr' ? 'scènes' : 'scenes'}</span>
               <span className="flex items-center gap-1"><Eye size={14} className="text-blue-400" /> {analysis.plans?.length || 0} {locale === 'fr' ? 'plans' : 'shots'}</span>
               <span className="flex items-center gap-1"><Users size={14} className="text-purple-400" /> {analysis.characterBible?.length || 0} {locale === 'fr' ? 'personnages' : 'characters'}</span>
             </div>
-            <div className="beam w-48 mx-auto mb-3" />
-            <p className="text-xs text-slate-500 animate-pulse">{locale === 'fr' ? 'Préparation du cockpit...' : 'Preparing cockpit...'}</p>
+            <div className="beam w-48 mx-auto mb-5" />
+            <div className="flex flex-col gap-2">
+              <button onClick={() => { setShowCelebration(false); setMode('expert'); setWorkspace('production'); setTab('storyboard') }}
+                className="w-full py-3 px-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-500/20">
+                <Layers size={16} /> {locale === 'fr' ? 'Voir le storyboard' : 'View storyboard'}
+              </button>
+              <button onClick={() => { setShowCelebration(false); setTab('overview'); setWorkspace('analysis') }}
+                className="w-full py-3 px-4 bg-dark-800 hover:bg-dark-700 border border-dark-600 text-slate-200 font-medium rounded-xl text-sm flex items-center justify-center gap-2 transition-all">
+                <Eye size={16} /> {locale === 'fr' ? 'Explorer l\'analyse' : 'Explore analysis'}
+              </button>
+              <button onClick={() => setShowCelebration(false)}
+                className="text-xs text-slate-500 hover:text-slate-400 mt-1 transition-colors">
+                {locale === 'fr' ? 'Rester sur le script' : 'Stay on script'}
+              </button>
+            </div>
           </div>
         </div>
       )}
