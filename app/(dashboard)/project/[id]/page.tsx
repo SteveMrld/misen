@@ -136,7 +136,9 @@ export default function ProjectPage() {
     await fetch(`/api/projects/${projectId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ script_text: scriptText }) })
     try {
       const endpoint = aiMode ? 'analyze-ai' : 'analyze'
-      const res = await fetch(`/api/projects/${projectId}/${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ style_preset: stylePreset }) })
+      const minDelay = new Promise(resolve => setTimeout(resolve, 8000))
+      const apiCall = fetch(`/api/projects/${projectId}/${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ style_preset: stylePreset }) })
+      const [res] = await Promise.all([apiCall, minDelay])
       const data = await res.json()
       if (res.ok && data.result) { setAnalysis(data.result); setAnalysisId(data.analysis_id); toast(locale === 'fr' ? 'Analyse terminée — ' + (data.result.plans?.length || 0) + ' plans détectés' : 'Analysis complete — ' + (data.result.plans?.length || 0) + ' shots detected', 'success'); setShowCelebration(true) }
       else setError(data.error || t.common.error)
@@ -212,46 +214,65 @@ export default function ProjectPage() {
 
       
       {/* Analysis Progress Overlay */}
-      {analyzing && (
+      {analyzing && (() => {
+        const ENGINE_STEPS = [
+          { name: 'Script Parser', icon: Film },
+          { name: 'Intent Parser', icon: Brain },
+          { name: 'Story Tracker', icon: TrendingUp },
+          { name: 'Character Bible', icon: Users },
+          { name: 'Style Guard', icon: Wand2 },
+          { name: 'Compliance', icon: Shield },
+          { name: 'Cinematic Grammar', icon: Camera },
+          { name: 'Contextual Prompt', icon: Search },
+          { name: 'Consistency Inject', icon: GitBranch },
+          { name: 'Rec Engine (MCAP)', icon: Cpu },
+          { name: 'Model Syntax', icon: SlidersHorizontal },
+          { name: 'Negative Prompt', icon: Eye },
+          { name: 'Continuity Tracker', icon: Layers },
+        ]
+        return (
         <div className="fixed inset-0 z-[140] flex items-center justify-center">
           <div className="absolute inset-0 bg-dark-950/90 backdrop-blur-lg" />
           <div className="relative max-w-md w-full px-6 animate-fade-in">
-            <div className="text-center mb-8">
+            <div className="text-center mb-6">
               <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-orange-500/15 border border-orange-500/20 flex items-center justify-center">
                 <Brain size={28} className="text-orange-400 animate-pulse" />
               </div>
               <h2 className="font-display text-xl text-white mb-1">{locale === 'fr' ? 'Analyse en cours...' : 'Analysis in progress...'}</h2>
               <p className="text-xs text-slate-500">{locale === 'fr' ? '13 moteurs IA analysent votre scénario' : '13 AI engines analyzing your script'}</p>
             </div>
-            <div className="space-y-2">
-              {[
-                { name: 'Intent Parser', emoji: '🎯' },
-                { name: 'Scénariste', emoji: '✍️' },
-                { name: 'Story Tracker', emoji: '📖' },
-                { name: 'Shot Evaluator', emoji: '🎞️' },
-                { name: 'Crispifier', emoji: '✨' },
-                { name: 'Human Align', emoji: '🤝' },
-                { name: 'Camera Director', emoji: '📷' },
-                { name: 'Audio Tracker', emoji: '🔊' },
-                { name: 'Camera Control', emoji: '🎥' },
-                { name: 'Style Guard', emoji: '🎨' },
-                { name: 'Color Harmonizer', emoji: '🌈' },
-                { name: 'Motion Flow', emoji: '🌊' },
-                { name: 'Model Selector', emoji: '🤖' },
-              ].map((engine, i) => (
-                <div key={i} className="flex items-center gap-3 px-3 py-1.5 rounded-lg bg-dark-900/50 border border-dark-800">
-                  <span className="text-sm">{engine.emoji}</span>
-                  <span className="text-[11px] text-slate-400 flex-1">{engine.name}</span>
-                  <div className="w-16 h-1 bg-dark-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-orange-500 rounded-full animate-shimmer" style={{ animationDelay: i * 0.15 + 's' }} />
+            {/* Global progress bar */}
+            <div className="w-full h-1.5 bg-dark-700 rounded-full overflow-hidden mb-5">
+              <div className="h-full bg-gradient-to-r from-orange-500 to-violet-500 rounded-full" style={{ animation: 'progressGrow 8s ease-in-out forwards' }} />
+            </div>
+            <div className="space-y-1.5">
+              {ENGINE_STEPS.map((engine, i) => {
+                const Icon = engine.icon
+                return (
+                <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-lg" style={{ animation: `engineReveal 0.4s ease-out ${i * 0.6}s both` }}>
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ animation: `engineIconColor 0.3s ease-out ${i * 0.6 + 0.3}s both`, background: 'rgba(197,106,45,0.06)', border: '1px solid rgba(197,106,45,0.1)' }}>
+                    <Icon size={14} className="text-orange-400/60" style={{ animation: `engineIconBright 0.3s ease-out ${i * 0.6 + 0.3}s both` }} />
+                  </div>
+                  <span className="text-[11px] text-slate-500 flex-1 font-medium" style={{ animation: `engineTextBright 0.3s ease-out ${i * 0.6 + 0.3}s both` }}>{engine.name}</span>
+                  <div className="flex items-center gap-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-700" style={{ animation: `engineDot 0.3s ease-out ${i * 0.6 + 0.3}s both` }} />
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
-            <div className="beam w-full mt-6" />
+            <div className="beam w-full mt-5" />
+            <style>{`
+              @keyframes progressGrow { 0% { width: 0% } 100% { width: 100% } }
+              @keyframes engineReveal { 0% { opacity: 0; transform: translateY(6px) } 100% { opacity: 1; transform: translateY(0) } }
+              @keyframes engineIconColor { 0% { background: rgba(197,106,45,0.06); border-color: rgba(197,106,45,0.1) } 100% { background: rgba(197,106,45,0.15); border-color: rgba(197,106,45,0.25) } }
+              @keyframes engineIconBright { 0% { opacity: 0.4 } 100% { opacity: 1 } }
+              @keyframes engineTextBright { 0% { color: rgb(100,116,139) } 100% { color: rgb(226,232,240) } }
+              @keyframes engineDot { 0% { background: rgb(51,65,85) } 100% { background: rgb(74,222,128) } }
+            `}</style>
           </div>
         </div>
-      )}
+        )
+      })()}
 
       {/* Analysis Celebration */}
       {showCelebration && analysis && (
@@ -493,16 +514,22 @@ export default function ProjectPage() {
               </div>
 
               {/* Engine Intelligence Report */}
-              {analysis.engineInsights && (
+              {analysis.engineInsights && (() => {
+                const ICON_MAP: Record<string, any> = { Film, Brain, TrendingUp, Users, Wand2, Shield, Camera, Search, GitBranch, Cpu, SlidersHorizontal, Eye, Layers }
+                return (
                 <div className="bg-dark-900 rounded-2xl border border-dark-700 overflow-hidden">
                   <div className="px-4 py-3 border-b border-dark-700 flex items-center justify-between">
                     <div className="flex items-center gap-2"><Cpu size={16} className="text-violet-400" /><span className="text-sm font-medium text-slate-200">{locale === 'fr' ? '13 moteurs — Rapport d\'intelligence' : '13 engines — Intelligence Report'}</span></div>
                     <span className="text-[10px] text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full font-semibold">{(analysis.engineInsights as any[]).filter((e: any) => e.status === 'done').length}/13 {locale === 'fr' ? 'actifs' : 'active'}</span>
                   </div>
                   <div className="divide-y divide-dark-700/30">
-                    {(analysis.engineInsights as any[]).map((eng: any, i: number) => (
+                    {(analysis.engineInsights as any[]).map((eng: any, i: number) => {
+                      const Icon = ICON_MAP[eng.iconName] || Cpu
+                      return (
                       <div key={i} className="px-4 py-2.5 flex items-start gap-3 hover:bg-dark-800/50 transition-colors">
-                        <span className="text-base mt-0.5 shrink-0">{eng.icon}</span>
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ background: 'rgba(197,106,45,0.1)', border: '1px solid rgba(197,106,45,0.15)' }}>
+                          <Icon size={14} className="text-orange-400" />
+                        </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-semibold text-slate-200">{eng.engine}</span>
@@ -512,7 +539,7 @@ export default function ProjectPage() {
                           {eng.detail && <p className="text-[10px] text-slate-600 mt-0.5">{eng.detail}</p>}
                         </div>
                       </div>
-                    ))}
+                    )})}
                   </div>
                   {analysis.stats && (
                     <div className="px-4 py-3 border-t border-dark-700 bg-dark-800/30">
@@ -528,7 +555,7 @@ export default function ProjectPage() {
                     </div>
                   )}
                 </div>
-              )}
+              )})()}
               <div className="bg-dark-900 rounded-2xl border border-dark-700 overflow-hidden">
                 <div className="px-4 py-3 border-b border-dark-700 flex items-center justify-between">
                   <div className="flex items-center gap-2"><Camera size={16} className="text-orange-500" /><span className="text-sm font-medium text-slate-200">{locale === 'fr' ? 'Plans & Prompts' : 'Shots & Prompts'}</span></div>

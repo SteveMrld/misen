@@ -153,7 +153,7 @@ export interface ScriptStats {
 export interface ParserResult { scenes: ParsedScene[]; personnages: string[]; stats: ScriptStats; }
 
 export interface EngineInsight {
-  engine: string; icon: string; status: 'done' | 'warn' | 'skip'; insight: string; detail: string;
+  engine: string; iconName: string; status: 'done' | 'warn' | 'skip'; insight: string; detail: string;
 }
 
 export interface AnalysisResult {
