@@ -40,19 +40,29 @@ const MODELS = [
   { name: 'Hailuo 2.3', color: '#D946EF', specialty: 'Cohérence temporelle', logo: '/images/models/hailuo.svg' },
 ]
 
-const ENGINES_SHORT = [
-  'Intent Parser', 'Scénariste', 'Story Tracker', 'Shot Evaluator',
-  'Crispifier', 'Human Align', 'Camera Control', 'Audio Tracker',
-  'Style Guard', 'Color Harmonizer', 'Motion Flow', 'Score Composer', 'Video Assembly',
+const ENGINES_DATA = [
+  { name: 'Intent Parser', img: '/images/icon_eng_intent_parser.png' },
+  { name: 'Scénariste', img: '/images/icon_eng_scenarist.png' },
+  { name: 'Story Tracker', img: '/images/icon_eng_story_tracker.png' },
+  { name: 'Shot Evaluator', img: '/images/icon_eng_shot_evaluator.png' },
+  { name: 'Crispifier', img: '/images/icon_eng_crispifier.png' },
+  { name: 'Human Align', img: '/images/icon_eng_human_align.png' },
+  { name: 'Camera Control', img: '/images/icon_eng_camera_control.png' },
+  { name: 'Audio Tracker', img: '/images/icon_eng_audio_tracker.png' },
+  { name: 'Style Guard', img: '/images/icon_eng_style_guard.png' },
+  { name: 'Color Harmonizer', img: '/images/icon_eng_color_harmonizer.png' },
+  { name: 'Motion Flow', img: '/images/icon_eng_motion_flow.png' },
+  { name: 'Score Composer', img: null },
+  { name: 'Video Assembly', img: null },
 ]
 
 const USE_CASES = [
-  { icon: Film, title: 'Court-métrage', desc: "Du script à l'écran en quelques heures" },
-  { icon: Sparkles, title: 'Publicité', desc: 'Spots 15s, 30s, 60s prêts à diffuser' },
-  { icon: Camera, title: 'Documentaire', desc: 'Narration, interviews, B-roll généré' },
-  { icon: Music, title: 'Clip musical', desc: 'Storytelling visuel synchronisé' },
-  { icon: Layers, title: 'BD & Motion', desc: 'Planches, storyboards animés' },
-  { icon: Globe, title: 'Éducatif', desc: 'Capsules pédagogiques immersives' },
+  { img: '/images/icon_court_metrage.png', title: 'Court-métrage', desc: "Du script à l'écran en quelques heures" },
+  { img: '/images/icon_publicite.png', title: 'Publicité', desc: 'Spots 15s, 30s, 60s prêts à diffuser' },
+  { img: '/images/icon_documentaire.png', title: 'Documentaire', desc: 'Narration, interviews, B-roll généré' },
+  { img: '/images/icon_clip_musical.png', title: 'Clip musical', desc: 'Storytelling visuel synchronisé' },
+  { img: '/images/icon_bd.png', title: 'BD & Motion', desc: 'Planches, storyboards animés' },
+  { img: '/images/icon_educatif.png', title: 'Éducatif', desc: 'Capsules pédagogiques immersives' },
 ]
 
 // ═══════════════════════════════════════════════════════════
@@ -228,16 +238,14 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
             {[
-              { step: '01', icon: Wand2, title: fr ? 'Imaginez' : 'Imagine', desc: fr ? 'Écrivez ou importez votre scénario.' : 'Write or import your screenplay.' },
-              { step: '02', icon: Eye, title: fr ? 'Analysez' : 'Analyze', desc: fr ? '13 moteurs dissèquent chaque scène.' : '13 engines dissect every scene.' },
-              { step: '03', icon: Layers, title: fr ? 'Orchestrez' : 'Orchestrate', desc: fr ? 'Storyboard IA, timeline 5 pistes, musique.' : 'AI storyboard, 5-track timeline, music.' },
-              { step: '04', icon: Zap, title: fr ? 'Générez' : 'Generate', desc: fr ? '7 modèles IA, assembly auto, export.' : '7 AI models, auto assembly, export.' },
+              { step: '01', img: '/images/icon_step_imaginez.png', title: fr ? 'Imaginez' : 'Imagine', desc: fr ? 'Écrivez ou importez votre scénario.' : 'Write or import your screenplay.' },
+              { step: '02', img: '/images/icon_step_analysez.png', title: fr ? 'Analysez' : 'Analyze', desc: fr ? '13 moteurs dissèquent chaque scène.' : '13 engines dissect every scene.' },
+              { step: '03', img: '/images/icon_step_orchestrez.png', title: fr ? 'Orchestrez' : 'Orchestrate', desc: fr ? 'Storyboard IA, timeline 5 pistes, musique.' : 'AI storyboard, 5-track timeline, music.' },
+              { step: '04', img: '/images/icon_step_generez.png', title: fr ? 'Générez' : 'Generate', desc: fr ? '7 modèles IA, assembly auto, export.' : '7 AI models, auto assembly, export.' },
             ].map(s => (
               <div key={s.step} className="landing-card">
                 <span style={{ fontSize: 11, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, color: 'rgba(197,106,45,0.35)', letterSpacing: '0.08em' }}>{s.step}</span>
-                <div style={{ width: 44, height: 44, borderRadius: 12, background: '#F6F7F9', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 16, marginBottom: 20 }}>
-                  <s.icon size={20} color="#C56A2D" strokeWidth={1.5} />
-                </div>
+                <img src={s.img} alt={s.title} width={64} height={64} style={{ borderRadius: 16, marginTop: 16, marginBottom: 20, objectFit: 'cover' }} />
                 <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 20, color: '#0F1115', marginBottom: 8, letterSpacing: '-0.02em' }}>{s.title}</h3>
                 <p style={{ fontSize: 14, color: 'rgba(15,17,21,0.4)', lineHeight: 1.6 }}>{s.desc}</p>
               </div>
@@ -304,8 +312,11 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
               {fr ? 'Propulsé par 13 moteurs d\'analyse' : 'Powered by 13 analysis engines'}
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 8, maxWidth: 700, margin: '0 auto' }}>
-              {ENGINES_SHORT.map(e => (
-                <span key={e} style={{ padding: '6px 12px', borderRadius: 99, background: 'white', border: '1px solid rgba(0,0,0,0.04)', fontSize: 11, color: 'rgba(15,17,21,0.4)', fontWeight: 500 }}>{e}</span>
+              {ENGINES_DATA.map(e => (
+                <span key={e.name} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px 4px 4px', borderRadius: 99, background: 'white', border: '1px solid rgba(0,0,0,0.04)', fontSize: 11, color: 'rgba(15,17,21,0.5)', fontWeight: 500 }}>
+                  {e.img ? <img src={e.img} alt={e.name} width={22} height={22} style={{ borderRadius: 99, objectFit: 'cover' }} /> : <span style={{ width: 22, height: 22, borderRadius: 99, background: 'rgba(197,106,45,0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#C56A2D', fontWeight: 700 }}>AI</span>}
+                  {e.name}
+                </span>
               ))}
             </div>
           </div>
@@ -322,9 +333,7 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
             {USE_CASES.map(uc => (
               <div key={uc.title} className="landing-usecase">
-                <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(197,106,45,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <uc.icon size={20} color="#C56A2D" strokeWidth={1.5} />
-                </div>
+                <img src={uc.img} alt={uc.title} width={48} height={48} style={{ borderRadius: 12, objectFit: 'cover', flexShrink: 0 }} />
                 <div>
                   <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 18, color: '#0F1115', marginBottom: 6, letterSpacing: '-0.02em' }}>{uc.title}</h3>
                   <p style={{ fontSize: 14, color: 'rgba(15,17,21,0.4)', lineHeight: 1.6 }}>{uc.desc}</p>
