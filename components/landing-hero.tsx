@@ -253,7 +253,9 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
             ].map(s => (
               <div key={s.step} className="landing-card">
                 <span style={{ fontSize: 11, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, color: 'rgba(197,106,45,0.35)', letterSpacing: '0.08em' }}>{s.step}</span>
-                <img src={s.img} alt={s.title} width={64} height={64} style={{ borderRadius: 16, marginTop: 16, marginBottom: 20, objectFit: 'cover' }} />
+                <div style={{ width: 72, height: 72, borderRadius: 16, overflow: 'hidden', marginTop: 16, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f1115' }}>
+                  <img src={s.img} alt={s.title} width={72} height={72} style={{ objectFit: 'cover', display: 'block' }} />
+                </div>
                 <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 20, color: '#0F1115', marginBottom: 8, letterSpacing: '-0.02em' }}>{s.title}</h3>
                 <p style={{ fontSize: 14, color: 'rgba(15,17,21,0.4)', lineHeight: 1.6 }}>{s.desc}</p>
               </div>
@@ -302,14 +304,16 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
             {MODELS.map(m => (
-              <div key={m.name} className="landing-card" style={{ textAlign: 'center', padding: 24 }}>
-                <img
-                  src={m.logo}
-                  alt={m.name}
-                  width={48}
-                  height={48}
-                  style={{ borderRadius: 12, margin: '0 auto 16px', display: 'block' }}
-                />
+              <div key={m.name} className="landing-card" style={{ padding: 24 }}>
+                <div style={{ width: 52, height: 52, borderRadius: 14, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <img
+                    src={m.logo}
+                    alt={m.name}
+                    width={52}
+                    height={52}
+                    style={{ objectFit: 'cover', display: 'block' }}
+                  />
+                </div>
                 <p style={{ fontSize: 13, fontWeight: 600, color: '#0F1115', marginBottom: 4, letterSpacing: '-0.01em' }}>{m.name}</p>
                 <p style={{ fontSize: 11, color: 'rgba(15,17,21,0.35)' }}>{m.specialty}</p>
               </div>
@@ -322,7 +326,7 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 8, maxWidth: 700, margin: '0 auto' }}>
               {ENGINES_DATA.map(e => (
                 <span key={e.name} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px 4px 4px', borderRadius: 99, background: 'white', border: '1px solid rgba(0,0,0,0.04)', fontSize: 11, color: 'rgba(15,17,21,0.5)', fontWeight: 500 }}>
-                  {e.img ? <img src={e.img} alt={e.name} width={22} height={22} style={{ borderRadius: 99, objectFit: 'cover' }} /> : <span style={{ width: 22, height: 22, borderRadius: 99, background: 'rgba(197,106,45,0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#C56A2D', fontWeight: 700 }}>AI</span>}
+                  {e.img ? <span style={{ width: 24, height: 24, borderRadius: 99, overflow: 'hidden', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: '#0f1115' }}><img src={e.img} alt={e.name} width={24} height={24} style={{ objectFit: 'cover', display: 'block' }} /></span> : <span style={{ width: 24, height: 24, borderRadius: 99, background: 'rgba(197,106,45,0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#C56A2D', fontWeight: 700, flexShrink: 0 }}>AI</span>}
                   {e.name}
                 </span>
               ))}
@@ -341,7 +345,9 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
             {USE_CASES.map(uc => (
               <div key={uc.title} className="landing-usecase">
-                <img src={uc.img} alt={uc.title} width={48} height={48} style={{ borderRadius: 12, objectFit: 'cover', flexShrink: 0 }} />
+                <div style={{ width: 48, height: 48, borderRadius: 12, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f6f7f9' }}>
+                  <img src={uc.img} alt={uc.title} width={48} height={48} style={{ objectFit: 'cover', display: 'block' }} />
+                </div>
                 <div>
                   <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 18, color: '#0F1115', marginBottom: 6, letterSpacing: '-0.02em' }}>{uc.title}</h3>
                   <p style={{ fontSize: 14, color: 'rgba(15,17,21,0.4)', lineHeight: 1.6 }}>{uc.desc}</p>
@@ -392,7 +398,7 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
               { name: 'Pro', price: '29€', desc: fr ? '20 projets' : '20 projects', features: fr ? ['Tout Free +', 'Assistant IA (30/mois)', 'Mode Expert complet', 'Timeline & Copilote', 'Génération intégrée'] : ['Everything Free +', 'AI Assistant (30/mo)', 'Full Expert Mode', 'Timeline & Copilot', 'Built-in Gen'], hl: true },
               { name: 'Studio', price: '79€', desc: fr ? 'Illimité' : 'Unlimited', features: fr ? ['Tout Pro +', 'IA illimitée', 'Projets illimités', 'API access', 'Support dédié'] : ['Everything Pro +', 'Unlimited AI', 'Unlimited Projects', 'API Access', 'Priority Support'], hl: false },
             ].map(p => (
-              <div key={p.name} className="landing-card" style={{ padding: 28, transform: p.hl ? 'scale(1.02)' : undefined, border: p.hl ? '1px solid rgba(197,106,45,0.2)' : undefined, boxShadow: p.hl ? '0 8px 32px rgba(197,106,45,0.06)' : undefined }}>
+              <div key={p.name} className="landing-card" style={{ padding: 28, alignItems: 'flex-start', textAlign: 'left', transform: p.hl ? 'scale(1.02)' : undefined, border: p.hl ? '1px solid rgba(197,106,45,0.2)' : undefined, boxShadow: p.hl ? '0 8px 32px rgba(197,106,45,0.06)' : undefined }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
                   <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: p.hl ? '#C56A2D' : 'rgba(15,17,21,0.25)' }}>{p.name.toUpperCase()}</span>
                   {p.hl && <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', color: '#C56A2D', background: 'rgba(197,106,45,0.08)', padding: '2px 8px', borderRadius: 99 }}>POPULAIRE</span>}
@@ -459,6 +465,7 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
         .landing-card {
           padding: 32px; border-radius: 16px; background: white; border: 1px solid rgba(0,0,0,0.04);
           transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          display: flex; flex-direction: column; align-items: center; text-align: center;
         }
         .landing-card:hover { border-color: rgba(197,106,45,0.15); box-shadow: 0 8px 32px rgba(197,106,45,0.04); transform: translateY(-2px); }
         .landing-usecase { display: flex; align-items: flex-start; gap: 20px; padding: 24px; border-radius: 16px; transition: background 0.3s; }
