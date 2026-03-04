@@ -3,9 +3,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import emptyProjectsImg from '@/public/images/empty_projects.png'
 import { useRouter } from 'next/navigation'
-import { Plus, Film, Clapperboard, Clock, MoreHorizontal, Trash2, Download, Upload, X, Loader2, Play, Camera, Zap, TrendingUp, DollarSign , ArrowRight } from 'lucide-react'
+import { Plus, Film, Clapperboard, Clock, MoreHorizontal, Trash2, Download, Upload, X, Loader2, Play, Camera, Zap, TrendingUp, DollarSign, ArrowRight, Sparkles, Music, Layers, Globe, BookOpen, Lightbulb, Cpu, Palette, Video, Wand2, ChevronRight } from 'lucide-react'
 import { ModelLegend } from '@/components/ui/model-badge'
 import { StoryboardSVG } from '@/components/ui/storyboard-svg'
+import { SCENARIO_TEMPLATES } from '@/lib/data/templates'
 import demoThumbCendres from '@/public/images/sc1_fleuve.jpg'
 import demoThumbOdyssee from '@/public/images/sc2_desert.jpg'
 import demoThumbPixel from '@/public/images/sc3_oeil.jpg'
@@ -198,6 +199,157 @@ export default function DashboardPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* ═══ TEMPLATES — Commencer avec un scénario ═══ */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-base font-semibold text-slate-100 flex items-center gap-2">
+              <BookOpen size={16} className="text-orange-400" />
+              {locale === 'fr' ? 'Commencer avec un template' : 'Start with a template'}
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">{locale === 'fr' ? 'Scénarios professionnels prêts à produire' : 'Professional scenarios ready to produce'}</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {SCENARIO_TEMPLATES.map(tpl => (
+            <button
+              key={tpl.id}
+              onClick={async () => {
+                try {
+                  const res = await fetch('/api/projects', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      name: tpl.title[locale === 'fr' ? 'fr' : 'en'],
+                      description: tpl.tagline[locale === 'fr' ? 'fr' : 'en'],
+                      template_id: tpl.id,
+                    }),
+                  })
+                  if (res.ok) {
+                    const project = await res.json()
+                    router.push(`/project/${project.id}`)
+                  }
+                } catch (e) { console.error(e) }
+              }}
+              className="text-left bg-dark-900/80 border border-dark-700 hover:border-dark-500 rounded-xl p-4 transition-all group hover:bg-dark-800/80"
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0" style={{ background: `${tpl.color}15`, border: `1px solid ${tpl.color}25` }}>
+                  {tpl.icon}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-slate-100 group-hover:text-orange-300 transition-colors truncate">{tpl.title[locale === 'fr' ? 'fr' : 'en']}</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">{tpl.genre[locale === 'fr' ? 'fr' : 'en']}</p>
+                  <div className="flex items-center gap-3 mt-2">
+                    <span className="text-[10px] text-slate-600">{tpl.stats.scenes} scènes</span>
+                    <span className="text-[10px] text-slate-600">{tpl.stats.plans} plans</span>
+                    <span className="text-[10px] text-slate-600">{tpl.stats.duration}</span>
+                    <span className="text-[10px] text-green-500/70">{tpl.stats.cost}</span>
+                  </div>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ═══ QUICK ACTIONS — Créer par type ═══ */}
+      <div className="mb-8">
+        <h2 className="text-base font-semibold text-slate-100 flex items-center gap-2 mb-3">
+          <Zap size={16} className="text-yellow-400" />
+          {locale === 'fr' ? 'Création rapide' : 'Quick create'}
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { icon: Film, label: locale === 'fr' ? 'Court-métrage' : 'Short film', color: '#64748B' },
+            { icon: Sparkles, label: locale === 'fr' ? 'Publicité' : 'Ad spot', color: '#D4AF37' },
+            { icon: Music, label: locale === 'fr' ? 'Clip musical' : 'Music video', color: '#EC4899' },
+            { icon: Camera, label: 'Documentaire', color: '#06B6D4' },
+            { icon: Layers, label: 'BD & Motion', color: '#8B5CF6' },
+            { icon: Globe, label: locale === 'fr' ? 'Éducatif' : 'Educational', color: '#10B981' },
+            { icon: Video, label: 'Corporate', color: '#3B82F6' },
+            { icon: Wand2, label: 'Game trailer', color: '#EF4444' },
+          ].map(({ icon: Icon, label, color }) => (
+            <button
+              key={label}
+              onClick={() => setShowNewModal(true)}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dark-700 hover:border-dark-500 bg-dark-900/60 hover:bg-dark-800/80 transition-all text-xs text-slate-300 hover:text-slate-100"
+            >
+              <Icon size={13} style={{ color }} />
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ═══ CAPABILITIES — Ce que MISEN sait faire ═══ */}
+      <div className="mb-8 bg-dark-900/60 border border-dark-700 rounded-xl p-5">
+        <h2 className="text-base font-semibold text-slate-100 flex items-center gap-2 mb-4">
+          <Cpu size={16} className="text-violet-400" />
+          {locale === 'fr' ? 'La puissance de MISEN' : 'MISEN capabilities'}
+        </h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { value: '13', label: locale === 'fr' ? 'Moteurs d\'analyse' : 'Analysis engines', desc: locale === 'fr' ? 'Intent Parser, Crispifier, Style Guard, Motion Flow…' : 'Intent Parser, Crispifier, Style Guard, Motion Flow…', color: 'text-orange-400' },
+            { value: '7', label: locale === 'fr' ? 'Modèles IA' : 'AI models', desc: 'Kling 3.0, Runway Gen-4.5, Sora 2, Veo 3.1…', color: 'text-violet-400' },
+            { value: '6', label: 'Formats', desc: locale === 'fr' ? 'Pub, Court-métrage, Clip, Docu, BD, Éducatif' : 'Ad, Short film, Music video, Doc, Comic, Educational', color: 'text-blue-400' },
+            { value: '4K', label: locale === 'fr' ? 'Résolution max' : 'Max resolution', desc: locale === 'fr' ? 'Export haute qualité, HDR, son multicanal' : 'High quality export, HDR, multichannel audio', color: 'text-green-400' },
+          ].map(cap => (
+            <div key={cap.label} className="text-center">
+              <p className={`text-2xl font-display font-bold ${cap.color}`}>{cap.value}</p>
+              <p className="text-xs font-medium text-slate-200 mt-1">{cap.label}</p>
+              <p className="text-[10px] text-slate-500 mt-1 leading-relaxed">{cap.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ═══ TIPS — Astuce du jour ═══ */}
+      <div className="mb-8">
+        {(() => {
+          const tips = locale === 'fr' ? [
+            { title: 'Importez votre scénario', desc: 'Collez votre texte ou importez un fichier .fdx/.pdf — MISEN détecte automatiquement les scènes, dialogues et indications techniques.', icon: Upload },
+            { title: 'Mode Expert', desc: 'Activez le mode Expert dans un projet pour contrôler chaque paramètre : modèle IA par plan, force de prompt, verrouillage de branche.', icon: Zap },
+            { title: 'Comparez les modèles', desc: 'Utilisez le bouton Compare pour voir côte à côte les résultats de 2 modèles IA sur le même plan. Choisissez le meilleur rendu.', icon: Layers },
+            { title: 'Storyboard visuel', desc: 'L\'onglet Storyboard génère automatiquement un découpage visuel de votre scénario avec les types de plans et mouvements de caméra.', icon: Palette },
+            { title: 'Export multi-format', desc: 'Exportez votre projet en JSON, partagez-le avec votre équipe, ou téléchargez le brief de production pour votre studio.', icon: Download },
+            { title: 'Score & Musique', desc: 'L\'onglet Score analyse l\'ambiance de chaque scène et suggère des compositions musicales adaptées au ton de votre film.', icon: Music },
+          ] : [
+            { title: 'Import your screenplay', desc: 'Paste your text or import a .fdx/.pdf file — MISEN auto-detects scenes, dialogues and technical cues.', icon: Upload },
+            { title: 'Expert Mode', desc: 'Enable Expert mode in a project to control every parameter: AI model per shot, prompt strength, branch locking.', icon: Zap },
+            { title: 'Compare models', desc: 'Use the Compare button to see side-by-side results from 2 AI models on the same shot. Pick the best render.', icon: Layers },
+            { title: 'Visual Storyboard', desc: 'The Storyboard tab auto-generates a visual breakdown with shot types and camera movements.', icon: Palette },
+            { title: 'Multi-format export', desc: 'Export your project as JSON, share with your team, or download the production brief for your studio.', icon: Download },
+            { title: 'Score & Music', desc: 'The Score tab analyzes each scene mood and suggests musical compositions matching your film tone.', icon: Music },
+          ]
+          const tip = tips[Math.floor(Date.now() / 86400000) % tips.length]
+          const TipIcon = tip.icon
+          return (
+            <div className="flex items-start gap-3 bg-gradient-to-r from-orange-500/5 to-violet-500/5 border border-orange-500/10 rounded-xl p-4">
+              <div className="w-9 h-9 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                <TipIcon size={16} className="text-orange-400" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-orange-300 flex items-center gap-2">
+                  <Lightbulb size={12} />
+                  {locale === 'fr' ? 'Astuce du jour' : 'Tip of the day'}
+                </p>
+                <p className="text-sm text-slate-200 mt-1 font-medium">{tip.title}</p>
+                <p className="text-xs text-slate-400 mt-1 leading-relaxed">{tip.desc}</p>
+              </div>
+            </div>
+          )
+        })()}
+      </div>
+
+      {/* ═══ MES PROJETS ═══ */}
+      {projects.length > 0 && (
+        <div className="flex items-center gap-2 mb-4">
+          <h2 className="text-base font-semibold text-slate-100">{locale === 'fr' ? 'Mes projets' : 'My projects'}</h2>
+          <span className="text-xs text-slate-500">({projects.length})</span>
         </div>
       )}
 
