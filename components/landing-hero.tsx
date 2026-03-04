@@ -264,6 +264,84 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
         </div>
       </section>
 
+      {/* ═══ WORKFLOW — Comment ça marche concrètement ═══ */}
+      <section id="workflow" className="landing-section" style={{ background: '#FFFFFF' }}>
+        <div className="landing-container">
+          <div style={{ textAlign: 'center', marginBottom: 64 }}>
+            <p className="landing-label" style={{ color: '#C56A2D' }}>{fr ? 'VOTRE WORKFLOW' : 'YOUR WORKFLOW'}</p>
+            <h2 className="landing-h2">{fr ? 'De l\'idée à la vidéo en 5 minutes' : 'From idea to video in 5 minutes'}</h2>
+            <p className="landing-subtitle">{fr ? 'MISEN pense votre film. Vous n\'avez qu\'à cliquer.' : 'MISEN thinks your film. You just click.'}</p>
+          </div>
+
+          {/* Timeline workflow */}
+          <div style={{ maxWidth: 800, margin: '0 auto', position: 'relative' }}>
+            {/* Vertical line */}
+            <div style={{ position: 'absolute', left: 28, top: 28, bottom: 28, width: 2, background: 'linear-gradient(to bottom, #C56A2D, #6C4DFF)', opacity: 0.15, borderRadius: 99 }} />
+
+            {[
+              {
+                step: '1',
+                title: fr ? 'Écrivez votre scénario' : 'Write your screenplay',
+                desc: fr ? 'Collez votre texte, importez un fichier, ou choisissez un template professionnel prêt à l\'emploi. Court-métrage, pub, clip — tout est possible.' : 'Paste your text, import a file, or pick a professional template. Short film, ad, music video — anything goes.',
+                where: 'MISEN',
+                color: '#C56A2D',
+              },
+              {
+                step: '2',
+                title: fr ? 'Lancez l\'analyse' : 'Run the analysis',
+                desc: fr ? '13 moteurs IA dissèquent chaque mot : découpage en scènes, plans, émotions, personnages, mouvements de caméra, courbe de tension. Tout est automatique.' : '13 AI engines dissect every word: scene breakdown, shots, emotions, characters, camera movements, tension curve. Fully automatic.',
+                where: 'MISEN',
+                color: '#C56A2D',
+              },
+              {
+                step: '3',
+                title: fr ? 'Récupérez vos prompts' : 'Get your prompts',
+                desc: fr ? 'Pour chaque plan, MISEN génère un prompt optimisé et adapté à la syntaxe du modèle IA recommandé. Copiez-le en un clic.' : 'For each shot, MISEN generates an optimized prompt adapted to the recommended AI model\'s syntax. Copy it in one click.',
+                where: 'MISEN',
+                color: '#C56A2D',
+              },
+              {
+                step: '4',
+                title: fr ? 'Générez sur la plateforme IA' : 'Generate on the AI platform',
+                desc: fr ? 'Collez le prompt dans Kling, Runway, Sora ou Veo. Le prompt est déjà optimisé — le résultat sera cinématographique dès le premier essai.' : 'Paste the prompt into Kling, Runway, Sora or Veo. The prompt is pre-optimized — the result will be cinematic on the first try.',
+                where: fr ? 'Kling / Runway / Sora / Veo' : 'Kling / Runway / Sora / Veo',
+                color: '#6C4DFF',
+              },
+              {
+                step: '5',
+                title: fr ? 'Votre film est prêt' : 'Your film is ready',
+                desc: fr ? 'Chaque plan est cohérent avec les autres grâce aux tokens de personnages, à la bible de style et au tracking de continuité. Assemblez et publiez.' : 'Every shot is consistent thanks to character tokens, style bible and continuity tracking. Assemble and publish.',
+                where: fr ? 'Résultat' : 'Result',
+                color: '#10B981',
+              },
+            ].map((item, i) => (
+              <div key={i} style={{ display: 'flex', gap: 24, marginBottom: i < 4 ? 32 : 0, position: 'relative' }}>
+                {/* Step number */}
+                <div style={{ width: 56, height: 56, borderRadius: 16, background: `${item.color}10`, border: `2px solid ${item.color}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, zIndex: 1 }}>
+                  <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 22, fontWeight: 700, color: item.color }}>{item.step}</span>
+                </div>
+                {/* Content */}
+                <div style={{ flex: 1, paddingTop: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                    <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 18, color: '#0F1115', letterSpacing: '-0.02em', margin: 0 }}>{item.title}</h3>
+                    <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: item.color, background: `${item.color}10`, padding: '3px 10px', borderRadius: 99 }}>{item.where}</span>
+                  </div>
+                  <p style={{ fontSize: 14, color: 'rgba(15,17,21,0.45)', lineHeight: 1.7, margin: 0 }}>{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom CTA */}
+          <div style={{ textAlign: 'center', marginTop: 56 }}>
+            <p style={{ fontSize: 14, color: 'rgba(15,17,21,0.3)', marginBottom: 20, fontStyle: 'italic' }}>
+              {fr ? '→ Vous ne revenez jamais dans MISEN pour coller quoi que ce soit. MISEN est le cerveau, l\'IA vidéo est le bras.' : '→ You never come back to MISEN to paste anything. MISEN is the brain, the video AI is the arm.'}
+            </p>
+            <a href="/auth" className="landing-cta-primary">{fr ? 'Essayer gratuitement' : 'Try for free'} →</a>
+          </div>
+        </div>
+      </section>
+
       {/* ═══ SHOWCASE ═══ */}
       <section id="showcase" className="landing-section" style={{ background: '#FFFFFF' }}>
         <div className="landing-container">
