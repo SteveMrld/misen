@@ -569,6 +569,17 @@ export default function ProjectPage() {
                     <button onClick={() => setMode('expert')} className="text-xs text-orange-400 hover:text-orange-300 flex items-center gap-1"><SlidersHorizontal size={12} /> {t.project.modeExpert} →</button>
                   </div>
                 </div>
+                {/* Generation options banner */}
+                <div className="px-4 py-2.5 border-b border-dark-700/50 bg-dark-800/30">
+                  <div className="flex items-center gap-4 flex-wrap text-[10px]">
+                    <span className="text-slate-500 font-medium">{locale === 'fr' ? 'Pour chaque plan :' : 'For each shot:'}</span>
+                    <span className="flex items-center gap-1 text-orange-400"><Copy size={9} /> {locale === 'fr' ? 'Copier & ouvrir la plateforme IA' : 'Copy & open AI platform'}</span>
+                    <span className="text-slate-700">|</span>
+                    <span className="flex items-center gap-1 text-violet-400"><Sparkles size={9} /> {locale === 'fr' ? 'Crédits MISEN (Pro/Studio)' : 'MISEN credits (Pro/Studio)'}</span>
+                    <span className="text-slate-700">|</span>
+                    <span className="flex items-center gap-1 text-green-400"><Zap size={9} /> {locale === 'fr' ? 'Clé API personnelle' : 'Own API key'}</span>
+                  </div>
+                </div>
                 <div className="divide-y divide-dark-700/50">
                   {(analysis.plans || []).slice(0, 30).map((plan: any, i: number) => (
                     <SPC key={i} plan={plan} index={i} analysisId={analysisId} userKeys={userKeys} projectId={projectId} />
@@ -1003,12 +1014,10 @@ function SPC({ plan, index, analysisId, userKeys, projectId }: { plan: any; inde
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] text-slate-600">${(plan?.estimatedCost||0).toFixed(3)}</span>
-              <button onClick={copy} className="px-2 py-1 bg-orange-600/10 hover:bg-orange-600/20 text-orange-400 text-[10px] rounded flex items-center gap-1 transition-colors">
-                {copied ? <><Check size={10} /> {t.demo.copied}</> : <><Copy size={10} /> {t.demo.copyPrompt}</>}
-              </button>
+              {/* Option 2: User has own API key → Generate directly */}
               {canGenerate && status === 'idle' && (
                 <button onClick={generate} className="px-2.5 py-1 btn-primary text-white text-[10px] font-medium rounded flex items-center gap-1 transition-colors">
-                  <Zap size={10} /> {t.demo.generateWith}
+                  <Zap size={10} /> {locale === 'fr' ? 'Générer' : 'Generate'}
                 </button>
               )}
               {canGenerate && status === 'failed' && (
@@ -1021,11 +1030,29 @@ function SPC({ plan, index, analysisId, userKeys, projectId }: { plan: any; inde
                   <Check size={10} /> {t.common.success}
                 </span>
               )}
+              {/* Option 3: MISEN credits (Pro/Studio) → Generate without user key */}
               {!canGenerate && (
-                <a href={studio.url} target="_blank" rel="noopener noreferrer"
-                  className="px-2 py-1 bg-dark-700 hover:bg-dark-600 text-slate-300 text-[10px] rounded flex items-center gap-1 transition-colors">
-                  <ExternalLink size={9} /> {studio.name}
-                </a>
+                <button onClick={() => {
+                  // For now, redirect to pricing — in production this calls MISEN's pooled API
+                  window.open('/settings?tab=usage', '_self')
+                }} className="px-2.5 py-1 bg-gradient-to-r from-violet-600/20 to-violet-500/20 hover:from-violet-600/30 hover:to-violet-500/30 text-violet-300 text-[10px] font-medium rounded flex items-center gap-1 border border-violet-500/20 transition-colors">
+                  <Sparkles size={10} /> {locale === 'fr' ? 'Crédits MISEN' : 'MISEN credits'}
+                </button>
+              )}
+              {/* Option 1: Copy prompt + Open platform in one click */}
+              {!canGenerate && status !== 'completed' && (
+                <button onClick={() => {
+                  navigator.clipboard.writeText(prompt).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) })
+                  window.open(studio.url, '_blank')
+                }} className="px-2.5 py-1 bg-orange-600/10 hover:bg-orange-600/20 text-orange-400 text-[10px] font-medium rounded flex items-center gap-1 transition-colors">
+                  {copied ? <><Check size={10} /> {t.demo.copied}</> : <><Copy size={10} /> {locale === 'fr' ? `Copier & ouvrir ${studio.name}` : `Copy & open ${studio.name}`}</>}
+                </button>
+              )}
+              {/* Simple copy for users with keys (they generate in-app) */}
+              {canGenerate && (
+                <button onClick={copy} className="px-2 py-1 bg-dark-700 hover:bg-dark-600 text-slate-400 text-[10px] rounded flex items-center gap-1 transition-colors">
+                  {copied ? <><Check size={10} /> {t.demo.copied}</> : <><Copy size={10} /> {t.demo.copyPrompt}</>}
+                </button>
               )}
             </div>
           </div>
@@ -1969,16 +1996,24 @@ function PC({ plan, index, analysisId, userKeys, characters }: { plan: any; inde
         )}
 
         {/* Actions bar */}
-        <div className="flex items-center gap-2 pt-1">
-          <button onClick={()=>{navigator.clipboard.writeText(editedPrompt||prompt);setCopied(true);setTimeout(()=>setCopied(false),2000)}}
-            className="px-3 py-1.5 bg-orange-600/10 hover:bg-orange-600/20 text-orange-400 text-[10px] rounded-lg flex items-center gap-1.5 border border-orange-500/20">
-            {copied?<><Check size={10} />{t.demo.copied}</>:<><Copy size={10} />{t.demo.copyPrompt}</>}
-          </button>
-          {canGenerate && status==='idle' && <button onClick={gen} className="px-3 py-1.5 btn-primary text-white text-[10px] rounded-lg flex items-center gap-1.5"><Zap size={10} /> {t.demo.generateWith}</button>}
+        <div className="flex items-center gap-2 pt-1 flex-wrap">
+          {/* Option 2: Has API key → Generate in-app */}
+          {canGenerate && status==='idle' && <button onClick={gen} className="px-3 py-1.5 btn-primary text-white text-[10px] rounded-lg flex items-center gap-1.5"><Zap size={10} /> {locale === 'fr' ? 'Générer' : 'Generate'}</button>}
           {canGenerate && status==='processing' && <span className="flex items-center gap-1.5 text-yellow-400 text-[10px]"><Loader2 size={12} className="animate-spin" />{locale === 'fr' ? 'Génération...' : 'Generating...'}</span>}
           {canGenerate && status==='completed' && <span className="flex items-center gap-1.5 text-green-400 text-[10px]"><Check size={12} />{locale === 'fr' ? 'Terminé' : 'Done'}</span>}
           {canGenerate && status==='failed' && <button onClick={gen} className="px-3 py-1.5 bg-red-500/10 text-red-400 text-[10px] rounded-lg flex items-center gap-1.5 border border-red-500/20"><AlertTriangle size={10} /> Retry</button>}
-          {!canGenerate && <a href={studio.url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-dark-700 hover:bg-dark-600 text-slate-300 text-[10px] rounded-lg flex items-center gap-1.5 border border-dark-600"><ExternalLink size={9} /> {studio.name}</a>}
+          {/* Option 3: MISEN credits (Pro/Studio) */}
+          {!canGenerate && <button onClick={() => window.open('/settings?tab=usage', '_self')} className="px-3 py-1.5 bg-gradient-to-r from-violet-600/20 to-violet-500/20 hover:from-violet-600/30 hover:to-violet-500/30 text-violet-300 text-[10px] font-medium rounded-lg flex items-center gap-1.5 border border-violet-500/20 transition-colors"><Sparkles size={10} /> {locale === 'fr' ? 'Crédits MISEN' : 'MISEN credits'}</button>}
+          {/* Option 1: Copy + Open platform */}
+          {!canGenerate && <button onClick={()=>{navigator.clipboard.writeText(editedPrompt||prompt);setCopied(true);setTimeout(()=>setCopied(false),2000);window.open(studio.url,'_blank')}}
+            className="px-3 py-1.5 bg-orange-600/10 hover:bg-orange-600/20 text-orange-400 text-[10px] rounded-lg flex items-center gap-1.5 border border-orange-500/20">
+            {copied?<><Check size={10} />{t.demo.copied}</>:<><Copy size={10} />{locale === 'fr' ? `Copier & ouvrir ${studio.name}` : `Copy & open ${studio.name}`}</>}
+          </button>}
+          {/* Simple copy for key holders */}
+          {canGenerate && <button onClick={()=>{navigator.clipboard.writeText(editedPrompt||prompt);setCopied(true);setTimeout(()=>setCopied(false),2000)}}
+            className="px-3 py-1.5 bg-dark-700 hover:bg-dark-600 text-slate-400 text-[10px] rounded-lg flex items-center gap-1.5 border border-dark-600">
+            {copied?<><Check size={10} />{t.demo.copied}</>:<><Copy size={10} />{t.demo.copyPrompt}</>}
+          </button>}
           <CompareButton plan={plan} />
         </div>
       </div>
