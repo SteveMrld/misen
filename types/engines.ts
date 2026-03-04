@@ -46,12 +46,15 @@ export interface ParsedScene {
 
 export interface Plan {
   id: string; sceneIndex: number; planIndex: number;
-  description: string; cadrage: ShotType; camera: CameraMove;
+  description: string; cadrage: ShotType; shotType: ShotType; camera: CameraMove; cameraMove: CameraMove;
   angle: CameraAngle; eclairage: LightingStyle; duree: number;
+  estimatedDuration: number; estimatedCost: number;
   personnages: string[]; dialogue?: DialogueLine;
   emotion: Emotion; intensite: number;
-  modeleRecommande: AIModelId; scoreModele: number;
-  prompt: string; negativePrompt: string; tips: string[];
+  modeleRecommande: AIModelId; modelId: AIModelId; scoreModele: number;
+  prompt: string; finalPrompt: string; basePrompt: string;
+  negativePrompt: string; tips: string[];
+  reasoning?: string[]; alternatives?: AIModelId[];
 }
 
 export interface SymbolDetection { symbol: string; meaning: string; occurrences: number; }
