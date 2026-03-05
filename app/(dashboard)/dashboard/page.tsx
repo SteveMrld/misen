@@ -202,19 +202,47 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* ═══ TEMPLATES — Commencer avec un scénario ═══ */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-base font-semibold text-slate-100 flex items-center gap-2">
-              <BookOpen size={16} className="text-orange-400" />
-              {locale === 'fr' ? 'Commencer avec un template' : 'Start with a template'}
+      {/* ═══ HERO INSPIRATION BANNER ═══ */}
+      {projects.length === 0 && (
+        <div className="relative mb-8 rounded-2xl overflow-hidden" style={{ minHeight: 200 }}>
+          <video src="/videos/hero_cinematic.mp4" autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover opacity-30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-dark-950 via-dark-950/80 to-transparent" />
+          <div className="relative z-10 p-8 flex flex-col justify-center" style={{ minHeight: 200 }}>
+            <p className="text-[11px] font-semibold text-orange-400 tracking-widest uppercase mb-3">{locale === 'fr' ? 'STUDIO IA' : 'AI STUDIO'}</p>
+            <h2 className="text-2xl sm:text-3xl font-display font-bold text-white leading-tight mb-3" style={{ letterSpacing: '-0.03em' }}>
+              {locale === 'fr' ? 'Votre prochaine création\ncommence ici.' : 'Your next creation\nstarts here.'}
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">{locale === 'fr' ? 'Scénarios professionnels prêts à produire' : 'Professional scenarios ready to produce'}</p>
+            <p className="text-sm text-slate-400 max-w-md mb-5">{locale === 'fr' ? 'Choisissez un template cinématographique ou écrivez votre propre scénario. 13 moteurs IA transforment vos mots en film.' : 'Pick a cinematic template or write your own screenplay. 13 AI engines turn your words into film.'}</p>
+            <button onClick={() => setShowNewModal(true)} className="btn-primary px-5 py-2.5 text-sm font-semibold flex items-center gap-2 w-fit">
+              <Plus size={16} /> {locale === 'fr' ? 'Créer un projet' : 'Create a project'}
+            </button>
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {SCENARIO_TEMPLATES.map(tpl => (
+      )}
+
+      {/* ═══ TEMPLATES — Commencer avec un scénario ═══ */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-base font-semibold text-slate-100 flex items-center gap-2">
+              <Sparkles size={16} className="text-orange-400" />
+              {locale === 'fr' ? 'Templates cinématographiques' : 'Cinematic templates'}
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">{locale === 'fr' ? 'Scénarios professionnels prêts à produire — cliquez pour commencer' : 'Professional scenarios ready to produce — click to start'}</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {SCENARIO_TEMPLATES.map(tpl => {
+            const TEMPLATE_IMAGES: Record<string, string> = {
+              'luxe-parfum': '/images/sc2_desert.jpg',
+              'court-drame': '/images/sc1_fleuve.jpg',
+              'clip-musical': '/images/sc3_ville.jpg',
+              'educatif': '/images/sc3_oeil.jpg',
+              'game-trailer': '/images/sc3_silhouette.jpg',
+              'corporate': '/images/sc1_couloir.jpg',
+            }
+            const bgImg = TEMPLATE_IMAGES[tpl.id] || '/images/sc1_portrait.jpg'
+            return (
             <button
               key={tpl.id}
               onClick={async () => {
@@ -234,25 +262,41 @@ export default function DashboardPage() {
                   }
                 } catch (e) { console.error(e) }
               }}
-              className="text-left bg-dark-900/80 border border-dark-700 hover:border-dark-500 rounded-xl p-4 transition-all group hover:bg-dark-800/80"
+              className="text-left rounded-xl overflow-hidden transition-all group relative hover:ring-1 hover:ring-orange-500/30 hover:shadow-lg hover:shadow-orange-500/5"
+              style={{ minHeight: 220 }}
             >
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0" style={{ background: `${tpl.color}15`, border: `1px solid ${tpl.color}25` }}>
-                  {tpl.icon}
+              {/* Background image */}
+              <div className="absolute inset-0">
+                <img src={bgImg} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
+              </div>
+              {/* Content */}
+              <div className="relative z-10 h-full flex flex-col justify-end p-5" style={{ minHeight: 220 }}>
+                {/* Genre pill */}
+                <span className="text-[10px] font-bold tracking-widest uppercase mb-2 px-2.5 py-1 rounded-full w-fit"
+                  style={{ color: tpl.color, background: `${tpl.color}20`, border: `1px solid ${tpl.color}30` }}>
+                  {tpl.genre[locale === 'fr' ? 'fr' : 'en'].split('·')[0].trim()}
+                </span>
+                <h3 className="text-lg font-display font-bold text-white mb-1 group-hover:text-orange-200 transition-colors" style={{ letterSpacing: '-0.02em' }}>
+                  {tpl.title[locale === 'fr' ? 'fr' : 'en']}
+                </h3>
+                <p className="text-xs text-slate-300/80 italic mb-3">"{tpl.tagline[locale === 'fr' ? 'fr' : 'en']}"</p>
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] text-slate-400">{tpl.stats.scenes} scènes</span>
+                  <span className="text-[10px] text-slate-500">•</span>
+                  <span className="text-[10px] text-slate-400">{tpl.stats.plans} plans</span>
+                  <span className="text-[10px] text-slate-500">•</span>
+                  <span className="text-[10px] text-slate-400">{tpl.stats.duration}</span>
+                  <span className="ml-auto text-[10px] font-medium text-green-400/80">{tpl.stats.cost}</span>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-slate-100 group-hover:text-orange-300 transition-colors truncate">{tpl.title[locale === 'fr' ? 'fr' : 'en']}</p>
-                  <p className="text-[11px] text-slate-500 mt-0.5">{tpl.genre[locale === 'fr' ? 'fr' : 'en']}</p>
-                  <div className="flex items-center gap-3 mt-2">
-                    <span className="text-[10px] text-slate-600">{tpl.stats.scenes} scènes</span>
-                    <span className="text-[10px] text-slate-600">{tpl.stats.plans} plans</span>
-                    <span className="text-[10px] text-slate-600">{tpl.stats.duration}</span>
-                    <span className="text-[10px] text-green-500/70">{tpl.stats.cost}</span>
-                  </div>
+                {/* Hover CTA */}
+                <div className="flex items-center gap-1.5 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="text-[11px] font-semibold text-orange-400">{locale === 'fr' ? 'Lancer ce projet' : 'Start this project'}</span>
+                  <ArrowRight size={12} className="text-orange-400" />
                 </div>
               </div>
             </button>
-          ))}
+          )})}
         </div>
       </div>
 
