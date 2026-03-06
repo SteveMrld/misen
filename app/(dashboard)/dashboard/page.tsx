@@ -149,6 +149,9 @@ export default function DashboardPage() {
           <button onClick={handleImport} disabled={importing} className="px-3 py-2 text-sm text-slate-300 border border-dark-600 hover:bg-dark-800 rounded-lg flex items-center gap-2 transition-colors">
             {importing ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} Importer
           </button>
+          <button onClick={() => router.push('/magic')} className="px-3 py-2 text-sm text-orange-400 border border-orange-500/30 hover:bg-orange-500/10 rounded-lg flex items-center gap-2 transition-colors">
+            <Sparkles size={16} /> {locale === 'fr' ? 'Mode magique' : 'Magic mode'}
+          </button>
           <button onClick={() => setShowNewModal(true)} className="btn-primary px-4 py-2 text-sm flex items-center gap-2">
             <Plus size={16} /> {t.dashboard.newProject}
           </button>
@@ -215,6 +218,9 @@ export default function DashboardPage() {
             <p className="text-sm text-slate-400 max-w-md mb-5">{locale === 'fr' ? 'Choisissez un template cinématographique ou écrivez votre propre scénario. 17 moteurs IA transforment vos mots en film.' : 'Pick a cinematic template or write your own screenplay. 13 AI engines turn your words into film.'}</p>
             <button onClick={() => setShowNewModal(true)} className="btn-primary px-5 py-2.5 text-sm font-semibold flex items-center gap-2 w-fit">
               <Plus size={16} /> {locale === 'fr' ? 'Créer un projet' : 'Create a project'}
+            </button>
+            <button onClick={() => router.push('/magic')} className="px-5 py-2.5 text-sm font-semibold flex items-center gap-2 w-fit border border-orange-500/30 text-orange-400 hover:bg-orange-500/10 rounded-lg transition-colors">
+              <Sparkles size={16} /> {locale === 'fr' ? 'Mode magique — 1 clic' : 'Magic mode — 1 click'}
             </button>
           </div>
         </div>
