@@ -341,7 +341,7 @@ export default function MagicModePage() {
             { value: stats.scenes, label: fr ? 'Scènes' : 'Scenes', color: 'text-orange-400' },
             { value: stats.plans, label: 'Plans', color: 'text-blue-400' },
             { value: `${Math.round(stats.duration)}s`, label: fr ? 'Durée' : 'Duration', color: 'text-green-400' },
-            { value: `~${stats.cost.toFixed(1)}€`, label: fr ? 'Coût estimé' : 'Est. cost', color: 'text-violet-400' },
+            { value: `${Math.max(stats.plans, 1)} cr.`, label: fr ? 'Crédits estimés' : 'Est. credits', color: 'text-violet-400' },
           ].map(kpi => (
             <div key={kpi.label} className="bg-dark-900 border border-dark-700 rounded-xl px-4 py-3 text-center">
               <p className={`text-xl font-display font-bold ${kpi.color}`}>{kpi.value}</p>
@@ -440,11 +440,11 @@ export default function MagicModePage() {
               {fr ? 'Courbe de tension' : 'Tension curve'}
             </h2>
             <div className="bg-dark-900 border border-dark-700 rounded-xl p-4">
-              <div className="flex items-end gap-1 h-24">
+              <div className="flex items-end gap-1" style={{ height: 96 }}>
                 {tension.curve.map((pt: any, i: number) => (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1" style={{ height: '100%', justifyContent: 'flex-end' }}>
                     <div className="w-full rounded-t" style={{
-                      height: `${Math.max(pt.tension * 0.9, 8)}%`,
+                      height: Math.max(pt.tension * 0.9, 6),
                       background: pt.tension > 70 ? 'linear-gradient(to top, #C56A2D, #E8955A)' : pt.tension > 40 ? 'linear-gradient(to top, #6C4DFF, #8B6FFF)' : 'linear-gradient(to top, #334155, #475569)',
                     }} />
                     <span className="text-[8px] text-slate-600">S{pt.sceneIndex + 1}</span>
