@@ -201,8 +201,8 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
 
           <p style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)', color: 'rgba(255,255,255,0.8)', maxWidth: 560, margin: '0 auto 40px', lineHeight: 1.7, fontWeight: 400 }}>
             {fr
-              ? "MISEN orchestre 13 moteurs d'analyse et 7 modèles IA pour transformer vos scénarios en productions cinématographiques."
-              : 'MISEN orchestrates 13 analysis engines and 7 AI models to transform your screenplays into cinematic productions.'
+              ? "MISEN orchestre 17 moteurs d'analyse et 7 modèles IA pour transformer vos scénarios en productions cinématographiques."
+              : 'MISEN orchestrates 17 analysis engines and 7 AI models to transform your screenplays into cinematic productions.'
             }
           </p>
 
@@ -247,7 +247,7 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
             {[
               { step: '01', img: '/images/icon_step_imaginez.png', title: fr ? 'Imaginez' : 'Imagine', desc: fr ? 'Écrivez ou importez votre scénario.' : 'Write or import your screenplay.' },
-              { step: '02', img: '/images/icon_step_analysez.png', title: fr ? 'Analysez' : 'Analyze', desc: fr ? '13 moteurs dissèquent chaque scène.' : '13 engines dissect every scene.' },
+              { step: '02', img: '/images/icon_step_analysez.png', title: fr ? 'Analysez' : 'Analyze', desc: fr ? '17 moteurs dissèquent chaque scène.' : '17 engines dissect every scene.' },
               { step: '03', img: '/images/icon_step_orchestrez.png', title: fr ? 'Orchestrez' : 'Orchestrate', desc: fr ? 'Storyboard IA, timeline 5 pistes, musique.' : 'AI storyboard, 5-track timeline, music.' },
               { step: '04', img: '/images/icon_step_generez.png', title: fr ? 'Générez' : 'Generate', desc: fr ? '7 modèles IA, assembly auto, export.' : '7 AI models, auto assembly, export.' },
             ].map(s => (
@@ -289,7 +289,7 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
               {
                 step: '2',
                 title: fr ? 'Lancez l\'analyse' : 'Run the analysis',
-                desc: fr ? '13 moteurs IA dissèquent chaque mot : découpage en scènes, plans, émotions, personnages, mouvements de caméra, courbe de tension. Tout est automatique.' : '13 AI engines dissect every word: scene breakdown, shots, emotions, characters, camera movements, tension curve. Fully automatic.',
+                desc: fr ? '17 moteurs IA dissèquent chaque mot : découpage en scènes, plans, émotions, personnages, mouvements de caméra, courbe de tension. Tout est automatique.' : '13 AI engines dissect every word: scene breakdown, shots, emotions, characters, camera movements, tension curve. Fully automatic.',
                 where: 'MISEN',
                 color: '#C56A2D',
               },
@@ -399,7 +399,7 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
           </div>
           <div style={{ marginTop: 64, textAlign: 'center' }}>
             <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(15,17,21,0.2)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 16 }}>
-              {fr ? 'Propulsé par 13 moteurs d\'analyse' : 'Powered by 13 analysis engines'}
+              {fr ? 'Propulsé par 17 moteurs d\'analyse' : 'Powered by 17 analysis engines'}
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 8, maxWidth: 700, margin: '0 auto' }}>
               {ENGINES_DATA.map(e => (
@@ -472,7 +472,7 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
             {[
-              { name: 'Free', price: '0€', desc: fr ? '3 projets' : '3 projects', features: fr ? ['13 moteurs d\'analyse', 'Assistant IA (3/mois)', 'Mode Simple', 'Export JSON'] : ['13 analysis engines', 'AI Assistant (3/mo)', 'Simple Mode', 'JSON Export'], hl: false },
+              { name: 'Free', price: '0€', desc: fr ? '3 projets' : '3 projects', features: fr ? ['17 moteurs d\'analyse', 'Assistant IA (3/mois)', 'Mode Simple', 'Export JSON'] : ['17 analysis engines', 'AI Assistant (3/mo)', 'Simple Mode', 'JSON Export'], hl: false },
               { name: 'Pro', price: '29€', desc: fr ? '20 projets' : '20 projects', features: fr ? ['Tout Free +', 'Assistant IA (30/mois)', 'Mode Expert complet', 'Timeline & Copilote', 'Génération intégrée'] : ['Everything Free +', 'AI Assistant (30/mo)', 'Full Expert Mode', 'Timeline & Copilot', 'Built-in Gen'], hl: true },
               { name: 'Studio', price: '79€', desc: fr ? 'Illimité' : 'Unlimited', features: fr ? ['Tout Pro +', 'IA illimitée', 'Projets illimités', 'API access', 'Support dédié'] : ['Everything Pro +', 'Unlimited AI', 'Unlimited Projects', 'API Access', 'Priority Support'], hl: false },
             ].map(p => (

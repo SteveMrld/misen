@@ -29,7 +29,7 @@ export default function CGUPage() {
       <section>
         <h2 className="text-lg font-semibold text-white mb-3">{isFr ? 'Article 3 — Services' : 'Article 3 — Services'}</h2>
         <p>{isFr
-          ? "MISEN propose : l'analyse de scénarios par 13 moteurs IA spécialisés, la génération de prompts optimisés pour chaque modèle vidéo IA, un assistant scénariste IA, des outils de pré-production (timeline, storyboard, copilote), et l'export en 6 formats."
+          ? "MISEN propose : l'analyse de scénarios par 17 moteurs IA spécialisés, la génération de prompts optimisés pour chaque modèle vidéo IA, un assistant scénariste IA, des outils de pré-production (timeline, storyboard, copilote), et l'export en 6 formats."
           : "MISEN offers: script analysis by 13 specialized AI engines, optimized prompt generation for each AI video model, an AI screenwriting assistant, pre-production tools (timeline, storyboard, copilot), and export in 6 formats."}</p>
       </section>
       <section>

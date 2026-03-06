@@ -28,6 +28,10 @@ import { consistencyInject } from './consistency-inject';
 import { modelSyntaxAdapter } from './model-syntax';
 import { negativePromptEngine } from './negative-prompt';
 import { continuityTracker } from './continuity-tracker';
+import { cameraPhysics } from './camera-physics';
+import { motionDirector } from './motion-director';
+import { buildWorldModel } from './world-model';
+import { directorEvaluate, type DirectorVerdict } from './director-ai';
 import { AI_MODELS } from '../models/ai-models';
 
 export interface PipelineOptions {
@@ -181,15 +185,69 @@ export function runPipeline(scriptText: string, options: PipelineOptions = {}): 
         hasMovement: grammar.camera !== 'fixe',
       });
 
+      // ── Stage 6b: CAMERA PHYSICS (Engine 15) ──
+      const camPhysics = cameraPhysics({
+        shotType: grammar.cadrage,
+        cameraMove: grammar.camera,
+        emotion: intent.dominantEmotion,
+        intensity: intent.intensity,
+        lighting: grammar.eclairage,
+        hasDialogue: !!dialogue,
+      });
+
+      // ── Stage 6c: MOTION DIRECTOR (Engine 16) ──
+      const motion = motionDirector({
+        shotType: grammar.cadrage,
+        cameraMove: grammar.camera,
+        emotion: intent.dominantEmotion,
+        intensity: intent.intensity,
+        duration: grammar.duree,
+        personnages: scene.personnages,
+        hasDialogue: !!dialogue,
+      });
+
+      // ── Stage 6d: WORLD MODEL (Engine 17) ──
+      const worldState = buildWorldModel({
+        sceneIndex: si,
+        planIndex: pi,
+        personnages: scene.personnages,
+        emotion: intent.dominantEmotion,
+        shotType: grammar.cadrage,
+        lighting: grammar.eclairage,
+        description,
+        previousWorldState: pi > 0 ? (plans[plans.length - 1] as any)?._worldState : undefined,
+      });
+
+      // ── Stage 6e: DIRECTOR AI pre-evaluation (Engine 14) ──
+      const directorPreEval = directorEvaluate({
+        plan: {
+          personnages: scene.personnages,
+          emotion: intent.dominantEmotion,
+          cameraMove: grammar.camera,
+          finalPrompt: adapted.adaptedPrompt,
+          negativePrompt: neg.negativePrompt,
+          modelId: rec.recommended,
+          stylePreset: options.stylePreset || styleBible?.preset,
+        },
+      });
+
       // ── Calcul coût ──
       const model = AI_MODELS[rec.recommended];
       const cost = (grammar.duree / 10) * model.costPer10s;
       sceneCost += cost;
       costByModel[rec.recommended] += cost;
 
+      // ── Enrich prompt with new engine tokens ──
+      const enrichedPrompt = [
+        adapted.adaptedPrompt,
+        camPhysics.promptTokens,
+        motion.promptTokens,
+        worldState.promptTokens,
+      ].filter(Boolean).join('. ');
+
       const planId = `S${si + 1}P${pi + 1}`;
 
-      plans.push({
+      const planData: any = {
         id: planId,
         sceneIndex: si,
         planIndex: pi,
@@ -210,13 +268,39 @@ export function runPipeline(scriptText: string, options: PipelineOptions = {}): 
         modeleRecommande: rec.recommended,
         modelId: rec.recommended,
         scoreModele: rec.scores[rec.recommended],
-        prompt: adapted.adaptedPrompt,
-        finalPrompt: adapted.adaptedPrompt,
+        prompt: enrichedPrompt,
+        finalPrompt: enrichedPrompt,
         basePrompt: ctx.basePrompt,
         negativePrompt: neg.negativePrompt,
         tips: rec.tips,
         reasoning: rec.reasoning,
         alternatives: rec.alternatives,
+        // New engines data
+        cameraPhysics: {
+          sensor: camPhysics.sensor,
+          lens: camPhysics.lens,
+          aperture: camPhysics.aperture,
+          iso: camPhysics.iso,
+          shutterAngle: camPhysics.shutterAngle,
+          fps: camPhysics.fps,
+          rig: camPhysics.rig,
+          focusMode: camPhysics.focusMode,
+          filmStock: camPhysics.filmStock,
+        },
+        motionPlan: {
+          cameraPaths: motion.cameraPaths,
+          subjectBindings: motion.subjectBindings,
+        },
+        worldModel: {
+          entities: worldState.entities.length,
+          relations: worldState.relations.length,
+          continuityConstraints: worldState.continuityConstraints.length,
+        },
+        directorPreScore: {
+          overall: Math.round(directorPreEval.score.overall),
+          decision: directorPreEval.decision,
+          reason: directorPreEval.reason,
+        },
         // Open-source fallback
         openSourceFallback: (() => {
           try {
@@ -234,7 +318,9 @@ export function runPipeline(scriptText: string, options: PipelineOptions = {}): 
             };
           } catch { return null; }
         })(),
-      });
+      };
+      planData._worldState = worldState; // internal ref for next plan's continuity
+      plans.push(planData);
     }
 
     costByScene.push(Math.round(sceneCost * 100) / 100);
@@ -276,6 +362,10 @@ export function runPipeline(scriptText: string, options: PipelineOptions = {}): 
     { engine: 'Model Syntax', iconName: 'SlidersHorizontal', status: 'done' as const, insight: `Prompts adaptés à la syntaxe de chaque modèle`, detail: `Préfixes, suffixes, tokens négatifs spécialisés par API` },
     { engine: 'Negative Prompt', iconName: 'Eye', status: 'done' as const, insight: `${plans.length} prompts négatifs générés`, detail: `Anti-artefacts, anti-doigts, stabilisation par plan` },
     { engine: 'Continuity Tracker', iconName: 'Layers', status: continuity.score >= 80 ? 'done' as const : 'warn' as const, insight: `Score de continuité: ${continuity.score}/100`, detail: continuity.alerts?.length > 0 ? `${continuity.alerts.length} alerte(s) de raccord` : 'Continuité validée entre tous les plans' },
+    { engine: 'Camera Physics', iconName: 'Aperture', status: 'done' as const, insight: `${plans.length} specs caméra générées`, detail: `Optique, capteur, ISO, shutter, rig — niveau directeur photo` },
+    { engine: 'Motion Director', iconName: 'Move', status: 'done' as const, insight: `${plans.filter((p: any) => p.motionPlan).length} plans de mouvement`, detail: `Trajectoires sujets + caméra, easing, binding personnages` },
+    { engine: 'World Model', iconName: 'Globe', status: 'done' as const, insight: `${plans.reduce((s: number, p: any) => s + (p.worldModel?.entities || 0), 0)} entités modélisées`, detail: `Scene graph: personnages, accessoires, lumière, environnement` },
+    { engine: 'Director AI', iconName: 'Clapperboard', status: 'done' as const, insight: `Pré-évaluation: ${plans.filter((p: any) => p.directorPreScore?.decision === 'KEEP').length}/${plans.length} KEEP`, detail: `Boucle qualité KEEP/REPAIR/REGENERATE prête pour post-génération` },
   ];
 
   // ═══ Résultat final ═══

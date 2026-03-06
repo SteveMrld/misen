@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://misen-ten.vercel.app'),
   title: 'MISEN — Studio IA de Production Cinématographique',
   description:
-    'Transformez votre scénario en plan de production complet. 13 moteurs d\'analyse, 7 modèles IA, génération vidéo automatisée. De l\'écriture à l\'écran.',
+    'Transformez votre scénario en plan de production complet. 17 moteurs d\'analyse, 7 modèles IA, génération vidéo automatisée. De l\'écriture à l\'écran.',
   keywords: ['MISEN', 'IA', 'cinéma', 'production', 'vidéo', 'scénario', 'storyboard', 'Kling', 'Runway', 'Sora', 'mise en scène', 'intelligence artificielle'],
   authors: [{ name: 'Steve Moradel' }],
   icons: {
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'MISEN — Studio IA de Production Cinématographique',
-    description: '13 moteurs d\'analyse × 7 modèles IA. De l\'écriture à l\'écran.',
+    description: '17 moteurs d\'analyse × 7 modèles IA. De l\'écriture à l\'écran.',
     url: 'https://misen-ten.vercel.app',
     siteName: 'MISEN',
     locale: 'fr_FR',
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'MISEN — Studio IA de Production',
-    description: '13 moteurs d\'analyse × 7 modèles IA. De l\'écriture à l\'écran.',
+    description: '17 moteurs d\'analyse × 7 modèles IA. De l\'écriture à l\'écran.',
   },
   robots: { index: true, follow: true },
 }

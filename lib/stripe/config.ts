@@ -26,9 +26,9 @@ export const PLANS = {
     priceId: process.env.STRIPE_PRO_PRICE_ID || '',
     generations: 100,
     projects: 20,
-    engines: 13,
+    engines: 17,
     assistantQuota: 30,  // 30 requêtes/mois ou clé perso illimité
-    features: ['13 moteurs d\'analyse', '100 générations/mois', '20 projets', 'Assistant IA (30 requêtes)', 'Export JSON + MP4', 'Support prioritaire'],
+    features: ['17 moteurs d\'analyse', '100 générations/mois', '20 projets', 'Assistant IA (30 requêtes)', 'Export JSON + MP4', 'Support prioritaire'],
   },
   studio: {
     id: 'studio',
@@ -37,9 +37,9 @@ export const PLANS = {
     priceId: process.env.STRIPE_STUDIO_PRICE_ID || '',
     generations: -1,
     projects: -1,
-    engines: 13,
+    engines: 17,
     assistantQuota: -1,  // illimité (clé perso recommandée)
-    features: ['13 moteurs d\'analyse', 'Générations illimitées', 'Projets illimités', 'Assistant IA illimité', 'Export tous formats', 'API access', 'Support dédié'],
+    features: ['17 moteurs d\'analyse', 'Générations illimitées', 'Projets illimités', 'Assistant IA illimité', 'Export tous formats', 'API access', 'Support dédié'],
   },
 } as const;
 

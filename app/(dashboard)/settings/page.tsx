@@ -25,15 +25,15 @@ const AI_PROVIDERS = [
 const PLANS = [
   {
     id: 'free', name: 'Free', price: 0, icon: Zap,
-    features: ['13 moteurs d\'analyse', 'Prompts optimisés par plan', '3 projets max', 'Assistant IA (3 req/mois)', 'Export JSON'],
+    features: ['17 moteurs d\'analyse', 'Prompts optimisés par plan', '3 projets max', 'Assistant IA (3 req/mois)', 'Export JSON'],
   },
   {
     id: 'pro', name: 'Pro', price: 29, icon: Crown, popular: true,
-    features: ['13 moteurs d\'analyse', 'Mode Expert complet', '20 projets', 'Assistant IA (30 req/mois)', 'Génération intégrée (vos clés)', 'Support prioritaire'],
+    features: ['17 moteurs d\'analyse', 'Mode Expert complet', '20 projets', 'Assistant IA (30 req/mois)', 'Génération intégrée (vos clés)', 'Support prioritaire'],
   },
   {
     id: 'studio', name: 'Studio', price: 79, icon: Sparkles,
-    features: ['13 moteurs d\'analyse', 'Projets illimités', 'Assistant IA illimité', 'Génération intégrée (vos clés)', 'API access', 'Support dédié'],
+    features: ['17 moteurs d\'analyse', 'Projets illimités', 'Assistant IA illimité', 'Génération intégrée (vos clés)', 'API access', 'Support dédié'],
   },
 ]
 

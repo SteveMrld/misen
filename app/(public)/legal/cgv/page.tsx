@@ -20,8 +20,8 @@ export default function CGVPage() {
       <section>
         <h2 className="text-lg font-semibold text-white mb-3">{isFr ? 'Article 2 — Offres et tarifs' : 'Article 2 — Plans & Pricing'}</h2>
         <p>{isFr
-          ? "Free : 0€ (3 projets, 13 moteurs, mode Simple). Pro : 29€/mois ou 23€/mois en annuel (20 projets, mode Expert, génération intégrée). Studio : 79€/mois ou 63€/mois en annuel (illimité, API, support dédié). Tarifs TTC."
-          : "Free: €0 (3 projects, 13 engines, Simple mode). Pro: €29/mo or €23/mo annual (20 projects, Expert mode, integrated generation). Studio: €79/mo or €63/mo annual (unlimited, API, dedicated support). Prices include taxes."}</p>
+          ? "Free : 0€ (3 projets, 17 moteurs, mode Simple). Pro : 29€/mois ou 23€/mois en annuel (20 projets, mode Expert, génération intégrée). Studio : 79€/mois ou 63€/mois en annuel (illimité, API, support dédié). Tarifs TTC."
+          : "Free: €0 (3 projects, 17 engines, Simple mode). Pro: €29/mo or €23/mo annual (20 projects, Expert mode, integrated generation). Studio: €79/mo or €63/mo annual (unlimited, API, dedicated support). Prices include taxes."}</p>
       </section>
       <section>
         <h2 className="text-lg font-semibold text-white mb-3">{isFr ? 'Article 3 — Paiement' : 'Article 3 — Payment'}</h2>

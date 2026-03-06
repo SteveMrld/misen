@@ -19,7 +19,7 @@ export async function POST(
     const body = await request.json().catch(() => ({}));
     const stylePreset = body.style_preset || 'cinematique';
 
-    // Lance le pipeline des 13 moteurs
+    // Lance le pipeline des 17 moteurs
     const result = runPipeline(project.script_text, { stylePreset });
 
     // Sauvegarde l'analyse (auto-versionning)

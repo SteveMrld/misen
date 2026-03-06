@@ -212,7 +212,7 @@ export default function DashboardPage() {
             <h2 className="text-2xl sm:text-3xl font-display font-bold text-white leading-tight mb-3" style={{ letterSpacing: '-0.03em' }}>
               {locale === 'fr' ? 'Votre prochaine création\ncommence ici.' : 'Your next creation\nstarts here.'}
             </h2>
-            <p className="text-sm text-slate-400 max-w-md mb-5">{locale === 'fr' ? 'Choisissez un template cinématographique ou écrivez votre propre scénario. 13 moteurs IA transforment vos mots en film.' : 'Pick a cinematic template or write your own screenplay. 13 AI engines turn your words into film.'}</p>
+            <p className="text-sm text-slate-400 max-w-md mb-5">{locale === 'fr' ? 'Choisissez un template cinématographique ou écrivez votre propre scénario. 17 moteurs IA transforment vos mots en film.' : 'Pick a cinematic template or write your own screenplay. 13 AI engines turn your words into film.'}</p>
             <button onClick={() => setShowNewModal(true)} className="btn-primary px-5 py-2.5 text-sm font-semibold flex items-center gap-2 w-fit">
               <Plus size={16} /> {locale === 'fr' ? 'Créer un projet' : 'Create a project'}
             </button>

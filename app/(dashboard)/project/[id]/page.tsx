@@ -7,7 +7,7 @@ import {
   Film, Eye, DollarSign, Shield, Users, TrendingUp, Camera, Zap, Copy, Check,
   Subtitles, Mic, Clock, Download, Volume2, Pause, SkipForward, SkipBack,
   Sparkles, Image, Search, RefreshCw, Wand2, SlidersHorizontal, Keyboard, ExternalLink, Music2
-, Layers, Package, Headphones, Upload, GitBranch, Cpu } from 'lucide-react'
+, Layers, Package, Headphones, Upload, GitBranch, Cpu, Aperture, Move, Globe, Clapperboard } from 'lucide-react'
 import { StoryboardSVG } from '@/components/ui/storyboard-svg'
 import { ModelBadge, getModelColor, ModelLegend } from '@/components/ui/model-badge'
 import { ScreenplayAssistant } from '@/components/ui/screenplay-assistant'
@@ -244,7 +244,7 @@ export default function ProjectPage() {
                 <Brain size={28} className="text-orange-400 animate-pulse" />
               </div>
               <h2 className="font-display text-xl text-white mb-1">{locale === 'fr' ? 'Analyse en cours...' : 'Analysis in progress...'}</h2>
-              <p className="text-xs text-slate-500">{locale === 'fr' ? '13 moteurs IA analysent votre scénario' : '13 AI engines analyzing your script'}</p>
+              <p className="text-xs text-slate-500">{locale === 'fr' ? '17 moteurs IA analysent votre scénario' : '17 AI engines analyzing your script'}</p>
             </div>
             {/* Global progress bar */}
             <div className="w-full h-1.5 bg-dark-700 rounded-full overflow-hidden mb-5">
@@ -520,11 +520,11 @@ export default function ProjectPage() {
 
               {/* Engine Intelligence Report */}
               {analysis.engineInsights && (() => {
-                const ICON_MAP: Record<string, any> = { Film, Brain, TrendingUp, Users, Wand2, Shield, Camera, Search, GitBranch, Cpu, SlidersHorizontal, Eye, Layers }
+                const ICON_MAP: Record<string, any> = { Film, Brain, TrendingUp, Users, Wand2, Shield, Camera, Search, GitBranch, Cpu, SlidersHorizontal, Eye, Layers, Aperture, Move, Globe, Clapperboard }
                 return (
                 <div className="bg-dark-900 rounded-2xl border border-dark-700 overflow-hidden">
                   <div className="px-4 py-3 border-b border-dark-700 flex items-center justify-between">
-                    <div className="flex items-center gap-2"><Cpu size={16} className="text-violet-400" /><span className="text-sm font-medium text-slate-200">{locale === 'fr' ? '13 moteurs — Rapport d\'intelligence' : '13 engines — Intelligence Report'}</span></div>
+                    <div className="flex items-center gap-2"><Cpu size={16} className="text-violet-400" /><span className="text-sm font-medium text-slate-200">{locale === 'fr' ? '17 moteurs — Rapport d\'intelligence' : '17 engines — Intelligence Report'}</span></div>
                     <span className="text-[10px] text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full font-semibold">{(analysis.engineInsights as any[]).filter((e: any) => e.status === 'done').length}/13 {locale === 'fr' ? 'actifs' : 'active'}</span>
                   </div>
                   <div className="divide-y divide-dark-700/30">
