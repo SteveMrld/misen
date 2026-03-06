@@ -578,11 +578,13 @@ export default function ProjectPage() {
                 <div className="px-4 py-2.5 border-b border-dark-700/50 bg-dark-800/30">
                   <div className="flex items-center gap-4 flex-wrap text-[10px]">
                     <span className="text-slate-500 font-medium">{locale === 'fr' ? 'Pour chaque plan :' : 'For each shot:'}</span>
-                    <span className="flex items-center gap-1 text-orange-400"><Copy size={9} /> {locale === 'fr' ? 'Copier & ouvrir la plateforme IA' : 'Copy & open AI platform'}</span>
+                    <span className="flex items-center gap-1 text-emerald-400"><Play size={9} /> {locale === 'fr' ? 'Gratuit (open-source)' : 'Free (open-source)'}</span>
                     <span className="text-slate-700">|</span>
-                    <span className="flex items-center gap-1 text-violet-400"><Sparkles size={9} /> {locale === 'fr' ? 'Crédits MISEN (Pro/Studio)' : 'MISEN credits (Pro/Studio)'}</span>
+                    <span className="flex items-center gap-1 text-orange-400"><Copy size={9} /> {locale === 'fr' ? 'Copier & ouvrir' : 'Copy & open'}</span>
                     <span className="text-slate-700">|</span>
-                    <span className="flex items-center gap-1 text-green-400"><Zap size={9} /> {locale === 'fr' ? 'Clé API personnelle' : 'Own API key'}</span>
+                    <span className="flex items-center gap-1 text-violet-400"><Sparkles size={9} /> {locale === 'fr' ? 'Crédits MISEN' : 'MISEN credits'}</span>
+                    <span className="text-slate-700">|</span>
+                    <span className="flex items-center gap-1 text-green-400"><Zap size={9} /> {locale === 'fr' ? 'Clé API' : 'API key'}</span>
                   </div>
                 </div>
                 <div className="divide-y divide-dark-700/50">
@@ -1021,6 +1023,38 @@ function SPC({ plan, index, analysisId, userKeys, projectId, creditBalance, onCr
   }
 
   const hasCredits = (creditBalance || 0) > 0
+  const osFallback = plan?.openSourceFallback
+
+  // Generate using open-source model (free)
+  const generateOpenSource = async () => {
+    if (!osFallback) return
+    setStatus('processing'); setProgress(0); setError(null)
+    try {
+      const r = await fetch('/api/generate-opensource', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          modelId: osFallback.modelId, prompt,
+          negativePrompt: plan?.negativePrompt,
+          projectId, shotId: `plan-${index}`,
+        }),
+      })
+      const data = await r.json()
+      if (!r.ok) { setStatus('failed'); setError(typeof data.error === 'string' ? data.error : 'Erreur'); return }
+      setStatus('polling')
+      let tick = 0
+      pollRef.current = setInterval(async () => {
+        tick++; setProgress(prev => Math.min(prev + 1, 90))
+        try {
+          const sr = await fetch(`/api/generate/status?jobId=${data.jobId}`)
+          if (!sr.ok) return
+          const sd = await sr.json()
+          if (sd.status === 'completed') { clearInterval(pollRef.current!); setProgress(100); setVideoUrl(sd.resultUrl || sd.thumbnailUrl); setStatus('completed') }
+          else if (sd.status === 'failed') { clearInterval(pollRef.current!); setStatus('failed'); setError(sd.errorMessage || 'Échec') }
+        } catch {}
+        if (tick > 180) { clearInterval(pollRef.current!); setStatus('failed'); setError('Timeout') }
+      }, 2000)
+    } catch (e: any) { setStatus('failed'); setError(e.message) }
+  }
 
   useEffect(() => { return () => { if (pollRef.current) clearInterval(pollRef.current) } }, [])
   const isGenerating = status === 'processing' || status === 'polling'
@@ -1116,6 +1150,13 @@ function SPC({ plan, index, analysisId, userKeys, projectId, creditBalance, onCr
                   {copied ? <><Check size={10} /> {t.demo.copied}</> : <><Copy size={10} /> {locale === 'fr' ? `Copier & ouvrir ${studio.name}` : `Copy & open ${studio.name}`}</>}
                 </button>
               )}
+              {/* Option 4: Open-source free generation */}
+              {osFallback && !canGenerate && status === 'idle' && (
+                <button onClick={generateOpenSource}
+                  className="px-2.5 py-1 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 text-[10px] font-medium rounded flex items-center gap-1 border border-emerald-500/15 transition-colors">
+                  <Play size={9} /> {locale === 'fr' ? 'Gratuit' : 'Free'}
+                </button>
+              )}
               {/* Simple copy for users with keys (they generate in-app) */}
               {canGenerate && (
                 <button onClick={copy} className="px-2 py-1 bg-dark-700 hover:bg-dark-600 text-slate-400 text-[10px] rounded flex items-center gap-1 transition-colors">
@@ -1137,6 +1178,17 @@ function SPC({ plan, index, analysisId, userKeys, projectId, creditBalance, onCr
             </button>
           </div>
           <p className="text-[11px] text-slate-400 leading-relaxed font-mono line-clamp-2">{prompt || '—'}</p>
+          {/* Open-source fallback comparison */}
+          {osFallback && !canGenerate && (
+            <div className="mt-1.5 flex items-center gap-2 text-[9px]">
+              <span className="text-slate-600">{locale === 'fr' ? 'Alt. gratuite :' : 'Free alt:'}</span>
+              <span className="text-emerald-400/80 font-medium">{osFallback.modelName}</span>
+              <span className="text-slate-600">({osFallback.score}/100)</span>
+              <span className="text-slate-700">vs</span>
+              <span className="text-orange-400/80 font-medium">{plan?.modelId}</span>
+              <span className="text-slate-600">({locale === 'fr' ? 'optimal' : 'optimal'})</span>
+            </div>
+          )}
           {isGenerating && (
             <div className="mt-2 h-1 bg-dark-700 rounded-full overflow-hidden">
               <div className="h-full bg-gradient-to-r from-orange-600 to-yellow-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
@@ -1922,6 +1974,8 @@ function PC({ plan, index, analysisId, userKeys, characters, creditBalance, onCr
   const gen = async () => { if(!analysisId||!canGenerate)return;setStatus('processing'); try{const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({analysisId,planIndex:index,sceneIndex:plan?.sceneIndex||0,modelId:plan?.modelId,prompt:editedPrompt||prompt,negativePrompt:plan?.negativePrompt})});setStatus(r.ok?'completed':'failed')}catch{setStatus('failed')} }
   const hasCredits = (creditBalance || 0) > 0
   const genWithCredits = async () => { setStatus('processing'); try{const r=await fetch('/api/generate-credits',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider:studio.provider,prompt:editedPrompt||prompt,negativePrompt:plan?.negativePrompt,duration:plan?.estimatedDuration||5,aspectRatio:'16:9',projectId:analysisId,shotId:`plan-${index}`})});const d=await r.json();if(!r.ok){setStatus('failed');return};onCreditsUsed?.(d.creditsUsed||1);setStatus('completed')}catch{setStatus('failed')} }
+  const osFallbackPC = plan?.openSourceFallback
+  const genOpenSourcePC = async () => { if(!osFallbackPC)return;setStatus('processing'); try{const r=await fetch('/api/generate-opensource',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({modelId:osFallbackPC.modelId,prompt:editedPrompt||prompt,negativePrompt:plan?.negativePrompt,projectId:analysisId,shotId:`plan-${index}`})});const d=await r.json();if(!r.ok){setStatus('failed');return};setStatus('completed')}catch{setStatus('failed')} }
   return (<div className="card overflow-hidden hover:border-dark-600 transition-all">
     {/* Compact row — always visible */}
     <button onClick={() => setExpanded(!expanded)} className="w-full flex items-center gap-3 p-2.5 text-left hover:bg-white/[0.02] transition-colors">
@@ -2078,9 +2132,14 @@ function PC({ plan, index, analysisId, userKeys, characters, creditBalance, onCr
           {!canGenerate && status==='completed' && <span className="flex items-center gap-1.5 text-green-400 text-[10px]"><Check size={12} />{locale === 'fr' ? 'Terminé' : 'Done'}</span>}
           {!canGenerate && status==='failed' && <button onClick={() => hasCredits ? genWithCredits() : window.open('/settings?tab=usage', '_self')} className="px-3 py-1.5 bg-red-500/10 text-red-400 text-[10px] rounded-lg flex items-center gap-1.5 border border-red-500/20"><AlertTriangle size={10} /> Retry</button>}
           {/* Option 1: Copy + Open platform */}
-          {!canGenerate && <button onClick={()=>{navigator.clipboard.writeText(editedPrompt||prompt);setCopied(true);setTimeout(()=>setCopied(false),2000);window.open(studio.url,'_blank')}}
+          {!canGenerate && status==='idle' && <button onClick={()=>{navigator.clipboard.writeText(editedPrompt||prompt);setCopied(true);setTimeout(()=>setCopied(false),2000);window.open(studio.url,'_blank')}}
             className="px-3 py-1.5 bg-orange-600/10 hover:bg-orange-600/20 text-orange-400 text-[10px] rounded-lg flex items-center gap-1.5 border border-orange-500/20">
             {copied?<><Check size={10} />{t.demo.copied}</>:<><Copy size={10} />{locale === 'fr' ? `Copier & ouvrir ${studio.name}` : `Copy & open ${studio.name}`}</>}
+          </button>}
+          {/* Option 4: Open-source free */}
+          {osFallbackPC && !canGenerate && status==='idle' && <button onClick={genOpenSourcePC}
+            className="px-3 py-1.5 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 text-[10px] font-medium rounded-lg flex items-center gap-1.5 border border-emerald-500/15 transition-colors">
+            <Play size={10} /> {locale === 'fr' ? `Gratuit · ${osFallbackPC.modelName}` : `Free · ${osFallbackPC.modelName}`}
           </button>}
           {/* Simple copy for key holders */}
           {canGenerate && <button onClick={()=>{navigator.clipboard.writeText(editedPrompt||prompt);setCopied(true);setTimeout(()=>setCopied(false),2000)}}

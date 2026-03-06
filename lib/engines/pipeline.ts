@@ -18,6 +18,7 @@ import { intentEngine } from './intent';
 import { cinematicGrammar } from './grammar';
 import { tensionCurve } from './tension';
 import { contextualPrompt } from './contextual-prompt';
+import { getOpenSourceFallback } from '../models/opensource-models';
 import { recEngineV2 } from './rec-engine';
 import { memoryEngineV2 } from './memory-engine';
 import { complianceCheck } from './compliance';
@@ -216,6 +217,23 @@ export function runPipeline(scriptText: string, options: PipelineOptions = {}): 
         tips: rec.tips,
         reasoning: rec.reasoning,
         alternatives: rec.alternatives,
+        // Open-source fallback
+        openSourceFallback: (() => {
+          try {
+            const fb = getOpenSourceFallback(rec.recommended);
+            return {
+              modelId: fb.model.id,
+              modelName: `${fb.model.name} ${fb.model.version}`,
+              provider: fb.model.provider,
+              modelPath: fb.model.modelPath,
+              qualityDelta: fb.qualityDelta,
+              score: Math.round((fb.model.resolution + fb.model.motion + fb.model.physics + fb.model.lighting + fb.model.vfx + fb.model.consistency + fb.model.styleRange) / 7 * 10),
+              reasoning: fb.reasoning,
+              strengths: fb.model.strengths,
+              limitations: fb.model.limitations,
+            };
+          } catch { return null; }
+        })(),
       });
     }
 

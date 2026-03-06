@@ -55,6 +55,13 @@ export interface Plan {
   prompt: string; finalPrompt: string; basePrompt: string;
   negativePrompt: string; tips: string[];
   reasoning?: string[]; alternatives?: AIModelId[];
+  openSourceFallback?: {
+    modelId: string; modelName: string; provider: string; modelPath: string;
+    qualityDelta: number; score: number;
+    reasoning: { fr: string; en: string };
+    strengths: { fr: string; en: string };
+    limitations: { fr: string; en: string };
+  } | null;
 }
 
 export interface SymbolDetection { symbol: string; meaning: string; occurrences: number; }
