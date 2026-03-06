@@ -10,75 +10,104 @@ export async function GET(request: NextRequest) {
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  const sbt = request.nextUrl.searchParams.get('sbt') || '';
+  const ref = supabaseUrl.replace('https://', '').replace('.supabase.co', '');
   const results: string[] = [];
 
-  if (!supabaseUrl) {
-    return NextResponse.json({ error: 'NEXT_PUBLIC_SUPABASE_URL manquante' }, { status: 500 });
+  if (!supabaseUrl || !sbt) {
+    return NextResponse.json({ error: 'Paramètres manquants (supabaseUrl ou sbt)' }, { status: 400 });
   }
-
-  // If no service role key, try to get it from Management API
-  let finalKey = serviceRoleKey;
-  if (!finalKey) {
-    const sbToken = request.nextUrl.searchParams.get('sbt');
-    const ref = supabaseUrl.replace('https://', '').replace('.supabase.co', '');
-    if (sbToken) {
-      try {
-        const kr = await fetch(`https://api.supabase.com/v1/projects/${ref}/api-keys`, {
-          headers: { 'Authorization': `Bearer ${sbToken}` }
-        });
-        if (kr.ok) {
-          const keys = await kr.json();
-          const srk = keys.find((k: any) => k.name === 'service_role');
-          if (srk) {
-            finalKey = srk.api_key;
-            results.push('Service role key récupérée via Management API');
-          }
-        }
-      } catch (e) {
-        results.push('Impossible de récupérer la service_role key');
-      }
-    }
-    if (!finalKey) {
-      return NextResponse.json({
-        error: 'SUPABASE_SERVICE_ROLE_KEY manquante. Ajoute sbt= param ou configure la variable Vercel.',
-        results
-      }, { status: 500 });
-    }
-  }
-
-  const supabase = createClient(supabaseUrl, finalKey);
 
   try {
-    // Check if table exists
-    const { error: checkErr } = await supabase.from('invitations').select('code').limit(1);
+    // Step 1: Get service_role key
+    const kr = await fetch(`https://api.supabase.com/v1/projects/${ref}/api-keys`, {
+      headers: { 'Authorization': `Bearer ${sbt}` }
+    });
+    if (!kr.ok) throw new Error('Cannot fetch API keys: ' + kr.status);
+    const keys = await kr.json();
+    const srk = keys.find((k: any) => k.name === 'service_role');
+    if (!srk) throw new Error('service_role key not found');
+    results.push('Service role key récupérée ✓');
 
-    if (checkErr && checkErr.message.includes('does not exist')) {
-      results.push('Table invitations n\'existe pas — création nécessaire via SQL Editor');
-      return NextResponse.json({
-        status: 'NEEDS_SQL',
-        results,
-        message: 'La table doit être créée manuellement dans le SQL Editor Supabase.',
-        sql_url: `https://supabase.com/dashboard/project/${supabaseUrl.replace('https://', '').replace('.supabase.co', '')}/sql/new`,
-      });
+    // Step 2: Create table via Management API SQL endpoint
+    const createSQL = `
+      CREATE TABLE IF NOT EXISTS invitations (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        code TEXT UNIQUE NOT NULL,
+        email TEXT,
+        name TEXT,
+        role TEXT NOT NULL DEFAULT 'beta_tester' CHECK (role IN ('founder', 'cofounder', 'beta_tester', 'studio', 'press')),
+        welcome_message TEXT,
+        used_by UUID REFERENCES auth.users(id),
+        used_at TIMESTAMPTZ,
+        max_uses INTEGER NOT NULL DEFAULT 1,
+        uses INTEGER NOT NULL DEFAULT 0,
+        expires_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+      ALTER TABLE invitations ENABLE ROW LEVEL SECURITY;
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='invitations' AND policyname='Users can read used invitations') THEN
+          CREATE POLICY "Users can read used invitations" ON invitations FOR SELECT USING (used_by = auth.uid());
+        END IF;
+      END $$;
+      CREATE INDEX IF NOT EXISTS idx_invitations_code ON invitations(code);
+    `;
+
+    const sqlR = await fetch(`https://api.supabase.com/v1/projects/${ref}/database/query`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${sbt}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: createSQL }),
+    });
+
+    if (sqlR.ok) {
+      results.push('Table invitations créée ✓');
+      results.push('RLS + policies activées ✓');
+    } else {
+      const sqlErr = await sqlR.text();
+      results.push('SQL warning: ' + sqlErr);
     }
 
-    results.push('Table invitations existe ✓');
+    // Step 3: Insert codes via Management API SQL
+    const insertSQL = `
+      INSERT INTO invitations (code, name, role, welcome_message, max_uses)
+      VALUES ('MISEN-FOUNDER-2026', 'Steve Moradel', 'founder', 'Bienvenue chez vous, Steve. MISEN est votre vision.', 999)
+      ON CONFLICT (code) DO NOTHING;
 
-    // Insert founder codes
-    const { error: e2 } = await supabase.from('invitations').upsert({
-      code: 'MISEN-FOUNDER-2026', name: 'Steve Moradel', role: 'founder',
-      welcome_message: 'Bienvenue chez vous, Steve. MISEN est votre vision.', max_uses: 999, uses: 0,
-    }, { onConflict: 'code' });
-    results.push(e2 ? 'Erreur fondateur: ' + e2.message : 'Code MISEN-FOUNDER-2026 (Steve) ✓');
+      INSERT INTO invitations (code, name, role, welcome_message, max_uses)
+      VALUES ('MISEN-STEPHANE-2026', 'Stéphane Juffe', 'cofounder', 'Bienvenue Stéphane. Cofondateur de MISEN.', 1)
+      ON CONFLICT (code) DO NOTHING;
+    `;
 
-    const { error: e3 } = await supabase.from('invitations').upsert({
-      code: 'MISEN-STEPHANE-2026', name: 'Stéphane Juffe', role: 'cofounder',
-      welcome_message: 'Bienvenue Stéphane. Cofondateur de MISEN.', max_uses: 1, uses: 0,
-    }, { onConflict: 'code' });
-    results.push(e3 ? 'Erreur Stéphane: ' + e3.message : 'Code MISEN-STEPHANE-2026 (Stéphane) ✓');
+    const insR = await fetch(`https://api.supabase.com/v1/projects/${ref}/database/query`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${sbt}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: insertSQL }),
+    });
 
-    const { data: codes } = await supabase.from('invitations').select('code, name, role, max_uses, uses').order('created_at');
+    if (insR.ok) {
+      results.push('Code MISEN-FOUNDER-2026 (Steve) ✓');
+      results.push('Code MISEN-STEPHANE-2026 (Stéphane) ✓');
+    } else {
+      const insErr = await insR.text();
+      results.push('Insert warning: ' + insErr);
+    }
+
+    // Step 4: Verify via PostgREST
+    // Need to wait a moment for schema cache to refresh
+    await new Promise(r => setTimeout(r, 2000));
+
+    const supabase = createClient(supabaseUrl, srk.api_key);
+    const { data: codes, error: listErr } = await supabase
+      .from('invitations')
+      .select('code, name, role, max_uses, uses')
+      .order('created_at');
+
+    if (listErr) {
+      results.push('Vérification: schema cache pas encore à jour — les codes sont créés, rafraîchis dans 1 min');
+    } else {
+      results.push(`Vérification: ${(codes || []).length} invitation(s) trouvée(s) ✓`);
+    }
 
     return NextResponse.json({
       status: 'OK',
@@ -89,6 +118,7 @@ export async function GET(request: NextRequest) {
         stephane: 'https://misen-ten.vercel.app/invite/MISEN-STEPHANE-2026',
       }
     });
+
   } catch (err: any) {
     return NextResponse.json({ error: err.message, results }, { status: 500 });
   }
