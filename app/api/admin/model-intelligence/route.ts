@@ -161,3 +161,4 @@ Respond ONLY in JSON (no markdown):
   const parsed = parseJSON(text);
   return { trends: parsed.trends || [], newModels: parsed.newModels || [] };
 }
+// Model Intelligence Engine v1
