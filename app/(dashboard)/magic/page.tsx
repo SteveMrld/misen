@@ -341,7 +341,7 @@ export default function MagicModePage() {
             { value: stats.scenes, label: fr ? 'Scènes' : 'Scenes', color: 'text-orange-400' },
             { value: stats.plans, label: 'Plans', color: 'text-blue-400' },
             { value: `${Math.round(stats.duration)}s`, label: fr ? 'Durée' : 'Duration', color: 'text-green-400' },
-            { value: `${Math.max(stats.plans, 1)} cr.`, label: fr ? 'Crédits estimés' : 'Est. credits', color: 'text-violet-400' },
+            { value: `${Math.max(stats.plans, 1)} cr.`, label: fr ? `Crédits · ~${(Math.max(stats.plans, 1) * 0.17).toFixed(2)}€` : `Credits · ~€${(Math.max(stats.plans, 1) * 0.17).toFixed(2)}`, color: 'text-violet-400' },
           ].map(kpi => (
             <div key={kpi.label} className="bg-dark-900 border border-dark-700 rounded-xl px-4 py-3 text-center">
               <p className={`text-xl font-display font-bold ${kpi.color}`}>{kpi.value}</p>
