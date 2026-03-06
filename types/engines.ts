@@ -180,4 +180,7 @@ export interface AnalysisResult {
   aiVision?: any;
   aiModel?: string;
   aiTokenCost?: { input: number; output: number };
+  // V14.4 Performance + Dataset
+  performance?: any;
+  datasetRecommendation?: any;
 }

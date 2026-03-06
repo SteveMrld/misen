@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Film, Sparkles, ArrowRight, Loader2, Play, Camera, Brain, Clock, Eye, Music2, Users, Zap, AlertTriangle, Copy, Check, ChevronDown } from 'lucide-react'
+import { Film, Sparkles, ArrowRight, Loader2, Play, Camera, Brain, Clock, Eye, Music2, Users, Zap, AlertTriangle, Copy, Check, ChevronDown, TrendingUp } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
 import { useI18n } from '@/lib/i18n'
 
@@ -22,6 +22,8 @@ const PIPELINE_STEPS = [
   { icon: Eye, label: 'Injection cohérence', labelEn: 'Consistency injection' },
   { icon: AlertTriangle, label: 'Vérification conformité', labelEn: 'Compliance check' },
   { icon: Music2, label: 'Score de continuité', labelEn: 'Continuity scoring' },
+  { icon: TrendingUp, label: 'Prédiction de performance', labelEn: 'Performance prediction' },
+  { icon: Brain, label: 'Intelligence cinématographique', labelEn: 'Cinematic intelligence' },
   { icon: Film, label: 'Assemblage final', labelEn: 'Final assembly' },
 ]
 
@@ -452,6 +454,129 @@ export default function MagicModePage() {
                 ))}
               </div>
               <p className="text-[10px] text-slate-500 mt-3 text-center">{tension.globalArc || ''}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Performance Engine */}
+        {analysis?.performance && (
+          <div className="mb-10">
+            <h2 className="text-base font-bold text-white mb-4 flex items-center gap-2">
+              <TrendingUp size={16} className="text-green-400" />
+              {fr ? 'Score de performance' : 'Performance score'}
+            </h2>
+            <div className="bg-dark-900 border border-dark-700 rounded-xl p-5">
+              {/* Global score */}
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{
+                  background: analysis.performance.global >= 70 ? 'rgba(16,185,129,0.1)' : analysis.performance.global >= 50 ? 'rgba(234,179,8,0.1)' : 'rgba(239,68,68,0.1)',
+                  border: `1px solid ${analysis.performance.global >= 70 ? 'rgba(16,185,129,0.2)' : analysis.performance.global >= 50 ? 'rgba(234,179,8,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                }}>
+                  <span className="text-2xl font-display font-bold" style={{
+                    color: analysis.performance.global >= 70 ? '#10B981' : analysis.performance.global >= 50 ? '#EAB308' : '#EF4444'
+                  }}>{analysis.performance.grade}</span>
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-white">{analysis.performance.global}/100</p>
+                  <p className="text-xs text-slate-500">{analysis.performance.benchmarkComparison}</p>
+                </div>
+              </div>
+
+              {/* Dimension bars */}
+              <div className="space-y-2.5">
+                {Object.values(analysis.performance.dimensions as Record<string, any>).map((dim: any) => (
+                  <div key={dim.label}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] text-slate-400">{dim.label}</span>
+                      <span className="text-[10px] font-mono text-slate-500">{dim.score}</span>
+                    </div>
+                    <div className="h-1.5 bg-dark-800 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all" style={{
+                        width: `${dim.score}%`,
+                        background: dim.score >= 70 ? '#10B981' : dim.score >= 50 ? '#EAB308' : '#EF4444',
+                      }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Alerts */}
+              {analysis.performance.alerts?.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {analysis.performance.alerts.map((alert: any, i: number) => (
+                    <div key={i} className="flex items-start gap-2 text-xs" style={{
+                      padding: '8px 10px', borderRadius: 8,
+                      background: alert.severity === 'critical' ? 'rgba(239,68,68,0.06)' : alert.severity === 'warning' ? 'rgba(234,179,8,0.06)' : 'rgba(59,130,246,0.06)',
+                      border: `1px solid ${alert.severity === 'critical' ? 'rgba(239,68,68,0.12)' : alert.severity === 'warning' ? 'rgba(234,179,8,0.12)' : 'rgba(59,130,246,0.12)'}`,
+                    }}>
+                      <AlertTriangle size={12} className="shrink-0 mt-0.5" style={{
+                        color: alert.severity === 'critical' ? '#EF4444' : alert.severity === 'warning' ? '#EAB308' : '#3B82F6'
+                      }} />
+                      <div>
+                        <p className="text-slate-300">{alert.message}</p>
+                        <p className="text-slate-500 mt-0.5">{alert.fix}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Suggestions */}
+              {analysis.performance.suggestions?.length > 0 && (
+                <div className="mt-3">
+                  {analysis.performance.suggestions.map((s: string, i: number) => (
+                    <p key={i} className="text-[10px] text-slate-500 flex items-start gap-1.5 mt-1">
+                      <Sparkles size={9} className="text-orange-400 shrink-0 mt-0.5" /> {s}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Dataset Intelligence */}
+        {analysis?.datasetRecommendation && (
+          <div className="mb-10">
+            <h2 className="text-base font-bold text-white mb-4 flex items-center gap-2">
+              <Brain size={16} className="text-violet-400" />
+              {fr ? 'Intelligence cinématographique' : 'Cinematic intelligence'}
+            </h2>
+            <div className="bg-dark-900 border border-dark-700 rounded-xl p-5">
+              <p className="text-xs text-slate-400 mb-4">{analysis.datasetRecommendation.benchmarkText}</p>
+
+              {/* Optimal structure */}
+              <p className="text-[10px] font-bold text-orange-400 mb-2 tracking-wider uppercase">
+                {fr ? 'Structure narrative optimale' : 'Optimal narrative structure'}
+              </p>
+              <div className="flex flex-wrap gap-1.5 mb-4">
+                {analysis.datasetRecommendation.optimalStructure?.map((block: any, i: number) => (
+                  <div key={i} className="px-2.5 py-1.5 rounded-lg text-[9px]" style={{
+                    background: block.type === 'climax' ? 'rgba(197,106,45,0.15)' : block.type === 'product' ? 'rgba(108,77,255,0.1)' : 'rgba(255,255,255,0.04)',
+                    border: block.type === 'climax' ? '1px solid rgba(197,106,45,0.25)' : '1px solid rgba(255,255,255,0.06)',
+                    color: block.type === 'climax' ? '#C56A2D' : block.type === 'product' ? '#6C4DFF' : 'rgba(255,255,255,0.5)',
+                  }}>
+                    <span className="font-bold">{Math.round(block.position * 100)}%</span> — {block.type} · {block.duration}s
+                  </div>
+                ))}
+              </div>
+
+              {/* Style genomes */}
+              {analysis.datasetRecommendation.styleGenomes?.length > 0 && (
+                <>
+                  <p className="text-[10px] font-bold text-violet-400 mb-2 tracking-wider uppercase">
+                    {fr ? 'Styles recommandés' : 'Recommended styles'}
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {analysis.datasetRecommendation.styleGenomes.slice(0, 4).map((style: any) => (
+                      <div key={style.id} className="px-3 py-2 bg-dark-800/50 rounded-lg border border-dark-700/50">
+                        <p className="text-xs font-bold text-white">{style.director}</p>
+                        <p className="text-[9px] text-slate-500 mt-0.5">{style.traits.signature}</p>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}

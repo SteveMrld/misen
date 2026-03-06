@@ -33,6 +33,8 @@ import { motionDirector } from './motion-director';
 import { buildWorldModel } from './world-model';
 import { directorEvaluate, type DirectorVerdict } from './director-ai';
 import { AI_MODELS } from '../models/ai-models';
+import { performanceEngine } from './performance';
+import { getDatasetRecommendation } from './cinematic-dataset';
 
 export interface PipelineOptions {
   stylePreset?: StylePreset;
@@ -368,6 +370,14 @@ export function runPipeline(scriptText: string, options: PipelineOptions = {}): 
     { engine: 'Director AI', iconName: 'Clapperboard', status: 'done' as const, insight: `Pré-évaluation: ${plans.filter((p: any) => p.directorPreScore?.decision === 'KEEP').length}/${plans.length} KEEP`, detail: `Boucle qualité KEEP/REPAIR/REGENERATE prête pour post-génération` },
   ];
 
+  // ═══ Performance Engine ═══
+  const performance = performanceEngine({ plans, scenes, tension, genre: options?.stylePreset === 'documentaire' ? 'documentaire' : 'pub_luxe' });
+
+  // ═══ Cinematic Dataset ═══
+  const genreMap: Record<string, string> = { cinematique: 'pub_luxe', documentaire: 'documentaire', noir: 'court_metrage', onirique: 'pub_luxe' };
+  const datasetGenre = genreMap[options?.stylePreset || 'cinematique'] || 'pub_luxe';
+  const datasetRecommendation = getDatasetRecommendation(datasetGenre);
+
   // ═══ Résultat final ═══
   const costTotal = Math.round(Object.values(costByModel).reduce((a, b) => a + b, 0) * 100) / 100;
 
@@ -379,6 +389,8 @@ export function runPipeline(scriptText: string, options: PipelineOptions = {}): 
     characterBible, styleBible,
     costTotal, costByModel, costByScene,
     engineInsights,
+    performance,
+    datasetRecommendation,
     stats: { uniqueModels, modelDistribution, dialogueScenes, totalDialogues, dominantEmotion, hasFlashbacks },
   };
 }
