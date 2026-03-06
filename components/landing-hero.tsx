@@ -413,7 +413,7 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 8, maxWidth: 700, margin: '0 auto' }}>
               {ENGINES_DATA.map(e => (
                 <span key={e.name} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px 4px 4px', borderRadius: 99, background: 'white', border: '1px solid rgba(0,0,0,0.04)', fontSize: 11, color: 'rgba(15,17,21,0.5)', fontWeight: 500 }}>
-                  {e.img ? <span style={{ width: 28, height: 28, borderRadius: 99, flexShrink: 0, background: '#0f1115', backgroundImage: `url(${e.img})`, backgroundRepeat: 'no-repeat', backgroundPosition: 'center center', backgroundSize: 'contain', backgroundOrigin: 'content-box', boxSizing: 'border-box', padding: 5 }} /> : <span style={{ width: 28, height: 28, borderRadius: 99, background: 'rgba(197,106,45,0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#C56A2D', fontWeight: 700, flexShrink: 0 }}>AI</span>}
+                  {e.img ? <span style={{ width: 28, height: 28, borderRadius: 99, flexShrink: 0, overflow: 'hidden', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#0f1115' }}><img src={e.img} alt="" width={32} height={32} style={{ objectFit: 'cover', display: 'block', transform: 'scale(1.4)' }} /></span> : <span style={{ width: 28, height: 28, borderRadius: 99, background: 'rgba(197,106,45,0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#C56A2D', fontWeight: 700, flexShrink: 0 }}>AI</span>}
                   {e.name}
                 </span>
               ))}
