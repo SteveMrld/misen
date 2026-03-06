@@ -21,7 +21,7 @@ export default function DemoPage() {
   const { t } = useI18n()
   const [scenarioIdx, setScenarioIdx] = useState(0)
   const [currentStep, setCurrentStep] = useState(0)
-  const [autoPlay, setAutoPlay] = useState(false)
+  const [autoPlay, setAutoPlay] = useState(true)
   const [typedText, setTypedText] = useState('')
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -30,7 +30,7 @@ export default function DemoPage() {
   const narration = NARRATIONS[scenario.id]?.[step.step] || ''
 
   const switchScenario = (idx: number) => {
-    setScenarioIdx(idx); setCurrentStep(0); setAutoPlay(false)
+    setScenarioIdx(idx); setCurrentStep(0); setAutoPlay(true)
   }
 
   useEffect(() => {
@@ -96,7 +96,7 @@ export default function DemoPage() {
           {DEMO_WALKTHROUGH.map((w, i) => {
             const StepIcon = TAB_ICONS[w.step] || Film
             return (
-              <button key={i} onClick={() => { setCurrentStep(i); setAutoPlay(false) }}
+              <button key={i} onClick={() => { setCurrentStep(i); setAutoPlay(true) }}
                 className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-md text-xs transition-all ${
                   i === currentStep ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/15' :
                   i < currentStep ? 'bg-orange-500/20 text-orange-400' : 'bg-dark-800 text-slate-600'
