@@ -120,7 +120,10 @@ export default function MagicModePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, script_text: script }),
       })
-      if (!projRes.ok) throw new Error('Erreur création projet')
+      if (!projRes.ok) {
+        const errData = await projRes.json().catch(() => ({}))
+        throw new Error(errData.error || `Erreur création projet (${projRes.status})`)
+      }
       const project = await projRes.json()
       setProjectId(project.id)
 
@@ -130,7 +133,10 @@ export default function MagicModePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ style_preset: 'cinematique' }),
       })
-      if (!analyzeRes.ok) throw new Error('Erreur analyse')
+      if (!analyzeRes.ok) {
+        const errData = await analyzeRes.json().catch(() => ({}))
+        throw new Error(errData.error || `Erreur analyse (${analyzeRes.status})`)
+      }
       const data = await analyzeRes.json()
 
       setAnalysis(data.result)
