@@ -272,7 +272,7 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
             ].map(s => (
               <div key={s.step} className="landing-card">
                 <span style={{ fontSize: 11, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, color: 'rgba(197,106,45,0.35)', letterSpacing: '0.08em' }}>{s.step}</span>
-                <div style={{ width: 72, height: 72, borderRadius: 16, marginTop: 16, marginBottom: 20, background: '#0f1115', backgroundImage: `url(${s.img})`, backgroundRepeat: 'no-repeat', backgroundPosition: 'center center', backgroundSize: 'contain', backgroundOrigin: 'content-box', boxSizing: 'border-box', padding: 12 }} />
+                <div style={{ width: 72, height: 72, borderRadius: 16, marginTop: 16, marginBottom: 20, background: '#0f1115', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}><img src={s.img} alt={s.title} style={{ width: 48, height: 48, objectFit: 'contain' }} /></div>
                 <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 20, color: '#0F1115', marginBottom: 8, letterSpacing: '-0.02em' }}>{s.title}</h3>
                 <p style={{ fontSize: 14, color: 'rgba(15,17,21,0.4)', lineHeight: 1.6 }}>{s.desc}</p>
               </div>
@@ -413,7 +413,7 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 8, maxWidth: 700, margin: '0 auto' }}>
               {ENGINES_DATA.map(e => (
                 <span key={e.name} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px 4px 4px', borderRadius: 99, background: 'white', border: '1px solid rgba(0,0,0,0.04)', fontSize: 11, color: 'rgba(15,17,21,0.5)', fontWeight: 500 }}>
-                  {e.img ? <span style={{ width: 28, height: 28, borderRadius: 99, flexShrink: 0, overflow: 'hidden', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#0f1115' }}><img src={e.img} alt="" width={32} height={32} style={{ objectFit: 'cover', display: 'block', transform: 'scale(1.4)' }} /></span> : <span style={{ width: 28, height: 28, borderRadius: 99, background: 'rgba(197,106,45,0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#C56A2D', fontWeight: 700, flexShrink: 0 }}>AI</span>}
+                  {e.img ? <span style={{ width: 28, height: 28, borderRadius: 99, flexShrink: 0, overflow: 'hidden', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#0f1115' }}><img src={e.img} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} /></span> : <span style={{ width: 28, height: 28, borderRadius: 99, background: 'rgba(197,106,45,0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#C56A2D', fontWeight: 700, flexShrink: 0 }}>AI</span>}
                   {e.name}
                 </span>
               ))}
@@ -432,7 +432,7 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
             {USE_CASES.map(uc => (
               <div key={uc.title} className="landing-usecase">
-                <div style={{ width: 56, height: 56, borderRadius: 14, flexShrink: 0, background: '#0f1115', backgroundImage: `url(${uc.img})`, backgroundRepeat: 'no-repeat', backgroundPosition: 'center center', backgroundSize: 'contain', backgroundOrigin: 'content-box', boxSizing: 'border-box', padding: 10 }} />
+                <div style={{ width: 56, height: 56, borderRadius: 14, flexShrink: 0, background: '#0f1115', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}><img src={uc.img} alt={uc.title} style={{ width: 36, height: 36, objectFit: 'contain' }} /></div>
                 <div>
                   <h3 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 18, color: '#0F1115', marginBottom: 6, letterSpacing: '-0.02em' }}>{uc.title}</h3>
                   <p style={{ fontSize: 14, color: 'rgba(15,17,21,0.4)', lineHeight: 1.6 }}>{uc.desc}</p>
