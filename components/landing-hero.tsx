@@ -86,7 +86,14 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [heroScenes] = useState(() => shuffleArray(HERO_SCENES_BASE))
   const [currentHero, setCurrentHero] = useState(0)
   const [scrollY, setScrollY] = useState(0)
+  const [hasInvite, setHasInvite] = useState(false)
   const fr = locale === 'fr'
+
+  // Check for invite cookie
+  useEffect(() => {
+    const match = document.cookie.match(/misen_invite=([^;]+)/)
+    if (match) setHasInvite(true)
+  }, [])
 
   // Hero rotation: advance when current video ends
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([])
@@ -117,8 +124,20 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   return (
     <div className="landing-light">
+      {/* ═══ INVITE BANNER ═══ */}
+      {hasInvite && !isLoggedIn && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 60, background: 'linear-gradient(90deg, #C56A2D, #6C4DFF)', padding: '8px 24px', textAlign: 'center' }}>
+          <p style={{ fontSize: 12, fontWeight: 600, color: 'white', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <span style={{ background: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: 99, fontSize: 10 }}>INVITATION</span>
+            {fr ? 'Votre invitation est activée. Créez votre compte pour commencer.' : 'Your invitation is active. Create your account to start.'}
+            <Link href="/register" style={{ color: 'white', textDecoration: 'underline', fontWeight: 700, marginLeft: 4 }}>
+              {fr ? 'Créer mon compte →' : 'Create account →'}
+            </Link>
+          </p>
+        </div>
+      )}
       {/* ═══ NAV ═══ */}
-      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', background: 'rgba(255,255,255,0.72)', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+      <nav style={{ position: 'fixed', top: hasInvite && !isLoggedIn ? 34 : 0, left: 0, right: 0, zIndex: 50, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', background: 'rgba(255,255,255,0.72)', borderBottom: '1px solid rgba(0,0,0,0.04)', transition: 'top 0.3s' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #C56A2D, #A35520)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(197,106,45,0.2)' }}>
@@ -337,7 +356,7 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
             <p style={{ fontSize: 14, color: 'rgba(15,17,21,0.3)', marginBottom: 20, fontStyle: 'italic' }}>
               {fr ? '→ Vous ne revenez jamais dans MISEN pour coller quoi que ce soit. MISEN est le cerveau, l\'IA vidéo est le bras.' : '→ You never come back to MISEN to paste anything. MISEN is the brain, the video AI is the arm.'}
             </p>
-            <a href="/register" className="landing-cta-primary">{fr ? 'Demander un accès' : 'Request access'} →</a>
+            <a href="/register" className="landing-cta-primary">{hasInvite ? (fr ? 'Créer mon compte' : 'Create my account') : (fr ? 'Demander un accès' : 'Request access')} →</a>
           </div>
         </div>
       </section>
