@@ -131,9 +131,9 @@ export default function MagicModePage() {
         body: JSON.stringify({ style_preset: 'cinematique' }),
       })
       if (!analyzeRes.ok) throw new Error('Erreur analyse')
-      const result = await analyzeRes.json()
+      const data = await analyzeRes.json()
 
-      setAnalysis(result)
+      setAnalysis(data.result)
       setProgress(100)
       setTimeout(() => setPhase('result'), 600)
     } catch (e: any) {
