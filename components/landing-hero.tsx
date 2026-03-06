@@ -337,7 +337,7 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
             <p style={{ fontSize: 14, color: 'rgba(15,17,21,0.3)', marginBottom: 20, fontStyle: 'italic' }}>
               {fr ? '→ Vous ne revenez jamais dans MISEN pour coller quoi que ce soit. MISEN est le cerveau, l\'IA vidéo est le bras.' : '→ You never come back to MISEN to paste anything. MISEN is the brain, the video AI is the arm.'}
             </p>
-            <a href="/register" className="landing-cta-primary">{fr ? 'Essayer gratuitement' : 'Try for free'} →</a>
+            <a href="/register" className="landing-cta-primary">{fr ? 'Demander un accès' : 'Request access'} →</a>
           </div>
         </div>
       </section>

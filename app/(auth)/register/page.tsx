@@ -1,17 +1,26 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Logo } from '@/components/ui/logo'
 import { useI18n } from '@/lib/i18n'
 import { LanguageToggle } from '@/components/ui/language-toggle'
-import { Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react'
+import { Eye, EyeOff, Loader2, CheckCircle, Shield } from 'lucide-react'
+
+function getInviteCode(): string | null {
+  if (typeof document === 'undefined') return null
+  const match = document.cookie.match(/misen_invite=([^;]+)/)
+  return match ? decodeURIComponent(match[1]) : null
+}
 
 export default function RegisterPage() {
   const router = useRouter()
   const { t } = useI18n()
+  const [inviteCode, setInviteCode] = useState<string | null>(null)
+  const [inviteChecked, setInviteChecked] = useState(false)
+  const [inviteValid, setInviteValid] = useState(false)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -21,9 +30,24 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
 
+  // Check invite code on mount
+  useEffect(() => {
+    const code = getInviteCode()
+    setInviteCode(code)
+    if (code) {
+      fetch(`/api/invite/validate?code=${encodeURIComponent(code)}`)
+        .then(r => r.json())
+        .then(d => { setInviteValid(d.valid); setInviteChecked(true) })
+        .catch(() => { setInviteValid(false); setInviteChecked(true) })
+    } else {
+      setInviteChecked(true)
+      setInviteValid(false)
+    }
+  }, [])
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!termsAccepted) return
+    if (!termsAccepted || !inviteValid) return
     setLoading(true)
     setError(null)
 
@@ -49,6 +73,14 @@ export default function RegisterPage() {
       setError(error.message)
       setLoading(false)
     } else {
+      // Mark invite as used
+      if (inviteCode) {
+        fetch('/api/invite/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: inviteCode }),
+        }).catch(() => {})
+      }
       setSuccess(true)
       setLoading(false)
     }
@@ -79,6 +111,37 @@ export default function RegisterPage() {
         <Link href="/login" className="btn-secondary btn-md inline-flex">
           Retour à la connexion
         </Link>
+      </div>
+    )
+  }
+
+  // Invite check loading
+  if (!inviteChecked) {
+    return (
+      <div className="card p-8 bg-dark-850 border-dark-700 animate-fade-in text-center">
+        <Loader2 size={32} className="text-orange-400 animate-spin mx-auto mb-4" />
+        <p className="text-sm text-slate-400">Vérification de votre invitation...</p>
+      </div>
+    )
+  }
+
+  // No valid invite — access denied
+  if (!inviteValid) {
+    return (
+      <div className="card p-8 bg-dark-850 border-dark-700 animate-fade-in text-center">
+        <Shield size={40} className="text-orange-400 mx-auto mb-4" />
+        <h2 className="text-lg font-display font-bold text-white mb-3">Accès sur invitation uniquement</h2>
+        <p className="text-sm text-slate-400 mb-6">
+          MISEN est actuellement en accès privé. Seules les personnes disposant d'un lien d'invitation peuvent créer un compte.
+        </p>
+        <div className="space-y-3">
+          <Link href="/" className="btn-primary btn-md inline-flex w-full justify-center">
+            Découvrir MISEN
+          </Link>
+          <Link href="/login" className="btn-secondary btn-md inline-flex w-full justify-center">
+            J'ai déjà un compte
+          </Link>
+        </div>
       </div>
     )
   }
