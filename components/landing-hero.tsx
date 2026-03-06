@@ -419,6 +419,11 @@ export function LandingHero({ isLoggedIn }: { isLoggedIn: boolean }) {
               ))}
             </div>
           </div>
+          <p style={{ textAlign: 'center', fontSize: 10, color: 'rgba(15,17,21,0.25)', marginTop: 32 }}>
+            {fr
+              ? 'Les noms et marques mentionnés appartiennent à leurs propriétaires respectifs. MISEN n\'est affilié à aucun de ces fournisseurs.'
+              : 'All names and trademarks mentioned are the property of their respective owners. MISEN is not affiliated with any of these providers.'}
+          </p>
         </div>
       </section>
 
