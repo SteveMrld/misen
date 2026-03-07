@@ -246,7 +246,7 @@ export default function MagicModePage() {
           </button>
 
           <p className="text-center text-[10px] text-slate-600 mt-3">
-            {fr ? '17 moteurs d\'intelligence · Analyse en ~8 secondes' : '17 intelligence engines · Analysis in ~8 seconds'}
+            {fr ? '30 moteurs d\'intelligence · Analyse en ~8 secondes' : '30 intelligence engines · Analysis in ~8 seconds'}
           </p>
         </div>
       </div>
@@ -279,7 +279,7 @@ export default function MagicModePage() {
           </div>
 
           <p className="text-[10px] text-slate-600">
-            {fr ? 'MISEN analyse votre scénario avec 17 moteurs d\'intelligence cinématographique...' : 'MISEN is analyzing your screenplay with 17 cinematic intelligence engines...'}
+            {fr ? 'MISEN analyse votre scénario avec 30 moteurs d\'intelligence cinématographique...' : 'MISEN is analyzing your screenplay with 17 cinematic intelligence engines...'}
           </p>
         </div>
       </div>
