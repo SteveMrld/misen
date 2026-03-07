@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'react'
 import {
   Play, Pause, ChevronRight,
   Film, Brain, Clock, Sparkles, Image, Subtitles, Zap,
-  Camera, Users, DollarSign, Eye,
+  Camera, Users, DollarSign, Eye, TrendingUp,
   ArrowRight, X
 } from 'lucide-react'
 import { DEMO_SCENARIOS, DEMO_WALKTHROUGH, NARRATIONS, type DemoScenario } from '@/lib/demo/data'
@@ -13,7 +13,7 @@ import Link from 'next/link'
 import { LanguageToggle } from '@/components/ui/language-toggle'
 
 const TAB_ICONS: Record<string, any> = {
-  script: Film, analyse: Brain, timeline: Clock, copilot: Sparkles,
+  script: Film, analyse: Brain, performance: TrendingUp, timeline: Clock, copilot: Sparkles,
   media: Image, subtitles: Subtitles, generate: Zap, result: Play,
 }
 
@@ -130,6 +130,7 @@ export default function DemoPage() {
 
         {step.step === 'script' && <DemoScript scenario={scenario} />}
         {step.step === 'analyse' && <DemoAnalyse scenario={scenario} />}
+        {step.step === 'performance' && <DemoPerformance scenario={scenario} />}
         {step.step === 'timeline' && <DemoTimeline scenario={scenario} />}
         {step.step === 'copilot' && <DemoCopilot scenario={scenario} />}
         {step.step === 'media' && <DemoMedia scenario={scenario} />}
@@ -221,6 +222,85 @@ function DemoAnalyse({ scenario }: { scenario: DemoScenario }) {
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  )
+}
+
+function DemoPerformance({ scenario }: { scenario: DemoScenario }) {
+  // Performance scores vary by scenario genre
+  const scores: Record<string, { label: string; score: number; color: string }[]> = {
+    cendres: [
+      { label: 'Hook', score: 72, color: '#EAB308' },
+      { label: 'Rétention', score: 65, color: '#EAB308' },
+      { label: 'Impact émotionnel', score: 81, color: '#10B981' },
+      { label: 'Rythme', score: 70, color: '#10B981' },
+      { label: 'Potentiel viral', score: 48, color: '#EF4444' },
+    ],
+    odyssee: [
+      { label: 'Hook', score: 85, color: '#10B981' },
+      { label: 'Rétention', score: 78, color: '#10B981' },
+      { label: 'Impact émotionnel', score: 74, color: '#10B981' },
+      { label: 'Visibilité produit', score: 82, color: '#10B981' },
+      { label: 'Potentiel viral', score: 71, color: '#10B981' },
+    ],
+    pixel: [
+      { label: 'Hook', score: 68, color: '#EAB308' },
+      { label: 'Rétention', score: 74, color: '#10B981' },
+      { label: 'Impact émotionnel', score: 62, color: '#EAB308' },
+      { label: 'Rythme', score: 81, color: '#10B981' },
+      { label: 'Potentiel viral', score: 55, color: '#EAB308' },
+    ],
+  }
+  const scenarioKey = scenario.plans[0]?.src?.includes('sc1') ? 'cendres' : scenario.plans[0]?.src?.includes('sc2') ? 'odyssee' : 'pixel'
+  const dims = scores[scenarioKey] || scores.cendres
+  const global = Math.round(dims.reduce((s, d) => s + d.score, 0) / dims.length)
+  const grade = global >= 75 ? 'B+' : global >= 65 ? 'B' : global >= 55 ? 'C+' : 'C'
+
+  const styles: { director: string; signature: string }[] = scenarioKey === 'odyssee'
+    ? [{ director: 'Denis Villeneuve', signature: 'Paysages vastes, dolly lent, lumière dorée' }, { director: 'Wong Kar-wai', signature: 'Néons, slow-motion, cadres dans le cadre' }]
+    : scenarioKey === 'pixel'
+    ? [{ director: 'David Fincher', signature: 'Précision chirurgicale, palette désaturée' }, { director: 'Steven Spielberg', signature: 'Lumière comme émotion, push-in révélation' }]
+    : [{ director: 'Stanley Kubrick', signature: 'Symétrie parfaite, Steadicam, silence' }, { director: 'Denis Villeneuve', signature: 'Échelle monumentale, dolly lent' }]
+
+  return (
+    <div className="space-y-4">
+      {/* Global score */}
+      <div className="bg-dark-900 border border-dark-700 rounded-xl p-4">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: global >= 70 ? 'rgba(16,185,129,0.1)' : 'rgba(234,179,8,0.1)', border: `1px solid ${global >= 70 ? 'rgba(16,185,129,0.2)' : 'rgba(234,179,8,0.2)'}` }}>
+            <span className="text-xl font-bold" style={{ color: global >= 70 ? '#10B981' : '#EAB308' }}>{grade}</span>
+          </div>
+          <div>
+            <p className="text-base font-bold text-white">{global}/100</p>
+            <p className="text-[10px] text-slate-500">Performance Engine — 7 dimensions analysées</p>
+          </div>
+        </div>
+        <div className="space-y-2">
+          {dims.map(d => (
+            <div key={d.label}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] text-slate-400">{d.label}</span>
+                <span className="text-[10px] font-mono text-slate-500">{d.score}</span>
+              </div>
+              <div className="h-1.5 bg-dark-800 rounded-full overflow-hidden">
+                <div className="h-full rounded-full" style={{ width: `${d.score}%`, background: d.color }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Style Genome recommendations */}
+      <div className="bg-dark-900 border border-dark-700 rounded-xl p-4">
+        <p className="text-[10px] font-bold text-violet-400 mb-3 tracking-wider uppercase">Styles cinématographiques recommandés</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {styles.map(s => (
+            <div key={s.director} className="px-3 py-2.5 bg-dark-800/50 rounded-lg border border-dark-700/50">
+              <p className="text-xs font-bold text-white">{s.director}</p>
+              <p className="text-[9px] text-slate-500 mt-0.5">{s.signature}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )

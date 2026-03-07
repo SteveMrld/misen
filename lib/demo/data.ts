@@ -234,20 +234,22 @@ FIN`,
 
 export const DEMO_WALKTHROUGH = [
   { step: 'script', title: '1. Le script', narration: '', duration: 5000 },
-  { step: 'analyse', title: '2. Analyse IA', narration: '', duration: 6000 },
-  { step: 'timeline', title: '3. Timeline', narration: '', duration: 5000 },
-  { step: 'copilot', title: '4. Copilote IA', narration: '', duration: 5000 },
-  { step: 'media', title: '5. Médias', narration: '', duration: 5000 },
-  { step: 'subtitles', title: '6. Sous-titres', narration: '', duration: 5000 },
-  { step: 'generate', title: '7. Génération', narration: '', duration: 5000 },
-  { step: 'result', title: '8. Votre film', narration: '', duration: 8000 },
+  { step: 'analyse', title: '2. Analyse IA (30 moteurs)', narration: '', duration: 6000 },
+  { step: 'performance', title: '3. Score de performance', narration: '', duration: 5000 },
+  { step: 'timeline', title: '4. Timeline', narration: '', duration: 5000 },
+  { step: 'copilot', title: '5. Copilote IA', narration: '', duration: 5000 },
+  { step: 'media', title: '6. Médias', narration: '', duration: 5000 },
+  { step: 'subtitles', title: '7. Sous-titres', narration: '', duration: 5000 },
+  { step: 'generate', title: '8. Génération', narration: '', duration: 5000 },
+  { step: 'result', title: '9. Votre film', narration: '', duration: 8000 },
 ]
 
 // Narrations per scenario
 export const NARRATIONS: Record<string, Record<string, string>> = {
   cendres: {
     script: 'MISEN analyse votre scénario. "Le Poids des cendres" — un court-métrage sur le deuil et le lien fraternel. 4 scènes, format Fountain détecté.',
-    analyse: '13 moteurs travaillent en parallèle : intention émotionnelle, grammaire cinématique, personnages, tension dramatique, coûts.',
+    analyse: '30 moteurs travaillent en parallèle : intention émotionnelle, grammaire cinématique, physique caméra, world model, personnages, tension dramatique, routing MCAP vers le meilleur modèle IA pour chaque plan.',
+    performance: 'Score de performance : Hook 72/100, Rétention 65/100, Impact émotionnel 81/100. Suggestion : raccourcir le premier plan pour capter l\'attention plus vite.',
     timeline: 'Chaque plan est positionné sur la timeline avec durée, modèle IA et piste audio.',
     copilot: 'L\'assistant créatif vous guide : références cinéma, suggestions de plans, recommandations musicales.',
     media: 'Cherchez des images de référence depuis Pexels et Pixabay. Construisez votre moodboard visuel.',
@@ -257,7 +259,8 @@ export const NARRATIONS: Record<string, Record<string, string>> = {
   },
   odyssee: {
     script: '"Odyssée" — une publicité parfum luxe de 45 secondes. Esthétique onirique, palette bleu nuit et or.',
-    analyse: '13 moteurs IA analysent le script : ambiance visuelle, cadrage produit, rythme publicitaire, coût par plan.',
+    analyse: '30 moteurs IA analysent le script : ambiance visuelle, cadrage produit, rythme publicitaire, physique caméra, world model, routing MCAP — Kling pour les plans larges, Runway pour les textures, Veo pour le portrait.',
+    performance: 'Score de performance : Hook 85/100, Visibilité produit 78/100, Potentiel viral 71/100. Style recommandé : Villeneuve (paysages vastes, dolly lent, lumière dorée).',
     timeline: '6 plans en 21 secondes. Rythme publicitaire rapide avec pauses contemplatives sur le produit.',
     copilot: 'Références Dune, Blade Runner. Suggestions palette chromatique et cadrage produit luxe.',
     media: 'Références visuelles : déserts, architecture luxe, textures sable et marbre pour le moodboard.',
@@ -267,7 +270,8 @@ export const NARRATIONS: Record<string, Record<string, string>> = {
   },
   pixel: {
     script: '"Pixel" — une vidéo éducative sur l\'IA. 2 minutes, ton accessible, esthétique tech moderne.',
-    analyse: 'Analyse spéciale format éducatif : rythme de narration, segmentation thématique, complexité visuelle.',
+    analyse: '30 moteurs analysent : rythme de narration, segmentation thématique, complexité visuelle, world model, routing MCAP optimal par plan.',
+    performance: 'Score de performance : Rétention 74/100, Impact émotionnel 62/100, Rythme 81/100. Suggestion : ajouter un plan macro d\'ouverture plus percutant.',
     timeline: '4 plans, transitions fluides. Rythme TED Talk : images fortes + pauses pour la narration.',
     copilot: 'Références Ex Machina, Her. Mélange esthétique froide (tech) et chaude (humain).',
     media: 'Images de référence : macro yeux, villes la nuit, interfaces code, silhouettes contemplatives.',
