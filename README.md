@@ -77,3 +77,4 @@ misen/
 **Porteur de projet** : Steve Moradel
 **Développement** : Claude (Anthropic)
 **© 2026 Jabrilia Éditions** — Tous droits réservés
+
