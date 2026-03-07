@@ -442,27 +442,20 @@ function DemoResult({ scenario }: { scenario: DemoScenario }) {
   const [currentPlan, setCurrentPlan] = useState(0)
   const [nextPlan, setNextPlan] = useState(-1)
   const [fadePhase, setFadePhase] = useState<'stable' | 'crossfading'>('stable')
-  const [imagesLoaded, setImagesLoaded] = useState(false)
+  const [ready, setReady] = useState(false)
   const rafRef = useRef<number | null>(null)
   const lastTimeRef = useRef<number>(0)
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([])
 
   const plans = scenario.plans
   const totalDur = plans.reduce((s, p) => s + p.dur, 0)
-  const CROSSFADE_MS = 1500
+  const CROSSFADE_MS = 2000
 
-  // Preload all videos on mount / scenario change
+  // Auto-start after brief delay
   useEffect(() => {
-    setPlaying(false); setElapsed(0); setCurrentPlan(0); setNextPlan(-1); setFadePhase('stable'); setImagesLoaded(false)
-    let loaded = 0
-    plans.forEach(p => {
-      const vid = document.createElement('video')
-      vid.oncanplaythrough = () => { loaded++; if (loaded >= plans.length) setImagesLoaded(true) }
-      vid.onerror = () => { loaded++; if (loaded >= plans.length) setImagesLoaded(true) }
-      vid.src = p.src
-      vid.preload = 'auto'
-    })
-    // Fallback: mark as loaded after 5s
-    setTimeout(() => setImagesLoaded(true), 5000)
+    setPlaying(false); setElapsed(0); setCurrentPlan(0); setNextPlan(-1); setFadePhase('stable'); setReady(false)
+    const timer = setTimeout(() => { setReady(true); setPlaying(true) }, 1500)
+    return () => clearTimeout(timer)
   }, [scenario.id])
 
   const getPlanAtTime = (t: number) => {
@@ -471,7 +464,7 @@ function DemoResult({ scenario }: { scenario: DemoScenario }) {
     return plans.length - 1
   }
 
-  // requestAnimationFrame loop for smooth playback
+  // Smooth playback loop
   useEffect(() => {
     if (!playing) {
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
@@ -485,11 +478,7 @@ function DemoResult({ scenario }: { scenario: DemoScenario }) {
 
       setElapsed(prev => {
         const next = prev + delta
-        if (next >= totalDur) {
-          setPlaying(false)
-          return totalDur
-        }
-        // Detect plan change
+        if (next >= totalDur) { setPlaying(false); return totalDur }
         const curPlan = getPlanAtTime(prev)
         const newPlan = getPlanAtTime(next)
         if (newPlan !== curPlan) {
@@ -514,20 +503,7 @@ function DemoResult({ scenario }: { scenario: DemoScenario }) {
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
   const planStartTime = plans.slice(0, currentPlan).reduce((s, p) => s + p.dur, 0)
   const planElapsed = elapsed - planStartTime
-  const planProgress = Math.min(planElapsed / current.dur, 1)
-  const subVisible = current.sub && planElapsed > 0.5 && planElapsed < current.dur - 0.3
-
-  // Ken Burns transform based on direction + progress
-  const getKenBurns = (direction: string, progress: number) => {
-    const p = progress
-    switch (direction) {
-      case 'right': return `scale(${1.02 + p * 0.06}) translateX(${-1 + p * 2}%)`
-      case 'left': return `scale(${1.02 + p * 0.06}) translateX(${1 - p * 2}%)`
-      case 'in': return `scale(${1.0 + p * 0.1})`
-      case 'out': return `scale(${1.1 - p * 0.08})`
-      default: return `scale(${1.02 + p * 0.04})`
-    }
-  }
+  const subVisible = current.sub && planElapsed > 0.3 && planElapsed < current.dur - 0.2
 
   const jumpTo = (planIdx: number) => {
     let acc = 0; for (let j = 0; j < planIdx; j++) acc += plans[j].dur
@@ -536,145 +512,165 @@ function DemoResult({ scenario }: { scenario: DemoScenario }) {
   }
 
   return (
-    <div className="bg-black rounded-xl overflow-hidden shadow-2xl shadow-black/80 border border-white/[0.06]">
-      {/* Cinema viewport */}
+    <div className="bg-black rounded-2xl overflow-hidden shadow-2xl shadow-black/90 border border-white/[0.04]">
+      {/* Cinema viewport — 2.39:1 anamorphic ratio */}
       <div className="relative aspect-[2.39/1] bg-black overflow-hidden cursor-pointer select-none"
         onClick={() => { if (elapsed >= totalDur) { setElapsed(0); setCurrentPlan(0); lastTimeRef.current = 0 }; setPlaying(!playing) }}>
 
-        {/* Layer A — current video */}
-        <video
-          key={`current-${currentPlan}`}
-          src={current.src}
-          autoPlay
-          muted
-          playsInline
-          loop
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{
-            willChange: 'transform, opacity',
-            transform: playing || elapsed > 0 ? getKenBurns(current.direction, planProgress) : 'scale(1.02)',
-            transition: 'transform 0.3s ease-out',
-            opacity: fadePhase === 'crossfading' ? 0 : 1,
-            transitionProperty: 'opacity, transform',
-            transitionDuration: fadePhase === 'crossfading' ? `${CROSSFADE_MS}ms` : '0.3s',
-            transitionTimingFunction: 'ease-in-out',
-          }}
-        />
-
-        {/* Layer B — incoming video (crossfade) */}
-        {incoming && (
+        {/* All video layers pre-mounted for instant transitions */}
+        {plans.map((p, i) => (
           <video
-            key={`incoming-${nextPlan}`}
-            src={incoming.src}
+            key={`layer-${i}`}
+            ref={el => { videoRefs.current[i] = el }}
+            src={p.src}
             autoPlay
             muted
             playsInline
             loop
+            preload="auto"
             className="absolute inset-0 w-full h-full object-cover"
             style={{
-              willChange: 'transform, opacity',
-              transform: getKenBurns(incoming.direction, 0),
-              opacity: fadePhase === 'crossfading' ? 1 : 0,
-              transition: `opacity ${CROSSFADE_MS}ms ease-in-out`,
+              opacity: i === currentPlan && fadePhase === 'stable' ? 1
+                : i === currentPlan && fadePhase === 'crossfading' ? 0
+                : i === nextPlan && fadePhase === 'crossfading' ? 1
+                : 0,
+              transition: `opacity ${CROSSFADE_MS}ms cubic-bezier(0.4, 0, 0.2, 1)`,
+              zIndex: i === nextPlan ? 2 : i === currentPlan ? 1 : 0,
             }}
           />
-        )}
+        ))}
 
-        {/* Cinematic vignette */}
-        <div className="absolute inset-0 shadow-[inset_0_0_120px_rgba(0,0,0,0.6)]" style={{ pointerEvents: 'none' }} />
+        {/* Cinematic vignette — deep, subtle */}
+        <div className="absolute inset-0" style={{
+          pointerEvents: 'none', zIndex: 5,
+          background: 'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.45) 100%)',
+        }} />
 
-        {/* Letterbox bars for cinema feel */}
-        <div className="absolute top-0 left-0 right-0 h-[3%] bg-black" style={{ pointerEvents: 'none' }} />
-        <div className="absolute bottom-0 left-0 right-0 h-[3%] bg-black" style={{ pointerEvents: 'none' }} />
+        {/* Letterbox bars — anamorphic cinema feel */}
+        <div className="absolute top-0 left-0 right-0 h-[4%] bg-black" style={{ pointerEvents: 'none', zIndex: 6 }} />
+        <div className="absolute bottom-0 left-0 right-0 h-[4%] bg-black" style={{ pointerEvents: 'none', zIndex: 6 }} />
 
-        {/* Film grain overlay */}
-        <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay" style={{
-          pointerEvents: 'none',
-          backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")',
+        {/* Film grain — very subtle */}
+        <div className="absolute inset-0 opacity-[0.025] mix-blend-overlay" style={{
+          pointerEvents: 'none', zIndex: 5,
+          backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")',
           backgroundSize: '128px 128px',
         }} />
 
-        {/* Subtitle */}
-        <div className={`absolute bottom-[8%] left-0 right-0 text-center transition-opacity duration-700 ease-in-out ${subVisible ? 'opacity-100' : 'opacity-0'}`} style={{ pointerEvents: 'none' }}>
-          <span className="bg-black/60 backdrop-blur-sm px-6 py-2.5 rounded text-white text-sm md:text-base font-medium tracking-wide shadow-2xl"
-            style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
+        {/* Subtitle — cinema style, large, breathing */}
+        <div className={`absolute bottom-[10%] left-0 right-0 text-center transition-all duration-700 ease-in-out ${subVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}
+          style={{ pointerEvents: 'none', zIndex: 10 }}>
+          <span style={{
+            display: 'inline-block',
+            background: 'rgba(0,0,0,0.55)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            padding: '10px 28px',
+            borderRadius: 4,
+            color: 'white',
+            fontSize: 'clamp(13px, 2vw, 18px)',
+            fontWeight: 400,
+            letterSpacing: '0.03em',
+            lineHeight: 1.5,
+            textShadow: '0 1px 6px rgba(0,0,0,0.9)',
+            fontFamily: "'DM Sans', -apple-system, sans-serif",
+          }}>
             {current.sub}
           </span>
         </div>
 
-        {/* Play overlay (initial) */}
-        {!playing && elapsed === 0 && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40">
-            {!imagesLoaded && <div className="absolute top-4 right-4 w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />}
-            <p className="text-white/60 text-xs tracking-[0.3em] uppercase mb-4 font-light">{scenario.title}</p>
-            <button className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 flex items-center justify-center shadow-2xl shadow-orange-500/30 transition-all hover:scale-110 group">
-              <Play size={32} fill="white" className="text-white ml-1 group-hover:scale-110 transition-transform" />
+        {/* HUD — model + shot type (always visible during playback, subtle) */}
+        {playing && (
+          <div className="absolute top-3 right-3 flex items-center gap-1.5" style={{ zIndex: 10, opacity: 0.6 }}>
+            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: current.color }} />
+            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.05em' }}>
+              {current.model} · {current.shot}
+            </span>
+          </div>
+        )}
+
+        {/* Play overlay — initial state, cinematic */}
+        {!ready && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[2px]" style={{ zIndex: 20 }}>
+            <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mb-4" />
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase' as const }}>Chargement du film</p>
+          </div>
+        )}
+
+        {!playing && ready && elapsed === 0 && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40" style={{ zIndex: 20 }}>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, letterSpacing: '0.3em', textTransform: 'uppercase' as const, marginBottom: 20, fontFamily: "'Playfair Display', Georgia, serif" }}>{scenario.title}</p>
+            <button className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 flex items-center justify-center shadow-2xl shadow-orange-500/30 transition-all hover:scale-110">
+              <Play size={32} fill="white" className="text-white ml-1" />
             </button>
-            <p className="text-white/30 text-[10px] tracking-widest uppercase mt-4">Un film MISEN</p>
+            <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 9, letterSpacing: '0.25em', textTransform: 'uppercase' as const, marginTop: 16 }}>Dirigé par MISEN</p>
           </div>
         )}
 
         {/* Pause indicator */}
         {!playing && elapsed > 0 && elapsed < totalDur && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-14 h-14 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center animate-pulse">
-              <Pause size={22} className="text-white/70" />
+          <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 20 }}>
+            <div className="w-14 h-14 rounded-full bg-black/20 backdrop-blur-sm flex items-center justify-center">
+              <Pause size={22} className="text-white/60" />
             </div>
           </div>
         )}
 
-        {/* End screen */}
+        {/* End screen — elegant */}
         {!playing && elapsed >= totalDur - 0.05 && elapsed > 0 && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-[3px]">
-            <p className="text-white/80 text-xl font-display tracking-[0.2em]">FIN</p>
-            <p className="text-white/30 text-xs mt-2 tracking-wide">{scenario.title} — Un film MISEN</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-[4px]" style={{ zIndex: 20 }}>
+            <p style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: 28, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.15em' }}>FIN</p>
+            <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, marginTop: 8, letterSpacing: '0.1em' }}>{scenario.title} — Dirigé par MISEN</p>
             <button onClick={(e) => { e.stopPropagation(); setElapsed(0); setCurrentPlan(0); setNextPlan(-1); setFadePhase('stable'); lastTimeRef.current = 0; setPlaying(true) }}
-              className="mt-5 px-5 py-2 btn-primary text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors">
+              className="mt-6 px-5 py-2 btn-primary text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors">
               <Play size={12} fill="white" /> Rejouer
             </button>
           </div>
         )}
-
-        {/* Plan info (hover) */}
-        {playing && (
-          <div className="absolute top-3 left-3 flex items-center gap-2 opacity-0 hover:opacity-100 transition-opacity duration-300">
-            <div className="px-2 py-1 bg-black/50 backdrop-blur-sm rounded text-[9px] text-white/70 font-medium">{current.label} · {current.shot}</div>
-            <div className="flex items-center gap-1 px-2 py-1 bg-black/50 backdrop-blur-sm rounded">
-              <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: current.color }} />
-              <span className="text-[9px] text-white/60">{current.model}</span>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Progress bar */}
+      {/* Progress bar — smooth, plan markers */}
       <div className="relative h-1 bg-dark-900 cursor-pointer group" onClick={(e) => {
         const rect = e.currentTarget.getBoundingClientRect()
         const newTime = ((e.clientX - rect.left) / rect.width) * totalDur
         const newPlan = getPlanAtTime(newTime)
         setElapsed(newTime); setCurrentPlan(newPlan); setNextPlan(-1); setFadePhase('stable'); lastTimeRef.current = 0
       }}>
-        {/* Scene markers */}
-        {(() => { let acc = 0; return plans.slice(0, -1).map((p, i) => { acc += p.dur; return <div key={i} className="absolute top-0 h-full w-px bg-white/10" style={{ left: `${(acc / totalDur) * 100}%` }} /> }) })()}
-        <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-orange-600 to-orange-400 group-hover:h-1.5 group-hover:-top-0.5 transition-all" style={{ width: `${(elapsed / totalDur) * 100}%` }} />
+        {(() => { let acc = 0; return plans.slice(0, -1).map((p, i) => { acc += p.dur; return <div key={i} className="absolute top-0 h-full w-px bg-white/[0.08]" style={{ left: `${(acc / totalDur) * 100}%` }} /> }) })()}
+        <div className="absolute top-0 left-0 h-full rounded-r-full transition-none" style={{
+          width: `${(elapsed / totalDur) * 100}%`,
+          background: 'linear-gradient(90deg, #C56A2D, #E8955A)',
+        }} />
+        <div className="absolute top-0 left-0 h-full group-hover:h-2 group-hover:-top-0.5 transition-all rounded-r-full" style={{
+          width: `${(elapsed / totalDur) * 100}%`,
+          background: 'linear-gradient(90deg, #C56A2D, #E8955A)',
+          opacity: 0,
+        }} />
       </div>
 
-      {/* Controls */}
-      <div className="bg-dark-950 px-4 py-2.5 flex items-center gap-3">
+      {/* Controls — minimal, elegant */}
+      <div className="bg-dark-950 px-4 py-2 flex items-center gap-3">
         <button onClick={() => { if (elapsed >= totalDur) { setElapsed(0); setCurrentPlan(0); lastTimeRef.current = 0 }; setPlaying(!playing) }}
-          className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
-          {playing ? <Pause size={12} className="text-white" /> : <Play size={12} fill="white" className="text-white ml-0.5" />}
+          className="w-7 h-7 rounded-full bg-white/[0.06] hover:bg-white/[0.12] flex items-center justify-center transition-colors">
+          {playing ? <Pause size={11} className="text-white/80" /> : <Play size={11} fill="white" className="text-white/80 ml-0.5" />}
         </button>
-        <span className="text-[11px] text-slate-500 tabular-nums min-w-[70px]">{fmt(elapsed)} / {fmt(totalDur)}</span>
-        <div className="flex-1 flex items-center justify-center gap-1.5">
-          {plans.map((_, i) => (
+        <span className="text-[10px] text-slate-600 tabular-nums min-w-[65px]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{fmt(elapsed)} / {fmt(totalDur)}</span>
+        <div className="flex-1 flex items-center justify-center gap-2">
+          {plans.map((p, i) => (
             <button key={i} onClick={() => { jumpTo(i); setPlaying(true) }}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${i === currentPlan ? 'bg-orange-500 scale-125' : i < currentPlan ? 'bg-orange-500/40' : 'bg-white/10'}`} />
+              className="flex items-center gap-1 transition-all duration-300"
+              style={{ opacity: i === currentPlan ? 1 : 0.3 }}>
+              <div className="w-1.5 h-1.5 rounded-full transition-all" style={{
+                backgroundColor: i === currentPlan ? p.color : i < currentPlan ? p.color : 'rgba(255,255,255,0.2)',
+                transform: i === currentPlan ? 'scale(1.5)' : 'scale(1)',
+              }} />
+              <span className="text-[8px] text-slate-500 hidden sm:inline">{p.label}</span>
+            </button>
           ))}
         </div>
-        <button className="px-2.5 py-1 btn-primary text-[10px] font-medium rounded transition-colors flex items-center gap-1">
-          <ArrowRight size={10} /> Export 4K
-        </button>
+        <span className="text-[9px] text-slate-700" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+          {current.model}
+        </span>
       </div>
     </div>
   )
