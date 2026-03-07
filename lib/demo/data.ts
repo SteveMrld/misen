@@ -11,7 +11,7 @@ export interface DemoScenario {
   script: string
   stats: { scenes: string; plans: string; chars: string; cost: string }
   plans: {
-    src: string; label: string; shot: string; model: string; color: string
+    src: string; img?: string; label: string; shot: string; model: string; color: string
     dur: number; sub: string; direction: 'right' | 'left' | 'in' | 'out'
   }[]
   copilot: { icon: string; title: string; detail: string }[]
@@ -65,10 +65,10 @@ Adrien jette deux cailloux dans l'eau. Les cercles se rejoignent.
 FIN`,
     stats: { scenes: '4', plans: '4', chars: '3', cost: '$1.80' },
     plans: [
-      { src: '/images/sc1_fleuve.jpg', label: 'SC1-P1', shot: 'Plan large', model: 'Kling 3.0', color: '#3B82F6', dur: 4.2, sub: '', direction: 'right' },
-      { src: '/images/sc1_portrait.jpg', label: 'SC1-P2', shot: 'Gros plan', model: 'Veo 3.1', color: '#10B981', dur: 3.5, sub: 'On y va aujourd\'hui. Pas vrai\u00A0?', direction: 'in' },
-      { src: '/images/sc1_pont.jpg', label: 'SC2-P1', shot: 'Plan large', model: 'Sora 2', color: '#EC4899', dur: 5.0, sub: '', direction: 'right' },
-      { src: '/images/sc1_couloir.jpg', label: 'SC3-P1', shot: 'Travelling', model: 'Runway Gen-4.5', color: '#8B5CF6', dur: 3.8, sub: 'On avait dit\u2026 ensemble.', direction: 'left' },
+      { src: '/videos/demo/cendres_p1.mp4', img: '/images/sc1_fleuve.jpg', label: 'SC1-P1', shot: 'Plan large', model: 'Kling 3.0', color: '#3B82F6', dur: 4.2, sub: '', direction: 'right' },
+      { src: '/videos/demo/cendres_p2.mp4', img: '/images/sc1_portrait.jpg', label: 'SC1-P2', shot: 'Gros plan', model: 'Veo 3.1', color: '#10B981', dur: 3.5, sub: 'On y va aujourd\'hui. Pas vrai\u00A0?', direction: 'in' },
+      { src: '/videos/demo/cendres_p3.mp4', img: '/images/sc1_pont.jpg', label: 'SC2-P1', shot: 'Plan large', model: 'Sora 2', color: '#EC4899', dur: 5.0, sub: '', direction: 'right' },
+      { src: '/videos/demo/cendres_p4.mp4', img: '/images/sc1_couloir.jpg', label: 'SC3-P1', shot: 'Travelling', model: 'Runway Gen-4.5', color: '#8B5CF6', dur: 3.8, sub: 'On avait dit\u2026 ensemble.', direction: 'left' },
     ],
     copilot: [
       { icon: '🎬', title: 'Ça me fait penser à...', detail: 'Cinema Paradiso (Tornatore, 1988) — la scène du cinéma. Technique recommandée : lumière projetée sur les visages, contrejour de l\'écran.' },
@@ -130,12 +130,12 @@ Au-delà du visible. ODYSSÉE.
 FIN`,
     stats: { scenes: '4', plans: '6', chars: '1', cost: '$2.10' },
     plans: [
-      { src: '/images/sc2_desert.jpg', label: 'SC1-P1', shot: 'Plan large', model: 'Kling 3.0', color: '#3B82F6', dur: 4.5, sub: '', direction: 'right' },
-      { src: '/images/sc2_sable.jpg', label: 'SC1-P2', shot: 'Insert', model: 'Runway Gen-4.5', color: '#8B5CF6', dur: 3.0, sub: '', direction: 'in' },
-      { src: '/images/sc2_flacon.jpg', label: 'SC2-P1', shot: 'Insert', model: 'Runway Gen-4.5', color: '#8B5CF6', dur: 3.2, sub: '', direction: 'in' },
-      { src: '/images/sc2_visage.jpg', label: 'SC2-P2', shot: 'Gros plan', model: 'Veo 3.1', color: '#10B981', dur: 2.8, sub: '', direction: 'in' },
-      { src: '/images/sc2_desert2.jpg', label: 'SC3-P1', shot: 'Plan large', model: 'Kling 3.0', color: '#3B82F6', dur: 4.0, sub: '', direction: 'left' },
-      { src: '/images/sc2_falaise.jpg', label: 'SC3-P2', shot: 'Contre-plongée', model: 'Sora 2', color: '#EC4899', dur: 3.5, sub: 'Au-delà du visible. ODYSSÉE.', direction: 'out' },
+      { src: '/videos/demo/odyssee_p1.mp4', img: '/images/sc2_desert.jpg', label: 'SC1-P1', shot: 'Plan large', model: 'Kling 3.0', color: '#3B82F6', dur: 4.5, sub: '', direction: 'right' },
+      { src: '/videos/demo/odyssee_p2.mp4', img: '/images/sc2_sable.jpg', label: 'SC1-P2', shot: 'Insert', model: 'Runway Gen-4.5', color: '#8B5CF6', dur: 3.0, sub: '', direction: 'in' },
+      { src: '/videos/demo/odyssee_p3.mp4', img: '/images/sc2_flacon.jpg', label: 'SC2-P1', shot: 'Insert', model: 'Runway Gen-4.5', color: '#8B5CF6', dur: 3.2, sub: '', direction: 'in' },
+      { src: '/videos/demo/odyssee_p4.mp4', img: '/images/sc2_visage.jpg', label: 'SC2-P2', shot: 'Gros plan', model: 'Veo 3.1', color: '#10B981', dur: 2.8, sub: '', direction: 'in' },
+      { src: '/videos/demo/odyssee_p5.mp4', img: '/images/sc2_desert2.jpg', label: 'SC3-P1', shot: 'Plan large', model: 'Kling 3.0', color: '#3B82F6', dur: 4.0, sub: '', direction: 'left' },
+      { src: '/videos/demo/odyssee_p6.mp4', img: '/images/sc2_falaise.jpg', label: 'SC3-P2', shot: 'Contre-plongée', model: 'Sora 2', color: '#EC4899', dur: 3.5, sub: 'Au-delà du visible. ODYSSÉE.', direction: 'out' },
     ],
     copilot: [
       { icon: '🎬', title: 'Référence visuelle', detail: 'Dune (Villeneuve, 2021) — la marche de Chani dans le désert. Lumière rasante à l\'aube, mouvement lent, texture du sable.' },

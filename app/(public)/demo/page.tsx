@@ -208,7 +208,7 @@ function DemoAnalyse({ scenario }: { scenario: DemoScenario }) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {scenario.plans.map((p) => (
           <div key={p.label} className="relative rounded-lg overflow-hidden border border-dark-700 group">
-            <img src={p.src} alt={p.label} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300" />
+            {p.src.endsWith(".mp4") ? <video src={p.src} autoPlay muted loop playsInline className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300" /> : <img src={p.src} alt={p.label} className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300" />}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
             <div className="absolute top-1.5 left-1.5">
               <span className="text-[9px] font-bold text-white bg-black/50 px-1.5 py-0.5 rounded">{p.label}</span>
@@ -323,7 +323,7 @@ function DemoTimeline({ scenario }: { scenario: DemoScenario }) {
           {plans.map((p, i) => (
             <div key={i} className="flex-shrink-0 rounded-lg overflow-hidden border border-dark-700 group" style={{ width: Math.max((p.dur / total) * 700, 120) }}>
               <div className="relative aspect-video">
-                <img src={p.src} alt={p.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                {p.src.endsWith(".mp4") ? <video src={p.src} autoPlay muted loop playsInline className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /> : <img src={p.src} alt={p.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                 <div className="absolute top-1 left-1 px-1 py-0.5 bg-black/60 rounded text-[7px] font-bold text-white">P{i + 1}</div>
                 <div className="absolute top-1 right-1 flex items-center gap-0.5 px-1 py-0.5 bg-black/60 rounded">
@@ -379,7 +379,7 @@ function DemoMedia({ scenario }: { scenario: DemoScenario }) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {scenario.plans.map((p, i) => (
           <div key={i} className="relative aspect-video rounded-lg border border-dark-700 overflow-hidden group">
-            <img src={p.src} alt={p.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            {p.src.endsWith(".mp4") ? <video src={p.src} autoPlay muted loop playsInline className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /> : <img src={p.src} alt={p.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
             <span className="absolute bottom-2 left-2 text-[10px] text-white font-medium">{p.shot}</span>
           </div>
@@ -450,16 +450,19 @@ function DemoResult({ scenario }: { scenario: DemoScenario }) {
   const totalDur = plans.reduce((s, p) => s + p.dur, 0)
   const CROSSFADE_MS = 1500
 
-  // Preload all images on mount / scenario change
+  // Preload all videos on mount / scenario change
   useEffect(() => {
     setPlaying(false); setElapsed(0); setCurrentPlan(0); setNextPlan(-1); setFadePhase('stable'); setImagesLoaded(false)
     let loaded = 0
     plans.forEach(p => {
-      const img = new window.Image()
-      img.onload = () => { loaded++; if (loaded >= plans.length) setImagesLoaded(true) }
-      img.onerror = () => { loaded++; if (loaded >= plans.length) setImagesLoaded(true) }
-      img.src = p.src
+      const vid = document.createElement('video')
+      vid.oncanplaythrough = () => { loaded++; if (loaded >= plans.length) setImagesLoaded(true) }
+      vid.onerror = () => { loaded++; if (loaded >= plans.length) setImagesLoaded(true) }
+      vid.src = p.src
+      vid.preload = 'auto'
     })
+    // Fallback: mark as loaded after 5s
+    setTimeout(() => setImagesLoaded(true), 5000)
   }, [scenario.id])
 
   const getPlanAtTime = (t: number) => {
@@ -538,10 +541,14 @@ function DemoResult({ scenario }: { scenario: DemoScenario }) {
       <div className="relative aspect-[2.39/1] bg-black overflow-hidden cursor-pointer select-none"
         onClick={() => { if (elapsed >= totalDur) { setElapsed(0); setCurrentPlan(0); lastTimeRef.current = 0 }; setPlaying(!playing) }}>
 
-        {/* Layer A — current image */}
-        <img
+        {/* Layer A — current video */}
+        <video
+          key={`current-${currentPlan}`}
           src={current.src}
-          alt={current.label}
+          autoPlay
+          muted
+          playsInline
+          loop
           className="absolute inset-0 w-full h-full object-cover"
           style={{
             willChange: 'transform, opacity',
@@ -554,11 +561,15 @@ function DemoResult({ scenario }: { scenario: DemoScenario }) {
           }}
         />
 
-        {/* Layer B — incoming image (crossfade) */}
+        {/* Layer B — incoming video (crossfade) */}
         {incoming && (
-          <img
+          <video
+            key={`incoming-${nextPlan}`}
             src={incoming.src}
-            alt=""
+            autoPlay
+            muted
+            playsInline
+            loop
             className="absolute inset-0 w-full h-full object-cover"
             style={{
               willChange: 'transform, opacity',
