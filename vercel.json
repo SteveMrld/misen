@@ -1,8 +1,8 @@
 {
   "crons": [
     {
-      "path": "/api/admin/model-intelligence?secret=MISEN-MIGRATE-2026&notify=true",
-      "schedule": "0 8 1,15 * *"
+      "path": "/api/admin/model-intelligence?secret=MISEN-MIGRATE-2026",
+      "schedule": "0 8 */2 * *"
     }
   ]
 }

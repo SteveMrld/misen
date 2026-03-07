@@ -21,10 +21,16 @@ export async function GET(request: NextRequest) {
     }, { status: 500 });
   }
 
+  // If no specific model requested, pick one based on day of month (rotates through all 7)
   const allModels = Object.values(AI_MODELS);
+  const allModelIds = Object.keys(AI_MODELS);
+  const dayRotation = new Date().getDate() % allModelIds.length;
+
   const targetModels = singleModel
     ? allModels.filter((m: any) => m.id === singleModel)
-    : allModels;
+    : [allModels[dayRotation]]; // Scan one model per run to avoid rate limits
+
+  const scanningAll = !singleModel;
 
   if (targetModels.length === 0) {
     return NextResponse.json({ error: `Modèle ${singleModel} non trouvé` }, { status: 404 });
