@@ -482,9 +482,18 @@ function DemoResult({ scenario }: { scenario: DemoScenario }) {
         const curPlan = getPlanAtTime(prev)
         const newPlan = getPlanAtTime(next)
         if (newPlan !== curPlan) {
+          // Reset incoming video to start
+          const incomingVid = videoRefs.current[newPlan]
+          if (incomingVid) {
+            incomingVid.currentTime = 0
+            incomingVid.play().catch(() => {})
+          }
           setNextPlan(newPlan)
           setFadePhase('crossfading')
           setTimeout(() => {
+            // Pause outgoing video
+            const outgoingVid = videoRefs.current[curPlan]
+            if (outgoingVid) outgoingVid.pause()
             setCurrentPlan(newPlan)
             setNextPlan(-1)
             setFadePhase('stable')
@@ -507,6 +516,11 @@ function DemoResult({ scenario }: { scenario: DemoScenario }) {
 
   const jumpTo = (planIdx: number) => {
     let acc = 0; for (let j = 0; j < planIdx; j++) acc += plans[j].dur
+    // Reset target video
+    const vid = videoRefs.current[planIdx]
+    if (vid) { vid.currentTime = 0; vid.play().catch(() => {}) }
+    // Pause all others
+    videoRefs.current.forEach((v, i) => { if (v && i !== planIdx) v.pause() })
     setElapsed(acc); setCurrentPlan(planIdx); setNextPlan(-1); setFadePhase('stable')
     lastTimeRef.current = 0
   }
@@ -518,27 +532,31 @@ function DemoResult({ scenario }: { scenario: DemoScenario }) {
         onClick={() => { if (elapsed >= totalDur) { setElapsed(0); setCurrentPlan(0); lastTimeRef.current = 0 }; setPlaying(!playing) }}>
 
         {/* All video layers pre-mounted for instant transitions */}
-        {plans.map((p, i) => (
-          <video
-            key={`layer-${i}`}
-            ref={el => { videoRefs.current[i] = el }}
-            src={p.src}
-            autoPlay
-            muted
-            playsInline
-            loop
-            preload="auto"
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{
-              opacity: i === currentPlan && fadePhase === 'stable' ? 1
-                : i === currentPlan && fadePhase === 'crossfading' ? 0
-                : i === nextPlan && fadePhase === 'crossfading' ? 1
-                : 0,
-              transition: `opacity ${CROSSFADE_MS}ms cubic-bezier(0.4, 0, 0.2, 1)`,
-              zIndex: i === nextPlan ? 2 : i === currentPlan ? 1 : 0,
-            }}
-          />
-        ))}
+        {plans.map((p, i) => {
+          const isActive = i === currentPlan || i === nextPlan
+          const isCurrent = i === currentPlan && fadePhase === 'stable'
+          const isFadingOut = i === currentPlan && fadePhase === 'crossfading'
+          const isFadingIn = i === nextPlan && fadePhase === 'crossfading'
+          return (
+            <video
+              key={`layer-${i}`}
+              ref={el => { videoRefs.current[i] = el }}
+              src={p.src}
+              autoPlay={isActive}
+              muted
+              playsInline
+              loop
+              preload="auto"
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{
+                opacity: isCurrent ? 1 : isFadingIn ? 1 : isFadingOut ? 0 : 0,
+                transition: isActive ? `opacity ${CROSSFADE_MS}ms cubic-bezier(0.25, 0.1, 0.25, 1.0)` : 'none',
+                zIndex: isFadingIn ? 2 : isCurrent || isFadingOut ? 1 : 0,
+                visibility: isActive ? 'visible' : 'hidden',
+              }}
+            />
+          )
+        })}
 
         {/* Cinematic vignette — deep, subtle */}
         <div className="absolute inset-0" style={{
