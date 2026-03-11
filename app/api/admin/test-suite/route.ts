@@ -27,14 +27,14 @@ export interface TestSuiteReport {
 /**
  * GET /api/admin/test-suite?secret=XXX
  *   Full run: all 50 scripts
- *   &genre=pub_luxe  → filter by genre
- *   &limit=5         → limit number of scripts
- *   &id=pub-parfum-01 → single script
+ *   &genre=pub_luxe  â filter by genre
+ *   &limit=5         â limit number of scripts
+ *   &id=pub-parfum-01 â single script
  */
 export async function GET(request: NextRequest) {
   const secret = request.nextUrl.searchParams.get('secret');
   if (secret !== ADMIN_SECRET) {
-    return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+    return NextResponse.json({ error: 'AccÃ¨s refusÃ©' }, { status: 403 });
   }
 
   const genreFilter = request.nextUrl.searchParams.get('genre');
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
   scripts = scripts.slice(0, limit);
 
   if (scripts.length === 0) {
-    return NextResponse.json({ error: 'Aucun script trouvé' }, { status: 404 });
+    return NextResponse.json({ error: 'Aucun script trouvÃ©' }, { status: 404 });
   }
 
   const startTime = Date.now();
@@ -139,7 +139,7 @@ export async function GET(request: NextRequest) {
 
   const result: TestSuiteReport = {
     generatedAt: new Date().toISOString(),
-    version: 'V14.4',
+    version: 'V14.6',
     totalScripts: scripts.length,
     completed,
     failed,
