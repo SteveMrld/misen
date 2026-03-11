@@ -454,13 +454,35 @@ function evaluateCriterion(
       comment = hasVariety ? 'Variété de durées — dynamique' : 'Durées trop uniformes'
       break
 
-    case 'tension_management':
-      // σ>10 = tension bien gérée, σ>18 = contraste dramatique fort
-      score = tensionVariance > 18 ? 80 : tensionVariance > 10 ? 70 : tensionVariance > 5 ? 55 : 40
-      comment = tensionVariance > 18 ? 'Gestion de tension efficace — contrastes marqués'
-              : tensionVariance > 10 ? 'Tension bien gérée, quelques respirations'
+    case 'tension_management': {
+      // Pour les scripts courts (≤9 plans), le σ physiquement atteignable est limité
+      // On normalise les seuils selon la longueur du script
+      const curveLength = tension?.curve?.length || plans.length || scenes.length || 10
+      const isShortScript = curveLength <= 9
+      const isMediumScript = curveLength <= 13
+
+      // Seuils adaptés : court → σ8/σ14, medium → σ9/σ16, long → σ10/σ18
+      const thresholdHigh = isShortScript ? 8 : isMediumScript ? 9 : 10
+      const thresholdVeryHigh = isShortScript ? 14 : isMediumScript ? 16 : 18
+
+      // Bonus arc global (récompense la structure narrative même sur peu de plans)
+      const arcBonus = tension?.globalArc?.includes('classique') ? 10
+                     : tension?.globalArc?.includes('crescendo') ? 7
+                     : tension?.globalArc?.includes('contemplatif') ? 5 : 0
+
+      // Score base
+      const baseScore = tensionVariance > thresholdVeryHigh ? 80
+                      : tensionVariance > thresholdHigh ? 70
+                      : tensionVariance > 4 ? 58 : 40
+
+      score = Math.min(95, baseScore + arcBonus)
+
+      comment = score >= 80 ? 'Gestion de tension efficace — contrastes marqués'
+              : score >= 70 ? 'Tension bien gérée, quelques respirations'
+              : score >= 58 ? 'Tension présente — enrichir les contrastes'
               : 'Tension trop plate — manque de contrastes'
       break
+    }
 
     case 'sound_design':
       const hasMusicRef = script.toLowerCase().match(/musique|bande.son|ambient|silence|son|audio|soundtrack/)
