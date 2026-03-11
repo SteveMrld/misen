@@ -131,13 +131,35 @@ export function tensionCurve(input: TensionInput): TensionResult {
     }
   }
 
-  // ─── NOUVEAU : Forcer un pic avant le climax si maxTension < 65 ───
-  if (maxTension < 65 && scenes.length >= 4) {
+  // ─── Forcer un arc dramatique structuré pour les scripts courts (≤9 plans) ───
+  if (scenes.length <= 9 && scenes.length >= 3) {
+    const n = curve.length;
+    const peakIdx = Math.max(1, Math.floor(n * 0.65));
+    const breathIdx = Math.max(peakIdx + 1, Math.floor(n * 0.85));
+
+    curve[0].tension = Math.min(50, Math.max(curve[0].tension, 35));
+
+    for (let i = 1; i < peakIdx; i++) {
+      const progress = i / peakIdx;
+      const target = Math.round(35 + progress * 45);
+      curve[i].tension = Math.min(100, Math.max(curve[i].tension, target));
+    }
+
+    curve[peakIdx].tension = Math.min(100, Math.max(curve[peakIdx].tension, 75));
+
+    if (breathIdx < n) {
+      curve[breathIdx].tension = Math.max(35, Math.min(curve[peakIdx].tension - 20, curve[breathIdx].tension));
+    }
+
+    let newMax = 0;
+    for (let i = 0; i < curve.length; i++) {
+      if (curve[i].tension > newMax) { newMax = curve[i].tension; climaxIndex = i; }
+    }
+  } else if (maxTension < 65 && scenes.length >= 4) {
     const peakIdx = Math.floor(scenes.length * 0.65);
     if (peakIdx < curve.length) {
       curve[peakIdx].tension = Math.min(100, Math.max(curve[peakIdx].tension, 72));
       if (peakIdx > 0) curve[peakIdx].delta = curve[peakIdx].tension - curve[peakIdx - 1].tension;
-      // Recalculer climax
       let newMax = 0;
       for (let i = 0; i < curve.length; i++) {
         if (curve[i].tension > newMax) { newMax = curve[i].tension; climaxIndex = i; }
