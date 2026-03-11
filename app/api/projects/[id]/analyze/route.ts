@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getProject, updateProject, saveAnalysis } from '@/lib/db/projects';
 import { runPipeline } from '@/lib/engines/pipeline';
+import { evaluateProject } from '@/lib/test/expert-panel';
 
 export async function POST(
   request: NextRequest,
@@ -18,9 +19,36 @@ export async function POST(
 
     const body = await request.json().catch(() => ({}));
     const stylePreset = body.style_preset || 'cinematique';
+    const genre = body.genre || 'court_metrage';
 
     // Lance le pipeline des 17 moteurs
     const result = runPipeline(project.script_text, { stylePreset });
+
+    // ── QA Expert Panel ──
+    let qaReport: any = null;
+    try {
+      const panelResult = evaluateProject(
+        { ...result, id: params.id, title: project.name || 'Untitled' },
+        project.script_text,
+        genre
+      );
+      qaReport = {
+        score: panelResult.consensusScore,
+        grade: panelResult.consensusGrade,
+        readyForProduction: panelResult.readyForProduction,
+        keyInsights: panelResult.keyInsights.slice(0, 3),
+        criticalIssues: panelResult.criticalIssues.slice(0, 3),
+        experts: panelResult.evaluations.map(e => ({
+          id: e.expertId,
+          name: e.expertName,
+          score: e.overallScore,
+          grade: e.grade,
+          verdict: e.verdict,
+          strengths: e.strengths.slice(0, 2),
+          weaknesses: e.weaknesses.slice(0, 1),
+        }))
+      };
+    } catch { /* QA non bloquant */ }
 
     // Sauvegarde l'analyse (auto-versionning)
     const analysis = await saveAnalysis(params.id, result, stylePreset);
@@ -35,6 +63,7 @@ export async function POST(
       analysis_id: analysis.id,
       version: analysis.version,
       result,
+      qaReport,
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
