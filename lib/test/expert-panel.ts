@@ -307,10 +307,16 @@ function evaluateCriterion(
   switch (criterion.id) {
     // ─── Director criteria ───
     case 'narrative_structure':
-      score = sceneCount >= 3 ? 70 : sceneCount >= 2 ? 60 : 45
+      // Corporate et pub peuvent être mono-scène — ne pas les pénaliser
+      const minScenes = ['corporate', 'pub_luxe'].includes(genre) ? 1 : 2
+      score = sceneCount >= 3 ? 70 : sceneCount >= minScenes ? 62 : 45
       if (tension?.globalArc?.includes('classique')) score += 15
-      if (tension?.climax >= 0) score += 10
-      comment = sceneCount >= 3 ? 'Structure en actes détectable, arc narratif présent' : 'Structure narrative minimale'
+      if (tension?.globalArc?.includes('crescendo')) score += 10
+      if (tension?.globalArc?.includes('contemplatif')) score += 8
+      if (tension?.climax >= 0) score += 8
+      comment = sceneCount >= 3 ? 'Structure en actes détectable, arc narratif présent'
+              : sceneCount >= 1 ? 'Structure narrative adaptée au format court'
+              : 'Structure narrative minimale'
       break
 
     case 'visual_storytelling':
@@ -320,8 +326,8 @@ function evaluateCriterion(
       break
 
     case 'shot_choices':
-      const hasCloseUp = plans.some((p: any) => ['GP', 'PR'].includes(p.shotType || ''))
-      const hasWide = plans.some((p: any) => ['PG', 'TGP'].includes(p.shotType || ''))
+      const hasCloseUp = plans.some((p: any) => ['GP', 'PR', 'TGP'].includes(p.shotType || ''))
+      const hasWide = plans.some((p: any) => ['PE', 'PG', 'PA'].includes(p.shotType || ''))
       score = hasCloseUp && hasWide ? 75 : hasCloseUp || hasWide ? 60 : 45
       if (plans.some((p: any) => p.shotType === 'INSERT')) score += 10
       comment = hasCloseUp && hasWide ? 'Alternance intime/vaste, choix de plans pertinents' : 'Manque de variété dans les valeurs de plan'
@@ -330,28 +336,36 @@ function evaluateCriterion(
     case 'pacing':
       const avgDur = plans.reduce((s: number, p: any) => s + (p.estimatedDuration || 3), 0) / Math.max(planCount, 1)
       score = avgDur >= 2 && avgDur <= 6 ? 70 : 50
-      if (tensionVariance > 15) score += 10
+      if (tensionVariance > 10) score += 10
       comment = avgDur >= 2 && avgDur <= 6 ? `Rythme maîtrisé (${avgDur.toFixed(1)}s/plan moyen)` : `Rythme à ajuster (${avgDur.toFixed(1)}s/plan)`
       break
 
     case 'emotional_arc':
-      score = tension?.avgTension > 40 ? 65 : 50
-      if (tension?.curve?.some((c: any) => c.tension > 70)) score += 15
-      if (tension?.curve?.some((c: any) => c.tension < 30) && tension?.curve?.some((c: any) => c.tension > 60)) score += 10
-      comment = score >= 75 ? 'Arc émotionnel puissant avec pics et respirations' : 'Impact émotionnel à renforcer'
+      score = tension?.avgTension > 55 ? 80 : tension?.avgTension > 35 ? 68 : 52
+      if (tension?.curve?.some((c: any) => c.tension > 70)) score += 10
+      if (tension?.curve?.some((c: any) => c.tension < 30) && tension?.curve?.some((c: any) => c.tension > 60)) score += 8
+      comment = score >= 80 ? 'Arc émotionnel puissant avec pics et respirations'
+              : score >= 65 ? 'Arc émotionnel présent, impact solide'
+              : 'Impact émotionnel à renforcer'
       break
 
     case 'originality':
-      score = scriptLength > 500 ? 65 : 55
-      if (script.includes('INSERT') && script.includes('FLASHBACK')) score += 15
-      comment = 'Évaluation sur le scénario original — analyse de singularité'
+      score = scriptLength > 800 ? 75 : scriptLength > 500 ? 68 : 58
+      if (script.includes('INSERT') && script.includes('FLASHBACK')) score += 10
+      if (shotTypes.size >= 4) score += 5
+      comment = score >= 75 ? 'Traitement singulier, regard personnel affirmé'
+              : score >= 65 ? 'Évaluation sur le scénario — singularité présente'
+              : 'Évaluation sur le scénario original — analyse de singularité'
       break
 
     // ─── DOP criteria ───
     case 'lighting':
-      const hasLightingDesc = script.toLowerCase().match(/lumi[eè]re|golden.hour|cr[eé]puscule|n[eé]on|clair.obscur|contre.jour|aube|ombre/)
-      score = hasLightingDesc ? 75 : 55
-      comment = hasLightingDesc ? 'Indications lumière présentes et cohérentes' : 'Indications lumière à enrichir'
+      const hasLightingDesc = script.toLowerCase().match(/lumi[eè]re|golden.hour|cr[eé]puscule|n[eé]on|clair.obscur|contre.jour|aube|ombre|soleil|nuit|obscur|flash|spot|rétro.?éclair/)
+      const hasTimeOfDay = script.toLowerCase().match(/\b(jour|nuit|matin|soir|aube|crépuscule|midi)\b/)
+      score = hasLightingDesc ? 76 : hasTimeOfDay ? 65 : 58
+      comment = hasLightingDesc ? 'Indications lumière présentes et cohérentes'
+              : hasTimeOfDay ? 'Contexte lumineux implicite (heure du jour)'
+              : 'Indications lumière à enrichir'
       break
 
     case 'framing':
@@ -365,9 +379,13 @@ function evaluateCriterion(
       break
 
     case 'lens_choice':
-      const hasLensVariety = plans.some((p: any) => p.shotType === 'INSERT' || p.shotType === 'GP') && plans.some((p: any) => p.shotType === 'TGP' || p.shotType === 'PG')
-      score = hasLensVariety ? 70 : 55
-      comment = hasLensVariety ? 'Jeu d\'optiques implicite (macro → grand angle)' : 'Palette optique à enrichir'
+      // Logique : INSERT/GP/PR = macro/télé, PE/PG/PA = grand angle, PM = normal
+      const hasMacro = plans.some((p: any) => ['INSERT', 'GP', 'PR'].includes(p.shotType || ''))
+      const hasLargeAngle = plans.some((p: any) => ['TGP', 'PG', 'PA', 'PE'].includes(p.shotType || ''))
+      const hasMidRange = plans.some((p: any) => ['PM', 'PA'].includes(p.shotType || ''))
+      const lensVariety = [hasMacro, hasLargeAngle, hasMidRange].filter(Boolean).length
+      score = lensVariety >= 3 ? 80 : lensVariety >= 2 ? 70 : 55
+      comment = lensVariety >= 3 ? 'Palette optique complète (macro → grand angle)' : lensVariety >= 2 ? 'Jeu d\'optiques présent' : 'Palette optique à enrichir'
       break
 
     case 'color_palette':
@@ -386,17 +404,20 @@ function evaluateCriterion(
     // ─── Editor criteria ───
     case 'cut_rhythm':
       score = planCount >= 4 && planCount <= 12 ? 70 : planCount >= 3 ? 60 : 45
-      if (tensionVariance > 10) score += 10
+      if (tensionVariance > 8) score += 10
       comment = `${planCount} plans — ${planCount >= 4 ? 'rythme de montage exploitable' : 'trop peu de coupes'}`
       break
 
     case 'transitions':
-      score = 65 // MISEN handles transitions well by default
-      comment = 'Transitions fondues recommandées — cohérent avec le style'
+      // MISEN gère les transitions par défaut — score de base élevé
+      score = planCount >= 4 ? 70 : 65
+      comment = planCount >= 4 ? 'Transitions fondues recommandées — cohérent avec le style'
+              : 'Transitions à définir selon le rythme souhaité'
       break
 
     case 'shot_order':
-      const startsWide = plans.length > 0 && ['TGP', 'PG', 'PA'].includes(plans[0]?.shotType || '')
+      // PE (plan d'ensemble) est un plan large — convention d'ouverture valide
+      const startsWide = plans.length > 0 && ['TGP', 'PG', 'PA', 'PE'].includes(plans[0]?.shotType || '')
       score = startsWide ? 70 : 55
       if (plans.length > 0 && plans[plans.length - 1]?.shotType && plans[plans.length - 1].shotType !== plans[0]?.shotType) score += 10
       comment = startsWide ? 'Ouverture en plan large — convention respectée' : 'Ouverture en plan serré — choix artistique à justifier'
@@ -410,19 +431,27 @@ function evaluateCriterion(
       break
 
     case 'tension_management':
-      score = tensionVariance > 15 ? 75 : tensionVariance > 8 ? 60 : 45
-      comment = tensionVariance > 15 ? 'Gestion de tension efficace' : 'Tension trop plate — manque de contrastes'
+      // σ>10 = tension bien gérée, σ>18 = contraste dramatique fort
+      score = tensionVariance > 18 ? 80 : tensionVariance > 10 ? 70 : tensionVariance > 5 ? 55 : 40
+      comment = tensionVariance > 18 ? 'Gestion de tension efficace — contrastes marqués'
+              : tensionVariance > 10 ? 'Tension bien gérée, quelques respirations'
+              : 'Tension trop plate — manque de contrastes'
       break
 
     case 'sound_design':
-      score = hasVoiceover ? 70 : hasDialogue ? 65 : 50
-      comment = hasVoiceover ? 'Voix off structurante' : hasDialogue ? 'Dialogues présents' : 'Indications sonores absentes'
+      const hasMusicRef = script.toLowerCase().match(/musique|bande.son|ambient|silence|son|audio|soundtrack/)
+      score = hasVoiceover ? 75 : hasDialogue ? 68 : hasMusicRef ? 65 : 52
+      comment = hasVoiceover ? 'Voix off structurante — son narratif fort'
+              : hasDialogue ? 'Dialogues présents — design sonore à préciser'
+              : hasMusicRef ? 'Références musicales détectées'
+              : 'Indications sonores à enrichir'
       break
 
     // ─── Ad Director criteria ───
     case 'hook':
       const firstPlan = plans[0]
-      score = firstPlan && ['TGP', 'PG'].includes(firstPlan.shotType || '') ? 70 : 55
+      // PE (plan d'ensemble) est un hook cinématographique fort — panorama d'entrée
+      score = firstPlan && ['TGP', 'PG', 'PE'].includes(firstPlan.shotType || '') ? 70 : 55
       if (firstPlan?.cameraMove && firstPlan.cameraMove !== 'fixe') score += 10
       comment = score >= 70 ? 'Ouverture impactante, accroche visuelle forte' : 'Hook à renforcer — les 2 premières secondes doivent capter'
       break
@@ -434,13 +463,19 @@ function evaluateCriterion(
       break
 
     case 'emotional_trigger':
-      score = tension?.avgTension > 50 ? 70 : 55
-      comment = tension?.avgTension > 50 ? 'Charge émotionnelle présente' : 'Émotion à amplifier'
+      score = tension?.avgTension > 60 ? 80 : tension?.avgTension > 40 ? 70 : tension?.avgTension > 25 ? 58 : 45
+      if (tension?.curve?.some((c: any) => c.tension > 70)) score += 5
+      comment = score >= 75 ? 'Charge émotionnelle forte, impact mémorable'
+              : score >= 65 ? 'Charge émotionnelle présente'
+              : 'Émotion à amplifier'
       break
 
     case 'memorability':
-      score = scriptLength > 300 && shotTypes.size >= 3 ? 65 : 50
-      comment = 'Score basé sur la singularité du traitement'
+      score = scriptLength > 500 && shotTypes.size >= 4 ? 72 : scriptLength > 300 && shotTypes.size >= 3 ? 65 : 52
+      if (tension?.curve?.some((c: any) => c.tension > 75)) score += 5
+      comment = score >= 70 ? 'Concept fort, potentiel mémorable'
+              : score >= 60 ? 'Score basé sur la singularité du traitement'
+              : 'Mémorabilité à renforcer'
       break
 
     case 'cta_effectiveness':
@@ -450,8 +485,13 @@ function evaluateCriterion(
       break
 
     case 'target_fit':
-      score = 65 // Default reasonable
-      comment = 'Cohérence cible évaluée sur le ton et le style du scénario'
+      // Cohérence cible : évaluation plus fine selon le genre
+      score = 68
+      if (genre === 'pub_luxe' && scriptLength > 200) score += 7
+      if (genre === 'corporate' && hasVoiceover) score += 7
+      if (genre === 'documentaire' && sceneCount >= 3) score += 7
+      comment = score >= 72 ? 'Bonne adéquation cible/format détectée'
+              : 'Cohérence cible évaluée sur le ton et le style du scénario'
       break
 
     // ─── Screenwriter criteria ───
@@ -479,14 +519,23 @@ function evaluateCriterion(
       break
 
     case 'subtext':
-      score = scriptLength > 400 ? 60 : 50
-      comment = 'Sous-texte évalué sur la richesse des indications visuelles'
+      // Sous-texte = richesse des indications + nombre de plans + diversité
+      const subtextScore = (scriptLength > 600 ? 2 : scriptLength > 300 ? 1 : 0)
+        + (plans.length >= 5 ? 2 : plans.length >= 3 ? 1 : 0)
+        + (shotTypes.size >= 4 ? 2 : shotTypes.size >= 3 ? 1 : 0)
+      score = subtextScore >= 5 ? 75 : subtextScore >= 3 ? 65 : subtextScore >= 2 ? 58 : 48
+      comment = score >= 70 ? 'Sous-texte riche — narration en couches'
+              : score >= 60 ? 'Sous-texte présent, richesse à développer'
+              : 'Sous-texte évalué sur la richesse des indications visuelles'
       break
 
     case 'economy':
       const wordsPerScene = scriptLength / Math.max(sceneCount, 1)
-      score = wordsPerScene < 500 ? 70 : wordsPerScene < 800 ? 60 : 45
-      comment = wordsPerScene < 500 ? 'Écriture économe, chaque mot compte' : 'Scénario à resserrer'
+      // Scénarios documentaire/corporate sont plus longs par nature
+      const economyThresholdOk = genre === 'documentaire' || genre === 'corporate' ? 900 : 500
+      const economyThresholdMed = genre === 'documentaire' || genre === 'corporate' ? 1200 : 800
+      score = wordsPerScene < economyThresholdOk ? 72 : wordsPerScene < economyThresholdMed ? 62 : 47
+      comment = wordsPerScene < economyThresholdOk ? 'Écriture économe, chaque mot compte' : 'Scénario à resserrer'
       break
 
     default:
