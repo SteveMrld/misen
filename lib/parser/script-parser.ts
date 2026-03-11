@@ -273,10 +273,48 @@ export function parseScript(text: string, options: Partial<ParserOptions> = {}):
   // Stats
   const stats = computeStats(scenes, allPersonnages);
 
+  // ─── NOUVEAU : Détection des scènes redondantes ───
+  const warnings: string[] = [];
+  const redundantPairs: Array<[number, number, number]> = []; // [i, j, score]
+
+  if (scenes.length >= 3) {
+    for (let i = 0; i < scenes.length - 1; i++) {
+      for (let j = i + 1; j < scenes.length; j++) {
+        const sim = sceneTextSimilarity(scenes[i], scenes[j]);
+        if (sim >= 0.68) {
+          redundantPairs.push([i, j, Math.round(sim * 100)]);
+          warnings.push(
+            `Scènes ${i + 1} et ${j + 1} ("${scenes[i].titre || scenes[i].lieu}" / "${scenes[j].titre || scenes[j].lieu}") similaires à ${Math.round(sim * 100)}% — fusion ou suppression recommandée`
+          );
+          // Marquer la scène la moins riche comme redondante
+          const wordsI = scenes[i].contenu.join(' ').split(/\s+/).length;
+          const wordsJ = scenes[j].contenu.join(' ').split(/\s+/).length;
+          if (wordsI <= wordsJ) {
+            (scenes[i] as any).isRedundant = true;
+          } else {
+            (scenes[j] as any).isRedundant = true;
+          }
+        }
+      }
+    }
+
+    // Détecter les scènes trop courtes (<15 mots) en milieu de script — à resserrer
+    for (let i = 1; i < scenes.length - 1; i++) {
+      const wordCount = scenes[i].contenu.join(' ').split(/\s+/).length;
+      if (wordCount < 15 && scenes[i].dialogues.length === 0) {
+        warnings.push(
+          `Scène ${i + 1} ("${scenes[i].lieu || scenes[i].titre}") trop courte (${wordCount} mots, pas de dialogue) — à enrichir ou fusionner`
+        );
+        (scenes[i] as any).needsExpansion = true;
+      }
+    }
+  }
+
   return {
     scenes,
     personnages: Array.from(allPersonnages),
     stats,
+    warnings: warnings.length > 0 ? warnings : undefined,
   };
 }
 
@@ -293,6 +331,33 @@ function estimateDuration(scene: ParsedScene): number {
   const dialogueWords = scene.dialogues.reduce((sum, d) => sum + d.texte.split(/\s+/).length, 0);
   // ~2 sec par 10 mots d'action, ~3 sec par ligne de dialogue
   return Math.max(5, Math.round(actionWords / 5 + scene.dialogues.length * 3));
+}
+
+// ─── Calcul de similarité textuelle entre deux scènes (Jaccard sur tokens) ───
+function sceneTextSimilarity(a: ParsedScene, b: ParsedScene): number {
+  const tokenize = (scene: ParsedScene): Set<string> => {
+    const raw = [
+      ...scene.contenu,
+      ...scene.dialogues.map(d => d.texte),
+      scene.lieu || '',
+      scene.titre || '',
+    ].join(' ').toLowerCase();
+    // Supprimer les mots vides français et stopwords
+    const stopwords = new Set(['le','la','les','un','une','des','de','du','et','en','à','au','aux','il','elle','ils','elles','se','son','sa','ses','je','tu','nous','vous','qui','que','quoi','dans','sur','avec','pour','par','mais','ou','donc','or','ni','car','est','sont','a','ont','été','faire','fait','être','avoir','plus','très']);
+    const tokens = raw.split(/[\s,.'!?;:()\-–—]+/).filter(t => t.length > 2 && !stopwords.has(t));
+    return new Set(tokens);
+  };
+
+  const setA = tokenize(a);
+  const setB = tokenize(b);
+  if (setA.size === 0 || setB.size === 0) return 0;
+
+  let intersection = 0;
+  for (const token of setA) {
+    if (setB.has(token)) intersection++;
+  }
+  const union = setA.size + setB.size - intersection;
+  return intersection / Math.max(union, 1);
 }
 
 function computeStats(scenes: ParsedScene[], personnages: Set<string>): ScriptStats {

@@ -128,6 +128,7 @@ export function runPipeline(scriptText: string, options: PipelineOptions = {}): 
         previousCadrage: plans.length > 0 ? plans[plans.length - 1].cadrage : undefined,
         scenePosition: pi === 0 ? 'debut' : pi === planCount - 1 ? 'fin' : 'milieu',
         personnageCount: scene.personnages.length,
+        usedCadrages: plans.map(p => p.cadrage).filter(Boolean) as any[],
       });
 
       const dialogue = pi < scene.dialogues.length ? scene.dialogues[pi] : undefined;
@@ -328,7 +329,45 @@ export function runPipeline(scriptText: string, options: PipelineOptions = {}): 
     costByScene.push(Math.round(sceneCost * 100) / 100);
   }
 
-  // ═══ ÉTAPE 8 : Continuity Tracker ═══
+  // ═══ FIX P0 : Injection automatique INSERT produit (pub/corporate) ═══
+  // Si genre pub ou corporate et aucun plan INSERT avant 40% → en injecter un
+  const detectedGenre = options?.stylePreset || 'cinematique';
+  const isPubGenre = ['pub_luxe', 'corporate', 'cinematique'].includes(detectedGenre) ||
+    (options as any)?.genre?.includes('pub') || (options as any)?.genre === 'corporate';
+
+  if (isPubGenre && plans.length >= 3) {
+    const threshold40 = Math.floor(plans.length * 0.4);
+    const insertBefore40 = plans
+      .slice(0, threshold40)
+      .findIndex(p => p.shotType === 'INSERT' || /produit|flacon|logo|marque|product|brand|bottle/i.test(p.finalPrompt || ''));
+
+    if (insertBefore40 === -1) {
+      // Construire un plan INSERT au ~30% du film
+      const insertPosition = Math.max(1, Math.floor(plans.length * 0.28));
+      const refPlan = plans[Math.min(insertPosition, plans.length - 1)];
+      const insertPlan: any = {
+        ...refPlan,
+        id: `INSERT_AUTO`,
+        cadrage: 'INSERT',
+        shotType: 'INSERT',
+        camera: 'fixe',
+        cameraMove: 'fixe',
+        angle: 'neutre',
+        eclairage: refPlan?.eclairage || 'naturel',
+        duree: 3,
+        estimatedDuration: 3,
+        description: 'Plan INSERT produit (injecté automatiquement)',
+        prompt: `Extreme close-up macro shot of the product, sharp focus, beautiful lighting, brand visibility, cinematic quality, 8K`,
+        finalPrompt: `Extreme close-up macro shot of the product, sharp focus, beautiful lighting, brand visibility, cinematic quality, 8K`,
+        basePrompt: `Macro INSERT produit`,
+        negativePrompt: refPlan?.negativePrompt || 'blur, motion, people',
+        emotion: 'determination',
+        intensite: 60,
+        _autoInserted: true,
+      };
+      plans.splice(insertPosition, 0, insertPlan);
+    }
+  }
   const continuity = continuityTracker(plans);
 
   // ═══ Engine Intelligence Report ═══

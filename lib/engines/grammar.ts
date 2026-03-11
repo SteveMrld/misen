@@ -22,6 +22,8 @@ interface GrammarInput {
   previousCadrage?: ShotType;
   scenePosition: 'debut' | 'milieu' | 'fin';
   personnageCount: number;
+  /** Variété : liste des cadrages déjà utilisés dans ce projet */
+  usedCadrages?: ShotType[];
 }
 
 /**
@@ -135,6 +137,40 @@ export function cinematicGrammar(input: GrammarInput): GrammarResult {
   if (input.intensity > 80) rythme = 'frenetique';
   else if (input.intensity > 60) rythme = 'rapide';
   else if (input.intensity < 30) rythme = 'lent';
+
+  // ─── NOUVEAU : Variété de plans forcée ───
+  // Si le projet a déjà ≥ 4 plans consécutifs du même cadrage, forcer un autre type
+  const usedCadrages = input.usedCadrages || [];
+  const ALL_SHOT_TYPES: ShotType[] = ['PE', 'PA', 'PM', 'PR', 'GP', 'TGP', 'INSERT'];
+  const typeCounts: Record<string, number> = {};
+  for (const c of usedCadrages) typeCounts[c] = (typeCounts[c] || 0) + 1;
+
+  const uniqueTypesUsed = new Set(usedCadrages);
+  const lastFour = usedCadrages.slice(-4);
+  const lastFourAllSame = lastFour.length === 4 && lastFour.every(c => c === lastFour[0]);
+
+  // Forcer la diversité si : 4 derniers identiques, OU total projet < 4 types distincts après 6+ plans
+  const needsVariety = lastFourAllSame || (usedCadrages.length >= 6 && uniqueTypesUsed.size < 4);
+  if (needsVariety && !input.isFirstPlan && !input.isLastPlan) {
+    const unusedTypes = ALL_SHOT_TYPES.filter(t => !uniqueTypesUsed.has(t) && t !== cadrage);
+    if (unusedTypes.length > 0) {
+      // Choisir un type adapté à l'intensité
+      const candidates = unusedTypes.filter(t => {
+        if (input.intensity > 65) return ['GP', 'TGP', 'PR', 'INSERT'].includes(t);
+        if (input.intensity < 35) return ['PE', 'PA', 'PM'].includes(t);
+        return true;
+      });
+      const pick = candidates.length > 0 ? candidates[0] : unusedTypes[0];
+      cadrage = pick;
+      notes.push(`Variété forcée : ${pick} (diversification du séquençage)`);
+    } else if (lastFourAllSame) {
+      // Rotation dans les types connus
+      const others = ALL_SHOT_TYPES.filter(t => t !== cadrage);
+      const leastUsed = others.sort((a, b) => (typeCounts[a] || 0) - (typeCounts[b] || 0));
+      cadrage = leastUsed[0];
+      notes.push(`Variété forcée : rotation vers ${leastUsed[0]}`);
+    }
+  }
 
   // ─── Durée estimée ───
   let duree = 4; // par défaut 4 secondes

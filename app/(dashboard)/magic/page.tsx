@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Film, Sparkles, ArrowRight, Loader2, Play, Camera, Brain, Clock, Eye, Music2, Users, Zap, AlertTriangle, Copy, Check, ChevronDown, TrendingUp } from 'lucide-react'
+import { Film, Sparkles, ArrowRight, Loader2, Play, Camera, Brain, Clock, Eye, Music2, Users, Zap, AlertTriangle, Copy, Check, ChevronDown, TrendingUp, Video, CheckCircle2, XCircle } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
 import { useI18n } from '@/lib/i18n'
 
@@ -76,7 +76,7 @@ La ville en contrebas. Lumières. Le danseur au bord du vide. Bras écartés.
 Retour au studio. Mouvement final. Freeze.`
 }
 
-type Phase = 'input' | 'processing' | 'result'
+type Phase = 'input' | 'processing' | 'result' | 'generating' | 'generated'
 
 export default function MagicModePage() {
   const router = useRouter()
@@ -92,6 +92,13 @@ export default function MagicModePage() {
   const [error, setError] = useState<string | null>(null)
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null)
   const resultRef = useRef<HTMLDivElement>(null)
+
+  // ── États génération Kling ──
+  const [genProgress, setGenProgress] = useState(0)
+  const [genResults, setGenResults] = useState<Record<string, any>>({}) // shotId → {status, resultUrl, ...}
+  const [genTotal, setGenTotal] = useState(0)
+  const [genDone, setGenDone] = useState(0)
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Loading animation
   useEffect(() => {
@@ -150,10 +157,219 @@ export default function MagicModePage() {
     }
   }
 
+  // ── Génération bout-en-bout Kling ──
+  const handleGenerateAll = async () => {
+    if (!projectId) return
+    setPhase('generating')
+    setGenProgress(0)
+    setGenResults({})
+    setGenDone(0)
+    setError(null)
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/generate-all`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: 'kling', aspectRatio: '16:9' }),
+      })
+      const data = await res.json()
+
+      if (res.status === 402) {
+        throw new Error(
+          fr
+            ? `Crédits insuffisants — nécessaire: ${data.creditsNeeded} cr., disponible: ${data.creditsAvailable} cr. Rechargez depuis les paramètres.`
+            : `Insufficient credits — needed: ${data.creditsNeeded} cr., available: ${data.creditsAvailable} cr. Top up in settings.`
+        )
+      }
+      if (!res.ok) throw new Error(data.error || `Erreur soumission (${res.status})`)
+
+      setGenTotal(data.total || 0)
+
+      // Initialiser les résultats avec les jobs soumis
+      const initResults: Record<string, any> = {}
+      for (const r of data.results || []) {
+        initResults[r.shotId] = { status: r.status === 'submitted' ? 'pending' : 'error', generationId: r.generationId, error: r.error }
+      }
+      setGenResults(initResults)
+
+      // Démarrer le polling
+      pollingRef.current = setInterval(async () => {
+        try {
+          const statusRes = await fetch(`/api/projects/${projectId}/generation-status`)
+          const statusData = await statusRes.json()
+
+          const newResults: Record<string, any> = {}
+          for (const g of statusData.generations || []) {
+            newResults[g.shotId] = g
+          }
+          setGenResults(newResults)
+          setGenProgress(statusData.progress || 0)
+          setGenDone(statusData.done || 0)
+
+          if (statusData.allDone) {
+            if (pollingRef.current) clearInterval(pollingRef.current)
+            setTimeout(() => setPhase('generated'), 500)
+          }
+        } catch { /* ignore poll errors */ }
+      }, 4000)
+    } catch (e: any) {
+      setError(e.message)
+      setPhase('result')
+    }
+  }
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => { if (pollingRef.current) clearInterval(pollingRef.current) }
+  }, [])
+
   const copyPrompt = (prompt: string, idx: number) => {
     navigator.clipboard.writeText(prompt)
     setCopiedIdx(idx)
     setTimeout(() => setCopiedIdx(null), 2000)
+  }
+
+  // ─── GENERATING PHASE ───
+  if (phase === 'generating') {
+    const plans: any[] = analysis?.plans || []
+    return (
+      <div className="min-h-screen bg-dark-950 flex flex-col items-center justify-center px-4 sm:px-6 py-12">
+        <div className="w-full max-w-2xl">
+          {/* Error state */}
+          {error && (
+            <div className="mb-6 px-4 py-3 rounded-xl flex items-start gap-3" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.18)' }}>
+              <AlertTriangle size={16} className="text-red-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm text-red-300">{error}</p>
+                <button onClick={() => { setPhase('result'); setError(null) }} className="text-xs text-red-400 hover:text-red-300 mt-1 underline">
+                  {fr ? '← Retour à l\'analyse' : '← Back to analysis'}
+                </button>
+              </div>
+            </div>
+          )}
+          <div className="text-center mb-10">
+            <div className="w-16 h-16 mx-auto mb-5 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(197,106,45,0.15), rgba(108,77,255,0.15))', border: '1px solid rgba(197,106,45,0.25)' }}>
+              <Video size={28} className="text-orange-400 animate-pulse" />
+            </div>
+            <h1 className="text-2xl font-display font-bold text-white mb-2">
+              {fr ? 'Génération en cours…' : 'Generating…'}
+            </h1>
+            <p className="text-sm text-slate-500">
+              {fr ? `Kling 3.0 génère vos ${genTotal} plans · Polling toutes les 4s` : `Kling 3.0 generating your ${genTotal} shots · Polling every 4s`}
+            </p>
+          </div>
+
+          {/* Progress bar */}
+          <div className="mb-8">
+            <div className="flex justify-between text-xs text-slate-500 mb-2">
+              <span>{genDone}/{genTotal} {fr ? 'plans terminés' : 'shots done'}</span>
+              <span>{genProgress}%</span>
+            </div>
+            <div className="h-2 bg-dark-800 rounded-full overflow-hidden">
+              <div className="h-full rounded-full transition-all duration-1000"
+                style={{ width: `${genProgress}%`, background: 'linear-gradient(90deg, #C56A2D, #6C4DFF)' }} />
+            </div>
+          </div>
+
+          {/* Shot grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {plans.slice(0, 18).map((plan: any, i: number) => {
+              const result = genResults[plan.id] || {}
+              const statusColor = result.status === 'completed' ? '#10B981' : result.status === 'failed' ? '#EF4444' : result.status === 'processing' ? '#C56A2D' : '#475569'
+              return (
+                <div key={i} className="bg-dark-900 border border-dark-700 rounded-xl p-3 relative overflow-hidden">
+                  {result.resultUrl && (
+                    <video src={result.resultUrl} className="absolute inset-0 w-full h-full object-cover opacity-40 rounded-xl" autoPlay muted loop playsInline />
+                  )}
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[9px] font-mono text-orange-400">P{i + 1}</span>
+                      {result.status === 'completed' ? (
+                        <CheckCircle2 size={12} className="text-green-400" />
+                      ) : result.status === 'failed' ? (
+                        <XCircle size={12} className="text-red-400" />
+                      ) : result.status === 'processing' ? (
+                        <Loader2 size={12} className="text-orange-400 animate-spin" />
+                      ) : (
+                        <Clock size={12} className="text-slate-600" />
+                      )}
+                    </div>
+                    <div className="h-1 bg-dark-800 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: result.status === 'completed' ? '100%' : result.status === 'processing' ? '60%' : '0%', background: statusColor }} />
+                    </div>
+                    <p className="text-[8px] text-slate-600 mt-1.5 capitalize">{result.status || 'queued'}</p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ─── GENERATED PHASE ───
+  if (phase === 'generated') {
+    const plans: any[] = analysis?.plans || []
+    const completedCount = Object.values(genResults).filter((r: any) => r.status === 'completed').length
+    return (
+      <div className="min-h-screen bg-dark-950">
+        <div className="relative z-10 max-w-3xl mx-auto px-6 py-12">
+          <div className="text-center mb-10">
+            <div className="w-16 h-16 mx-auto mb-5 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+              <CheckCircle2 size={28} className="text-green-400" />
+            </div>
+            <h1 className="text-2xl font-display font-bold text-white mb-2">
+              {fr ? `${completedCount} vidéos générées` : `${completedCount} videos generated`}
+            </h1>
+            <p className="text-sm text-slate-500">
+              {fr ? 'Votre film est prêt · Assemblage disponible dans l\'éditeur' : 'Your film is ready · Assembly available in the editor'}
+            </p>
+          </div>
+
+          {/* Video grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+            {plans.map((plan: any, i: number) => {
+              const result = genResults[plan.id] || {}
+              return (
+                <div key={i} className="bg-dark-900 border border-dark-700 rounded-xl overflow-hidden">
+                  {result.resultUrl ? (
+                    <video src={result.resultUrl} className="w-full aspect-video object-cover" controls muted playsInline poster={result.thumbnailUrl} />
+                  ) : (
+                    <div className="w-full aspect-video bg-dark-800 flex items-center justify-center">
+                      {result.status === 'failed' ? (
+                        <XCircle size={24} className="text-red-400 opacity-50" />
+                      ) : (
+                        <Clock size={24} className="text-slate-600" />
+                      )}
+                    </div>
+                  )}
+                  <div className="p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[9px] font-mono text-orange-400">P{i + 1}</span>
+                      <span className="text-[9px] text-slate-500">{plan.shotType || plan.cadrage}</span>
+                      <span className="text-[9px] text-slate-600">·</span>
+                      <span className="text-[9px] text-slate-500">{plan.estimatedDuration || 3}s</span>
+                    </div>
+                    <p className="text-[9px] text-slate-500 line-clamp-2">{plan.finalPrompt || plan.prompt}</p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          <div className="text-center">
+            <button onClick={() => router.push(`/project/${projectId}`)}
+              className="px-8 py-4 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 mx-auto transition-all shadow-lg"
+              style={{ background: 'linear-gradient(135deg, #C56A2D 0%, #6C4DFF 100%)' }}>
+              <Film size={16} />
+              {fr ? 'Assembler dans l\'éditeur' : 'Assemble in editor'}
+              <ArrowRight size={16} />
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // ─── INPUT PHASE ───
@@ -583,13 +799,27 @@ export default function MagicModePage() {
 
         {/* CTA */}
         <div className="text-center py-8 border-t border-dark-800">
-          <button onClick={() => router.push(`/project/${projectId}`)}
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-bold text-sm flex items-center justify-center gap-2 mx-auto transition-all shadow-lg shadow-orange-500/20">
-            <Sparkles size={16} />
-            {fr ? 'Continuer dans l\'éditeur complet' : 'Continue in full editor'}
+          {/* Bouton principal : Générer avec Kling */}
+          <button
+            onClick={handleGenerateAll}
+            className="w-full px-6 py-4 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 mx-auto transition-all shadow-lg mb-3"
+            style={{ background: 'linear-gradient(135deg, #C56A2D 0%, #6C4DFF 100%)', boxShadow: '0 8px 32px rgba(197,106,45,0.25)' }}
+          >
+            <Video size={16} />
+            {fr ? '🎬 Générer avec Kling — script → film' : '🎬 Generate with Kling — script → film'}
             <ArrowRight size={16} />
           </button>
-          <p className="text-[10px] text-slate-600 mt-3">
+          <p className="text-[10px] text-slate-600 mb-6">
+            {fr ? `Tous les prompts soumis automatiquement à Kling 3.0 · Crédits déduits au lancement` : `All prompts submitted to Kling 3.0 · Credits deducted on launch`}
+          </p>
+
+          {/* Bouton secondaire : éditeur complet */}
+          <button onClick={() => router.push(`/project/${projectId}`)}
+            className="px-6 py-2.5 rounded-xl border border-dark-700 text-slate-400 hover:text-white hover:border-dark-600 font-medium text-sm flex items-center justify-center gap-2 mx-auto transition-all">
+            <Sparkles size={14} />
+            {fr ? 'Continuer dans l\'éditeur complet' : 'Continue in full editor'}
+          </button>
+          <p className="text-[10px] text-slate-600 mt-2">
             {fr ? 'Storyboard, timeline, copilote IA, sous-titres, voix off, musique, export...' : 'Storyboard, timeline, AI copilot, subtitles, voiceover, music, export...'}
           </p>
         </div>

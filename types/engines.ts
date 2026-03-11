@@ -160,7 +160,7 @@ export interface ScriptStats {
   totalScenes: number; totalDialogues: number; totalMots: number;
   personnagesCount: number; dureeEstimee: number; intCount: number; extCount: number;
 }
-export interface ParserResult { scenes: ParsedScene[]; personnages: string[]; stats: ScriptStats; }
+export interface ParserResult { scenes: ParsedScene[]; personnages: string[]; stats: ScriptStats; warnings?: string[]; }
 
 export interface EngineInsight {
   engine: string; iconName: string; status: 'done' | 'warn' | 'skip'; insight: string; detail: string;
