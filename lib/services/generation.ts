@@ -97,69 +97,106 @@ interface ProviderAdapter {
   cancel?(providerJobId: string, config: ProviderConfig): Promise<void>;
 }
 
-// ── 3.1 Kling 3.0 ──────────────────────────────────────────────────────────
+// ── 3.1 Kling via fal.ai ────────────────────────────────────────────────────
+// Utilise fal.ai comme proxy pay-as-you-go pour Kling 2.1 Master
+// Auth: Authorization: Key {FAL_API_KEY}
+// Submit : POST https://queue.fal.run/fal-ai/kling-video/v2/master/text-to-video
+// Status : GET  https://queue.fal.run/fal-ai/kling-video/requests/{requestId}/status
+// Result : GET  https://queue.fal.run/fal-ai/kling-video/requests/{requestId}
+
+const FAL_KLING_TEXT_URL = 'https://queue.fal.run/fal-ai/kling-video/v2/master/text-to-video';
+const FAL_KLING_IMG_URL  = 'https://queue.fal.run/fal-ai/kling-video/v2/master/image-to-video';
+const FAL_BASE           = 'https://queue.fal.run/fal-ai/kling-video';
 
 const klingAdapter: ProviderAdapter = {
   async submit(req, config) {
+    const endpoint = req.referenceImageUrl ? FAL_KLING_IMG_URL : FAL_KLING_TEXT_URL;
+
     const body: Record<string, unknown> = {
-      model_name: 'kling-v3',
       prompt: req.prompt,
       negative_prompt: req.negativePrompt ?? '',
-      duration: String(req.duration),
-      aspect_ratio: req.aspectRatio,
-      mode: 'professional',
+      duration: req.duration <= 5 ? '5' : '10',
+      aspect_ratio: req.aspectRatio || '16:9',
     };
 
     if (req.referenceImageUrl) {
       body.image_url = req.referenceImageUrl;
     }
-    if (req.referenceVideoUrl) {
-      body.video_url = req.referenceVideoUrl;
-    }
 
-    const res = await fetchProvider(`${config.baseUrl}/videos/generations`, {
+    const res = await fetchProvider(endpoint, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${config.apiKey}`,
+        'Authorization': `Key ${config.apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
     });
 
     const data = await res.json();
+    // fal.ai retourne { request_id, status, response_url, status_url }
+    const requestId = data.request_id ?? data.requestId;
+    if (!requestId) {
+      throw new GenerationError(
+        `fal.ai Kling: pas de request_id. Réponse: ${JSON.stringify(data)}`,
+        'kling', 'SUBMIT_ERROR'
+      );
+    }
     return {
-      providerJobId: data.data?.task_id ?? data.task_id,
-      estimatedDuration: req.duration * 10,
+      providerJobId: requestId,
+      estimatedDuration: req.duration * 12,
     };
   },
 
   async checkStatus(providerJobId, config) {
-    const res = await fetchProvider(
-      `${config.baseUrl}/videos/generations/${providerJobId}`,
-      {
-        headers: { 'Authorization': `Bearer ${config.apiKey}` },
-      }
+    // 1. Vérifier le statut
+    const statusRes = await fetchProvider(
+      `${FAL_BASE}/requests/${providerJobId}/status`,
+      { headers: { 'Authorization': `Key ${config.apiKey}` } }
     );
+    const statusData = await statusRes.json();
+    const falStatus: string = statusData.status ?? 'IN_QUEUE';
 
-    const data = await res.json();
-    const task = data.data ?? data;
+    // Si complété → récupérer le résultat
+    if (falStatus === 'COMPLETED') {
+      const resultRes = await fetchProvider(
+        `${FAL_BASE}/requests/${providerJobId}`,
+        { headers: { 'Authorization': `Key ${config.apiKey}` } }
+      );
+      const result = await resultRes.json();
+      const videoUrl = result.video?.url ?? result.video_url ?? result.output?.video?.url;
+      return {
+        status: 'completed',
+        resultUrl: videoUrl,
+        thumbnailUrl: undefined,
+        progress: 100,
+      };
+    }
 
     return {
-      status: mapKlingStatus(task.task_status),
-      progress: task.task_status === 'processing' ? (task.progress ?? 50) : undefined,
-      resultUrl: task.task_result?.videos?.[0]?.url,
-      thumbnailUrl: task.task_result?.videos?.[0]?.thumbnail_url,
-      errorMessage: task.task_status_msg,
+      status: mapFalStatus(falStatus),
+      progress: falStatus === 'IN_PROGRESS' ? 50 : 10,
+      errorMessage: statusData.error ?? statusData.detail,
     };
   },
 
   async cancel(providerJobId, config) {
-    await fetchProvider(`${config.baseUrl}/videos/generations/${providerJobId}/cancel`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${config.apiKey}` },
-    });
+    await fetchProvider(`${FAL_BASE}/requests/${providerJobId}/cancel`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Key ${config.apiKey}` },
+    }).catch(() => {}); // non-bloquant
   },
 };
+
+function mapFalStatus(status: string): GenerationStatus {
+  const map: Record<string, GenerationStatus> = {
+    IN_QUEUE: 'pending',
+    IN_PROGRESS: 'processing',
+    COMPLETED: 'completed',
+    FAILED: 'failed',
+    CANCELLED: 'cancelled',
+  };
+  return map[status] ?? 'processing';
+}
 
 function mapKlingStatus(status: string): GenerationStatus {
   const map: Record<string, GenerationStatus> = {
