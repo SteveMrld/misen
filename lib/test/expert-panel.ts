@@ -388,12 +388,36 @@ function evaluateCriterion(
       comment = lensVariety >= 3 ? 'Palette optique complète (macro → grand angle)' : lensVariety >= 2 ? 'Jeu d\'optiques présent' : 'Palette optique à enrichir'
       break
 
-    case 'color_palette':
-      score = 60 // Default — hard to evaluate without actual generation
-      const hasColorRef = script.toLowerCase().match(/or|bleu|rouge|noir|blanc|cuivre|violet|néon|ambre/)
-      if (hasColorRef) score += 15
-      comment = hasColorRef ? 'Palette chromatique intentionnelle détectée' : 'Palette couleurs à définir plus explicitement'
+    case 'color_palette': {
+      const sl = script.toLowerCase()
+      // Couche 1 — couleurs nommées (chaudes vs froides)
+      const warmColors = sl.match(/\b(or|doré|ambre|cuivre|orange|rouge|ocre|sépia|brun|rouille|sable|miel)\b/g) || []
+      const coldColors = sl.match(/\b(bleu|azur|cyan|violet|indigo|argent|blanc|gris|glacé|acier)\b/g) || []
+      const darkColors = sl.match(/\b(noir|sombre|obscur|ombre|nuit|ténèbres)\b/g) || []
+      const neonColors = sl.match(/\b(néon|fluo|rose|magenta|lime|électrique)\b/g) || []
+      const totalColorRefs = warmColors.length + coldColors.length + darkColors.length + neonColors.length
+      // Couche 2 — intentions de grade
+      const hasGradeIntent = sl.match(/\b(désaturé|saturé|monochrome|sépia|viré|grade|étalon|palette|teinte|contraste|chaleur|froid)\b/)
+      // Couche 3 — cohérence chromatique (une couleur dominante + une complémentaire = intentionnel)
+      const hasDominantPalette = (warmColors.length >= 2 && (coldColors.length >= 1 || darkColors.length >= 1))
+                               || (coldColors.length >= 2 && (warmColors.length >= 1 || darkColors.length >= 1))
+                               || neonColors.length >= 2
+      // Couche 4 — genre mapping (pub_luxe = attentes haute colorimétrie)
+      const genreColorBonus = ['pub_luxe', 'clip_musical'].includes(genre) ? 5 : 0
+      // Calcul
+      score = 58
+      if (totalColorRefs >= 4) score = 82
+      else if (totalColorRefs >= 2) score = 74
+      else if (totalColorRefs >= 1) score = 65
+      if (hasDominantPalette) score += 8
+      if (hasGradeIntent) score += 6
+      score += genreColorBonus
+      comment = score >= 80 ? `Palette chromatique riche et intentionnelle (${totalColorRefs} références couleur, cohérence dominant/complémentaire)`
+              : score >= 70 ? `Palette chromatique présente (${totalColorRefs} refs) — cohérence exploitable`
+              : score >= 62 ? 'Quelques références couleur — palette à affirmer'
+              : 'Palette chromatique non définie — préciser la température et les dominantes'
       break
+    }
 
     case 'continuity':
       const continuityScore = plans.length >= 3 ? 70 : 55
@@ -470,13 +494,26 @@ function evaluateCriterion(
               : 'Émotion à amplifier'
       break
 
-    case 'memorability':
-      score = scriptLength > 500 && shotTypes.size >= 4 ? 72 : scriptLength > 300 && shotTypes.size >= 3 ? 65 : 52
-      if (tension?.curve?.some((c: any) => c.tension > 75)) score += 5
-      comment = score >= 70 ? 'Concept fort, potentiel mémorable'
-              : score >= 60 ? 'Score basé sur la singularité du traitement'
-              : 'Mémorabilité à renforcer'
+    case 'memorability': {
+      // Image-clé : un plan ou un moment qui reste dans la tête
+      const hasStrongImage = script.match(/\b(silhouette|reflet|miroir|regard|larme|feu|fumée|vague|cendre|lumière|ombre)\b/i)
+      const hasPunchline = scenes.some((sc: any) => (sc.dialogues || []).some((d: any) => {
+        const text = (d.text || d.ligne || '').trim()
+        return text.length > 0 && text.length < 60 // phrase courte = potentiel punchline
+      }))
+      const hasCrescentTension = tension?.curve && tension.curve.some((c: any) => c.tension > 75)
+      const hasUniqueSetup = script.match(/\b(vertige|apesanteur|ralenti|accéléré|split|miroir|double|fantôme|invisible)\b/i)
+      score = scriptLength > 500 && shotTypes.size >= 4 ? 70 : scriptLength > 300 && shotTypes.size >= 3 ? 62 : 50
+      if (hasStrongImage) score += 10
+      if (hasPunchline) score += 8
+      if (hasCrescentTension) score += 6
+      if (hasUniqueSetup) score += 8
+      comment = score >= 82 ? 'Image-clé forte, concept mémorable — impact durable garanti'
+              : score >= 72 ? 'Bon potentiel mémorable — image ou formule forte présente'
+              : score >= 60 ? 'Mémorabilité correcte — renforcer l\'image-clé'
+              : 'Mémorabilité à construire — trouver un plan ou une phrase signature'
       break
+    }
 
     case 'cta_effectiveness':
       const hasCTA = script.toLowerCase().includes('voix off') || script.toLowerCase().includes('logo') || script.toLowerCase().includes('fin')
@@ -495,22 +532,76 @@ function evaluateCriterion(
       break
 
     // ─── Screenwriter criteria ───
-    case 'dialogue_quality':
+    case 'dialogue_quality': {
       const dialogueCount = scenes.reduce((s: number, sc: any) => s + (sc.dialogues?.length || 0), 0)
-      score = dialogueCount >= 3 ? 70 : dialogueCount >= 1 ? 60 : hasVoiceover ? 65 : 45
-      comment = dialogueCount >= 3 ? `${dialogueCount} répliques — voix distinctes détectables` : 'Peu de dialogues'
+      const sl = script.toLowerCase()
+      // Couche 1 — présence de voix off / narrateur / dialogues directs
+      const hasVO = hasVoiceover
+      const hasDirectDialogue = dialogueCount >= 1
+      // Couche 2 — naturalité (contractions, interruptions, hésitations)
+      const hasNaturalMarkers = script.match(/\b(euh|hmm|ben|ouais|nan|putain|merde|enfin|quoi|hein|bon)\b/i)
+        || script.match(/\.{3}|—|–/) // ellipses et tirets = hésitation, interruption
+      // Couche 3 — distinctivité des voix (plusieurs personnages avec styles différents)
+      const characterNames = characterBible.map((c: any) => (c.name || c.personnage || '').toUpperCase()).filter(Boolean)
+      const distinctVoices = characterNames.filter((name: string) => {
+        const lines = (script.match(new RegExp(name + '\\n([^\\n]+)', 'g')) || [])
+        return lines.length >= 1
+      }).length
+      // Couche 4 — sous-texte dans les dialogues (questions sans réponse, silences indiqués)
+      const hasSilences = script.match(/\bsilence\b|\b\.\.\.\b|SILENCE|pause/i)
+      const hasSubtext = script.match(/\b(sous.entendu|regarde|hésite|sans répondre|détourne)\b/i) || hasSilences
+      // Score final
+      if (!hasDirectDialogue && !hasVO) {
+        score = 48
+      } else if (hasVO && !hasDirectDialogue) {
+        score = 68
+        if (hasNaturalMarkers) score += 8
+      } else {
+        score = dialogueCount >= 5 ? 72 : dialogueCount >= 3 ? 67 : 60
+        if (hasNaturalMarkers) score += 8
+        if (distinctVoices >= 2) score += 7
+        if (hasSubtext) score += 7
+        if (characterBible.length >= 2 && dialogueCount >= 3) score += 5
+      }
+      comment = score >= 80 ? `Dialogues naturels, ${distinctVoices} voix distinctes, sous-texte présent`
+              : score >= 70 ? `${dialogueCount} répliques — voix exploitables, naturel présent`
+              : score >= 60 ? `${dialogueCount} répliques présentes — voix à différencier davantage`
+              : hasVO ? 'Voix off seule — dialogues directs à intégrer pour enrichir'
+              : 'Peu ou pas de dialogues — scénario visuel pur'
       break
+    }
 
-    case 'character_depth':
-      score = characterBible.length >= 2 ? 70 : characterBible.length >= 1 ? 60 : 45
-      comment = characterBible.length >= 2 ? `${characterBible.length} personnages développés` : 'Personnages à approfondir'
+    case 'character_depth': {
+      const hasPhysicalDesc = characterBible.some((c: any) => (c.apparence || c.description || '').length > 30)
+      const hasTraits = characterBible.some((c: any) => c.traits && c.traits.length >= 2)
+      const hasContradiction = script.match(/\b(malgré|pourtant|mais|cependant|paradoxe|contradiction|hésite|doute)\b/i)
+      score = characterBible.length >= 3 ? 75 : characterBible.length >= 2 ? 65 : characterBible.length >= 1 ? 55 : 40
+      if (hasPhysicalDesc) score += 7
+      if (hasTraits) score += 6
+      if (hasContradiction) score += 7
+      comment = score >= 80 ? `${characterBible.length} personnages profonds avec contradictions et traits distinctifs`
+              : score >= 70 ? `${characterBible.length} personnages développés — bible solide`
+              : score >= 58 ? `${characterBible.length} personnage(s) — approfondissement possible`
+              : 'Personnages à développer — ajouter traits physiques et psychologiques'
       break
+    }
 
-    case 'show_dont_tell':
-      const hasAction = script.match(/\n[A-Z].*\n(?![A-Z])/g)
-      score = hasAction && hasAction.length >= 3 ? 70 : 55
-      comment = 'Ratio action/dialogue évalué — le visuel doit primer'
+    case 'show_dont_tell': {
+      // Actions scénaristiques vs dialogues purs
+      const actionLines = (script.match(/^[A-ZÀ-Ü][^a-z\n]{0,5}\n(?![A-Z])/gm) || []).length
+      const hasInsert = script.toUpperCase().includes('INSERT')
+      const hasSymbolism = script.match(/\b(symbole|métaphore|représente|évoque|rappelle|comme un|telle une)\b/i)
+      const hasPureVisual = plans.some((p: any) => p.shotType === 'INSERT' || (p.prompt || '').length > 80)
+      score = actionLines >= 5 ? 72 : actionLines >= 3 ? 62 : 50
+      if (hasInsert) score += 10
+      if (hasSymbolism) score += 8
+      if (hasPureVisual) score += 6
+      comment = score >= 80 ? 'Narration visuelle dominante, le film montre sans expliquer'
+              : score >= 70 ? 'Bon équilibre montrer/dire — visuels forts'
+              : score >= 58 ? 'Ratio action/dialogue acceptable — enrichir le visuel'
+              : 'Trop de dialogue explicatif — laisser les images parler'
       break
+    }
 
     case 'dramatic_engine':
       score = tension?.climax >= 0 ? 70 : 50
