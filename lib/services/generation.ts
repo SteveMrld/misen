@@ -30,8 +30,8 @@ interface ProviderConfig {
 function getProviderConfig(provider: VideoProvider): ProviderConfig {
   const configs: Record<VideoProvider, () => ProviderConfig> = {
     kling: () => ({
-      apiKey: process.env.KLING_API_KEY ?? '',
-      baseUrl: 'https://api.klingai.com/v1',
+      apiKey: process.env.FAL_API_KEY ?? process.env.KLING_API_KEY ?? 'd776f40b-b23b-467a-b06d-7887cc2f7455:9dce9b2d6d144684da308d07b558b55c',
+      baseUrl: 'https://queue.fal.run',
     }),
     runway: () => ({
       apiKey: process.env.RUNWAY_API_KEY ?? '',
