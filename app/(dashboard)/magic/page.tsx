@@ -2,9 +2,43 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Film, Sparkles, ArrowRight, Loader2, Play, Camera, Brain, Clock, Eye, Music2, Users, Zap, AlertTriangle, Copy, Check, ChevronDown, TrendingUp, Video, CheckCircle2, XCircle } from 'lucide-react'
+import { Film, Sparkles, ArrowRight, Loader2, Play, Camera, Brain, Clock, Eye, Music2, Users, Zap, AlertTriangle, Copy, Check, ChevronDown, TrendingUp, Video, CheckCircle2, XCircle, Star, Shield, Wand2, Timer, Clapperboard } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
 import { useI18n } from '@/lib/i18n'
+
+// ── Genres disponibles ──
+const GENRES = [
+  { id: 'pub_luxe',      label: 'Pub luxe',       labelEn: 'Luxury ad',     emoji: '✨' },
+  { id: 'court_metrage', label: 'Court-métrage',  labelEn: 'Short film',    emoji: '🎬' },
+  { id: 'clip_musical',  label: 'Clip musical',   labelEn: 'Music video',   emoji: '🎵' },
+  { id: 'documentaire',  label: 'Documentaire',   labelEn: 'Documentary',   emoji: '📽️' },
+  { id: 'game_trailer',  label: 'Game trailer',   labelEn: 'Game trailer',  emoji: '🎮' },
+  { id: 'corporate',     label: 'Corporate',      labelEn: 'Corporate',     emoji: '🏢' },
+]
+
+const STYLES = [
+  { id: 'cinematique',   label: 'Cinématique',    labelEn: 'Cinematic'   },
+  { id: 'documentaire',  label: 'Documentaire',   labelEn: 'Documentary' },
+  { id: 'publicite',     label: 'Publicitaire',   labelEn: 'Commercial'  },
+]
+
+const DURATIONS = [
+  { id: '15', label: '15s', hint: 'Story / Reel' },
+  { id: '30', label: '30s', hint: 'Spot pub' },
+  { id: '60', label: '1min', hint: 'Court format' },
+  { id: '180', label: '3min+', hint: 'Long format' },
+]
+
+// Auto-detect genre from script keywords
+function autoDetectGenre(script: string): string {
+  const s = script.toLowerCase()
+  if (s.match(/flacon|parfum|luxe|bijou|marque|logo|produit/)) return 'pub_luxe'
+  if (s.match(/danseur|rythme|beat|refrain|couplet|clip/)) return 'clip_musical'
+  if (s.match(/narrateur|archive|témoignage|documentaire|interview/)) return 'documentaire'
+  if (s.match(/gameplay|joueur|boss|level|arena|game/)) return 'game_trailer'
+  if (s.match(/collaborateur|entreprise|équipe|innovation|corporate/)) return 'corporate'
+  return 'court_metrage'
+}
 
 // Pipeline step names for the loading animation
 const PIPELINE_STEPS = [
@@ -93,9 +127,21 @@ export default function MagicModePage() {
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null)
   const resultRef = useRef<HTMLDivElement>(null)
 
+  // ── Feature 1 — Guided Setup ──
+  const [selectedGenre, setSelectedGenre] = useState<string>('')
+  const [selectedStyle, setSelectedStyle] = useState<string>('cinematique')
+  const [selectedDuration, setSelectedDuration] = useState<string>('30')
+  const [setupOpen, setSetupOpen] = useState(false)
+
+  // ── Feature 2 — QA Score ──
+  const [qaReport, setQaReport] = useState<any>(null)
+
+  // ── Feature 3 — Credit confirm ──
+  const [showCreditConfirm, setShowCreditConfirm] = useState(false)
+
   // ── États génération Kling ──
   const [genProgress, setGenProgress] = useState(0)
-  const [genResults, setGenResults] = useState<Record<string, any>>({}) // shotId → {status, resultUrl, ...}
+  const [genResults, setGenResults] = useState<Record<string, any>>({})
   const [genTotal, setGenTotal] = useState(0)
   const [genDone, setGenDone] = useState(0)
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -116,13 +162,24 @@ export default function MagicModePage() {
 
   const handleCreate = async () => {
     if (!script.trim() || script.trim().length < 20) return
+
+    // Feature 1 — Auto-detect genre si pas sélectionné
+    const genre = selectedGenre || autoDetectGenre(script)
+    const styleMap: Record<string, string> = {
+      'pub_luxe': 'cinematique', 'court_metrage': 'cinematique',
+      'clip_musical': 'cinematique', 'documentaire': 'documentaire',
+      'game_trailer': 'cinematique', 'corporate': 'publicite',
+    }
+    const style = selectedStyle !== 'cinematique' ? selectedStyle : (styleMap[genre] || 'cinematique')
+
     setPhase('processing')
     setCurrentStep(0)
     setProgress(0)
     setError(null)
+    setQaReport(null)
+    setShowCreditConfirm(false)
 
     try {
-      // 1. Create project
       const name = projectName.trim() || (fr ? 'Mon film' : 'My film')
       const projRes = await fetch('/api/projects', {
         method: 'POST',
@@ -136,11 +193,11 @@ export default function MagicModePage() {
       const project = await projRes.json()
       setProjectId(project.id)
 
-      // 2. Run analysis
+      // Feature 1+2 — passer genre + style + Feature 2 récupère qaReport
       const analyzeRes = await fetch(`/api/projects/${project.id}/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ style_preset: 'cinematique' }),
+        body: JSON.stringify({ style_preset: style, genre }),
       })
       if (!analyzeRes.ok) {
         const errData = await analyzeRes.json().catch(() => ({}))
@@ -149,6 +206,7 @@ export default function MagicModePage() {
       const data = await analyzeRes.json()
 
       setAnalysis(data.result)
+      if (data.qaReport) setQaReport(data.qaReport)  // Feature 2
       setProgress(100)
       setTimeout(() => setPhase('result'), 600)
     } catch (e: any) {
@@ -429,7 +487,7 @@ export default function MagicModePage() {
           </div>
 
           {/* Quick examples */}
-          <div className="flex items-center gap-2 mt-3 mb-6">
+          <div className="flex items-center gap-2 mt-3 mb-4">
             <span className="text-[10px] text-slate-600">{fr ? 'Exemples :' : 'Examples:'}</span>
             {[
               { key: 'drama', label: fr ? 'Court-métrage' : 'Short film' },
@@ -441,6 +499,114 @@ export default function MagicModePage() {
                 {ex.label}
               </button>
             ))}
+          </div>
+
+          {/* ── Feature 1 — Guided Setup ── */}
+          <div className="mb-5 rounded-xl border border-dark-700 overflow-hidden">
+            {/* Header toggle */}
+            <button
+              onClick={() => setSetupOpen(v => !v)}
+              className="w-full flex items-center justify-between px-4 py-3 bg-dark-900 hover:bg-dark-800 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Wand2 size={13} className="text-orange-400" />
+                <span className="text-xs font-bold text-slate-200">
+                  {fr ? 'Configuration intelligente' : 'Smart setup'}
+                </span>
+                {selectedGenre && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20">
+                    {GENRES.find(g => g.id === selectedGenre)?.[fr ? 'label' : 'labelEn']}
+                  </span>
+                )}
+                {!selectedGenre && (
+                  <span className="text-[10px] text-slate-600">{fr ? '(auto-détection active)' : '(auto-detect on)'}</span>
+                )}
+              </div>
+              <ChevronDown size={14} className={`text-slate-500 transition-transform ${setupOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {setupOpen && (
+              <div className="px-4 pt-4 pb-5 bg-dark-900/50 space-y-4">
+                {/* Auto button */}
+                <button
+                  onClick={() => { setSelectedGenre(''); setSelectedStyle('cinematique'); setSelectedDuration('30') }}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-bold transition-all w-full"
+                  style={{
+                    background: !selectedGenre ? 'rgba(108,77,255,0.12)' : 'transparent',
+                    borderColor: !selectedGenre ? 'rgba(108,77,255,0.3)' : 'rgba(255,255,255,0.06)',
+                    color: !selectedGenre ? '#8B6FFF' : '#64748b'
+                  }}
+                >
+                  <Sparkles size={13} />
+                  {fr ? '✦ Auto — MISEN détecte le genre et choisit le style optimal' : '✦ Auto — MISEN detects genre and picks the optimal style'}
+                </button>
+
+                {/* Genre */}
+                <div>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">{fr ? 'Genre' : 'Genre'}</p>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {GENRES.map(g => (
+                      <button
+                        key={g.id}
+                        onClick={() => setSelectedGenre(g.id === selectedGenre ? '' : g.id)}
+                        className="px-2 py-2 rounded-lg border text-[10px] font-medium transition-all text-left"
+                        style={{
+                          background: selectedGenre === g.id ? 'rgba(197,106,45,0.12)' : 'rgba(255,255,255,0.02)',
+                          borderColor: selectedGenre === g.id ? 'rgba(197,106,45,0.35)' : 'rgba(255,255,255,0.06)',
+                          color: selectedGenre === g.id ? '#C56A2D' : '#64748b'
+                        }}
+                      >
+                        <span className="mr-1">{g.emoji}</span>
+                        {fr ? g.label : g.labelEn}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Style + Durée en ligne */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">{fr ? 'Style' : 'Style'}</p>
+                    <div className="space-y-1">
+                      {STYLES.map(s => (
+                        <button
+                          key={s.id}
+                          onClick={() => setSelectedStyle(s.id)}
+                          className="w-full px-3 py-1.5 rounded-lg border text-[10px] font-medium transition-all text-left"
+                          style={{
+                            background: selectedStyle === s.id ? 'rgba(108,77,255,0.1)' : 'rgba(255,255,255,0.02)',
+                            borderColor: selectedStyle === s.id ? 'rgba(108,77,255,0.3)' : 'rgba(255,255,255,0.06)',
+                            color: selectedStyle === s.id ? '#8B6FFF' : '#64748b'
+                          }}
+                        >
+                          {fr ? s.label : s.labelEn}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">{fr ? 'Durée cible' : 'Target length'}</p>
+                    <div className="space-y-1">
+                      {DURATIONS.map(d => (
+                        <button
+                          key={d.id}
+                          onClick={() => setSelectedDuration(d.id)}
+                          className="w-full px-3 py-1.5 rounded-lg border text-[10px] font-medium transition-all flex items-center justify-between"
+                          style={{
+                            background: selectedDuration === d.id ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.02)',
+                            borderColor: selectedDuration === d.id ? 'rgba(16,185,129,0.25)' : 'rgba(255,255,255,0.06)',
+                            color: selectedDuration === d.id ? '#10B981' : '#64748b'
+                          }}
+                        >
+                          <span className="font-bold">{d.label}</span>
+                          <span style={{ opacity: 0.6 }}>{d.hint}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Error */}
@@ -552,6 +718,96 @@ export default function MagicModePage() {
             {fr ? `${stats.scenes} scènes · ${stats.plans} plans · ${Math.round(stats.duration)}s · ${stats.chars} personnage${stats.chars > 1 ? 's' : ''}` : `${stats.scenes} scenes · ${stats.plans} shots · ${Math.round(stats.duration)}s · ${stats.chars} character${stats.chars > 1 ? 's' : ''}`}
           </p>
         </div>
+
+        {/* ── Feature 2 — QA Expert Panel Score ── */}
+        {qaReport && (
+          <div className="mb-10">
+            <h2 className="text-base font-bold text-white mb-4 flex items-center gap-2">
+              <Star size={16} className="text-yellow-400" />
+              {fr ? 'Score qualité cinématographique' : 'Cinematic quality score'}
+            </h2>
+            <div className="bg-dark-900 border border-dark-700 rounded-xl p-5">
+              {/* Score principal */}
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0" style={{
+                  background: qaReport.score >= 70 ? 'rgba(16,185,129,0.1)' : qaReport.score >= 55 ? 'rgba(234,179,8,0.1)' : 'rgba(239,68,68,0.1)',
+                  border: `1px solid ${qaReport.score >= 70 ? 'rgba(16,185,129,0.25)' : qaReport.score >= 55 ? 'rgba(234,179,8,0.25)' : 'rgba(239,68,68,0.25)'}`,
+                }}>
+                  <span className="text-2xl font-display font-bold" style={{
+                    color: qaReport.score >= 70 ? '#10B981' : qaReport.score >= 55 ? '#EAB308' : '#EF4444'
+                  }}>{qaReport.grade}</span>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-2xl font-bold text-white">{qaReport.score}</p>
+                    <p className="text-sm text-slate-500">/100</p>
+                    {qaReport.readyForProduction && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20 font-bold">
+                        {fr ? '✓ Prêt pour prod' : '✓ Ready for prod'}
+                      </span>
+                    )}
+                  </div>
+                  {/* Barre */}
+                  <div className="h-1.5 bg-dark-800 rounded-full overflow-hidden mt-2">
+                    <div className="h-full rounded-full transition-all" style={{
+                      width: `${qaReport.score}%`,
+                      background: qaReport.score >= 70 ? 'linear-gradient(to right, #10B981, #34D399)' : qaReport.score >= 55 ? 'linear-gradient(to right, #EAB308, #FCD34D)' : 'linear-gradient(to right, #EF4444, #F87171)'
+                    }} />
+                  </div>
+                  <p className="text-[10px] text-slate-600 mt-1">
+                    {fr ? `Évalué par ${qaReport.experts?.length || 3} experts virtuels` : `Evaluated by ${qaReport.experts?.length || 3} virtual experts`}
+                  </p>
+                </div>
+              </div>
+
+              {/* Experts mini-scores */}
+              {qaReport.experts && qaReport.experts.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {qaReport.experts.map((exp: any) => (
+                    <div key={exp.id} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-dark-800 border border-dark-700">
+                      <span className="text-[10px] text-slate-400">{exp.name.replace('Expert ', '')}</span>
+                      <span className="text-[10px] font-bold" style={{
+                        color: exp.score >= 70 ? '#10B981' : exp.score >= 55 ? '#EAB308' : '#EF4444'
+                      }}>{exp.score}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Forces et faiblesses */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {qaReport.keyInsights?.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-bold text-green-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                      <CheckCircle2 size={10} /> {fr ? 'Points forts' : 'Strengths'}
+                    </p>
+                    <div className="space-y-1">
+                      {qaReport.keyInsights.slice(0, 3).map((insight: string, i: number) => (
+                        <p key={i} className="text-[10px] text-slate-400 flex items-start gap-1.5">
+                          <span className="text-green-500 mt-0.5 shrink-0">✓</span> {insight}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {qaReport.criticalIssues?.length > 0 && (
+                  <div>
+                    <p className="text-[10px] font-bold text-orange-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                      <AlertTriangle size={10} /> {fr ? 'Points à améliorer' : 'To improve'}
+                    </p>
+                    <div className="space-y-1">
+                      {qaReport.criticalIssues.slice(0, 3).map((issue: string, i: number) => (
+                        <p key={i} className="text-[10px] text-slate-400 flex items-start gap-1.5">
+                          <span className="text-orange-400 mt-0.5 shrink-0">→</span> {issue}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* KPI row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
@@ -799,16 +1055,88 @@ export default function MagicModePage() {
 
         {/* CTA */}
         <div className="text-center py-8 border-t border-dark-800">
-          {/* Bouton principal : Générer avec Kling */}
-          <button
-            onClick={handleGenerateAll}
-            className="w-full px-6 py-4 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 mx-auto transition-all shadow-lg mb-3"
-            style={{ background: 'linear-gradient(135deg, #C56A2D 0%, #6C4DFF 100%)', boxShadow: '0 8px 32px rgba(197,106,45,0.25)' }}
-          >
-            <Video size={16} />
-            {fr ? '🎬 Générer avec Kling — script → film' : '🎬 Generate with Kling — script → film'}
-            <ArrowRight size={16} />
-          </button>
+
+          {/* ── Feature 3 — Credit confirm ── */}
+          {!showCreditConfirm ? (
+            <>
+              {/* Estimatif crédits */}
+              <div className="mb-4 px-4 py-3 rounded-xl bg-dark-900 border border-dark-700 text-left">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-slate-300 flex items-center gap-2">
+                    <Shield size={13} className="text-violet-400" />
+                    {fr ? 'Estimation avant génération' : 'Pre-generation estimate'}
+                  </span>
+                  {qaReport && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{
+                      background: qaReport.score >= 70 ? 'rgba(16,185,129,0.1)' : 'rgba(234,179,8,0.1)',
+                      color: qaReport.score >= 70 ? '#10B981' : '#EAB308',
+                      border: `1px solid ${qaReport.score >= 70 ? 'rgba(16,185,129,0.2)' : 'rgba(234,179,8,0.2)'}`
+                    }}>
+                      {fr ? `Score qualité : ${qaReport.score}/100 ${qaReport.grade}` : `Quality score: ${qaReport.score}/100 ${qaReport.grade}`}
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="bg-dark-800 rounded-lg py-2 px-1">
+                    <p className="text-base font-bold text-violet-400">{plans.length}</p>
+                    <p className="text-[9px] text-slate-500">{fr ? 'plans' : 'shots'}</p>
+                  </div>
+                  <div className="bg-dark-800 rounded-lg py-2 px-1">
+                    <p className="text-base font-bold text-orange-400">{plans.length * 3}</p>
+                    <p className="text-[9px] text-slate-500">{fr ? 'crédits' : 'credits'}</p>
+                  </div>
+                  <div className="bg-dark-800 rounded-lg py-2 px-1">
+                    <p className="text-base font-bold text-green-400">~{(plans.length * 0.45).toFixed(2)}€</p>
+                    <p className="text-[9px] text-slate-500">{fr ? 'coût estimé' : 'est. cost'}</p>
+                  </div>
+                </div>
+                <p className="text-[9px] text-slate-600 mt-2 text-center">
+                  {fr ? `Kling 3.0 · ${plans.length} clips de ~5s · 3 crédits/clip · débit réel ~$0.45/clip` : `Kling 3.0 · ${plans.length} clips ~5s each · 3 credits/clip · ~$0.45/clip`}
+                </p>
+              </div>
+
+              {/* Bouton → confirmation */}
+              <button
+                onClick={() => setShowCreditConfirm(true)}
+                className="w-full px-6 py-4 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg mb-3"
+                style={{ background: 'linear-gradient(135deg, #C56A2D 0%, #6C4DFF 100%)', boxShadow: '0 8px 32px rgba(197,106,45,0.25)' }}
+              >
+                <Video size={16} />
+                {fr ? '🎬 Générer avec Kling — script → film' : '🎬 Generate with Kling — script → film'}
+                <ArrowRight size={16} />
+              </button>
+            </>
+          ) : (
+            /* ── Confirmation finale ── */
+            <div className="mb-4 px-5 py-5 rounded-xl border-2 text-left" style={{ borderColor: 'rgba(197,106,45,0.4)', background: 'rgba(197,106,45,0.05)' }}>
+              <p className="text-sm font-bold text-white mb-1 flex items-center gap-2">
+                <Clapperboard size={15} className="text-orange-400" />
+                {fr ? 'Confirmer la génération ?' : 'Confirm generation?'}
+              </p>
+              <p className="text-xs text-slate-400 mb-4">
+                {fr
+                  ? `${plans.length} plans × 3 crédits = ${plans.length * 3} crédits seront déduits de votre compte. Génération ~${Math.round(plans.length * 0.5)} min.`
+                  : `${plans.length} shots × 3 credits = ${plans.length * 3} credits will be deducted. Generation ~${Math.round(plans.length * 0.5)} min.`}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleGenerateAll}
+                  className="flex-1 py-3 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-all"
+                  style={{ background: 'linear-gradient(135deg, #C56A2D 0%, #6C4DFF 100%)' }}
+                >
+                  <CheckCircle2 size={14} />
+                  {fr ? `Confirmer · ${plans.length * 3} crédits` : `Confirm · ${plans.length * 3} credits`}
+                </button>
+                <button
+                  onClick={() => setShowCreditConfirm(false)}
+                  className="px-4 py-3 rounded-xl border border-dark-700 text-slate-400 hover:text-white hover:bg-dark-800 text-sm transition-all"
+                >
+                  {fr ? 'Annuler' : 'Cancel'}
+                </button>
+              </div>
+            </div>
+          )}
+
           <p className="text-[10px] text-slate-600 mb-6">
             {fr ? `Tous les prompts soumis automatiquement à Kling 3.0 · Crédits déduits au lancement` : `All prompts submitted to Kling 3.0 · Credits deducted on launch`}
           </p>
