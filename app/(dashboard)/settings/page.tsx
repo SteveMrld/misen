@@ -12,7 +12,6 @@ const AI_PROVIDERS = [
   { id: 'openai', name: '🤖 OpenAI GPT (Assistant fallback)', placeholder: 'sk-...' },
   { id: 'kling', name: 'Kling 3.0', placeholder: 'sk-kling-...' },
   { id: 'falai', name: 'fal.ai (Kling)', placeholder: 'd776f40b-...' },
-{ id: 'falai', name: 'fal.ai (Kling)', placeholder: 'd776f40b-...' }
   { id: 'runway', name: 'Runway Gen-4.5', placeholder: 'rw_...' },
   { id: 'sora', name: 'Sora 2', placeholder: 'sk-...' },
   { id: 'veo', name: 'Veo 3.1', placeholder: 'AIza...' },
