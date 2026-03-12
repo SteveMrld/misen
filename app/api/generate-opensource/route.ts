@@ -11,7 +11,7 @@ import { OPENSOURCE_MODELS } from '@/lib/models/opensource-models';
 
 // HF Inference API (free tier or with MISEN's token for higher rate limits)
 const HF_TOKEN = process.env.HF_API_TOKEN || '';
-const HF_INFERENCE_URL = 'https://api-inference.huggingface.co/models';
+const HF_INFERENCE_URL = 'https://router.huggingface.co/models'
 
 export async function POST(request: NextRequest) {
   try {
