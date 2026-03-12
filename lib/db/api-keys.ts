@@ -14,6 +14,7 @@ export const AI_PROVIDERS = [
   { id: 'anthropic', name: 'Claude (Assistant scénariste)', placeholder: 'sk-ant-...', docsUrl: 'https://console.anthropic.com' },
   { id: 'openai', name: 'OpenAI GPT (Assistant fallback)', placeholder: 'sk-...', docsUrl: 'https://platform.openai.com' },
   { id: 'kling', name: 'Kling 3.0', placeholder: 'sk-kling-...', docsUrl: 'https://docs.qingque.cn' },
+  { id: 'falai', name: 'fal.ai (Kling)', placeholder: 'd776f40b-...', docsUrl: 'https://fal.ai/dashboard' },
   { id: 'runway', name: 'Runway Gen-4.5', placeholder: 'rw_...', docsUrl: 'https://docs.runwayml.com' },
   { id: 'sora', name: 'Sora 2', placeholder: 'sk-sora-...', docsUrl: 'https://platform.openai.com' },
   { id: 'veo', name: 'Veo 3.1', placeholder: 'AIza...', docsUrl: 'https://cloud.google.com/vertex-ai' },
