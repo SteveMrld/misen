@@ -113,6 +113,7 @@ export default function ProjectPage() {
           if (k.provider === 'openai') providers.add('sora') // Sora uses OpenAI key
           if (k.provider === 'google') providers.add('veo')
           if (k.provider === 'falai') providers.add('kling')
+          if (k.provider === 'falai') providers.add('sora')
         })
         setUserKeys(providers)
       })
