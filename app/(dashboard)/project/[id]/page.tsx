@@ -108,7 +108,8 @@ export default function ProjectPage() {
       .then((keys: any[]) => {
         const providers = new Set<string>()
         keys.forEach((k: any) => {
-          if (k.provider === 'kling') providers.add('kling')
+          if (k.provider === 'falai') providers.add('kling')
+          if (k.provider === 'falai') providers.add('sora')
           if (k.provider === 'runway') providers.add('runway')
           if (k.provider === 'openai') providers.add('sora') // Sora uses OpenAI key
           if (k.provider === 'google') providers.add('veo')
