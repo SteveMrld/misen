@@ -90,7 +90,7 @@ export default function ProjectPage() {
   const [creditBalance, setCreditBalance] = useState<number>(0)
   const [aiMode, setAiMode] = useState(false)
 
-  // Keyboard shortcuts Ã¢ÂÂ defined after handlers
+  // Keyboard shortcuts â defined after handlers
 
   useEffect(() => {
     if (!projectId) return
@@ -113,7 +113,6 @@ export default function ProjectPage() {
           if (k.provider === 'openai') providers.add('sora') // Sora uses OpenAI key
           if (k.provider === 'google') providers.add('veo')
           if (k.provider === 'falai') providers.add('kling')
-          if (k.provider === 'falai') providers.add('sora')
         })
         setUserKeys(providers)
       })
@@ -147,7 +146,7 @@ export default function ProjectPage() {
       const apiCall = fetch(`/api/projects/${projectId}/${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ style_preset: stylePreset }) })
       const [res] = await Promise.all([apiCall, minDelay])
       const data = await res.json()
-      if (res.ok && data.result) { setAnalysis(data.result); setAnalysisId(data.analysis_id); toast(locale === 'fr' ? 'Analyse terminÃÂ©e Ã¢ÂÂ ' + (data.result.plans?.length || 0) + ' plans dÃÂ©tectÃÂ©s' : 'Analysis complete Ã¢ÂÂ ' + (data.result.plans?.length || 0) + ' shots detected', 'success'); setShowCelebration(true) }
+      if (res.ok && data.result) { setAnalysis(data.result); setAnalysisId(data.analysis_id); toast(locale === 'fr' ? 'Analyse terminÃ©e â ' + (data.result.plans?.length || 0) + ' plans dÃ©tectÃ©s' : 'Analysis complete â ' + (data.result.plans?.length || 0) + ' shots detected', 'success'); setShowCelebration(true) }
       else setError(data.error || t.common.error)
     } catch { setError(t.common.error) } finally { setAnalyzing(false) }
   }
@@ -173,7 +172,7 @@ export default function ProjectPage() {
     } catch {}
   }
 
-  const isDemoProject = (project?.name || '').toLowerCase().includes('dÃÂ©mo') || (project?.name || '').toLowerCase().includes('demo')
+  const isDemoProject = (project?.name || '').toLowerCase().includes('dÃ©mo') || (project?.name || '').toLowerCase().includes('demo')
 
   const tourSteps = useProjectTour({ setMode, setWorkspace, setTab, hasAnalysis: !!analysis })
 
@@ -246,7 +245,7 @@ export default function ProjectPage() {
                 <Brain size={28} className="text-orange-400 animate-pulse" />
               </div>
               <h2 className="font-display text-xl text-white mb-1">{locale === 'fr' ? 'Analyse en cours...' : 'Analysis in progress...'}</h2>
-              <p className="text-xs text-slate-500">{locale === 'fr' ? '17 moteurs IA analysent votre scÃÂ©nario' : '17 AI engines analyzing your script'}</p>
+              <p className="text-xs text-slate-500">{locale === 'fr' ? '17 moteurs IA analysent votre scÃ©nario' : '17 AI engines analyzing your script'}</p>
             </div>
             {/* Global progress bar */}
             <div className="w-full h-1.5 bg-dark-700 rounded-full overflow-hidden mb-5">
@@ -289,9 +288,9 @@ export default function ProjectPage() {
             <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-orange-500/30 to-orange-600/20 border border-orange-500/30 flex items-center justify-center shadow-2xl shadow-orange-500/20">
               <Sparkles size={32} className="text-orange-400" />
             </div>
-            <h2 className="font-display text-2xl text-white mb-2">{locale === 'fr' ? 'Analyse terminÃÂ©e !' : 'Analysis complete!'}</h2>
+            <h2 className="font-display text-2xl text-white mb-2">{locale === 'fr' ? 'Analyse terminÃ©e !' : 'Analysis complete!'}</h2>
             <div className="flex items-center justify-center gap-4 text-sm text-slate-300 mb-4">
-              <span className="flex items-center gap-1"><Film size={14} className="text-orange-400" /> {analysis.scenes?.length || 0} {locale === 'fr' ? 'scÃÂ¨nes' : 'scenes'}</span>
+              <span className="flex items-center gap-1"><Film size={14} className="text-orange-400" /> {analysis.scenes?.length || 0} {locale === 'fr' ? 'scÃ¨nes' : 'scenes'}</span>
               <span className="flex items-center gap-1"><Eye size={14} className="text-blue-400" /> {analysis.plans?.length || 0} {locale === 'fr' ? 'plans' : 'shots'}</span>
               <span className="flex items-center gap-1"><Users size={14} className="text-purple-400" /> {analysis.characterBible?.length || 0} {locale === 'fr' ? 'personnages' : 'characters'}</span>
             </div>
@@ -340,16 +339,16 @@ export default function ProjectPage() {
             </div>
             <div className="max-h-64 overflow-y-auto p-1.5">
               {[
-                { label: t.project.workspaces.writing, desc: t.project.workspaces.writingDesc, icon: 'Ã¢ÂÂÃ¯Â¸Â', action: () => { setMode('expert'); setWorkspace('writing'); setTab('script') } },
-                { label: t.project.workspaces.analysis, desc: t.project.workspaces.analysisDesc, icon: 'Ã°ÂÂÂ', action: () => { if(analysis) { setMode('expert'); setWorkspace('analysis'); setTab('overview') } } },
-                { label: t.project.workspaces.production, desc: t.project.workspaces.productionDesc, icon: 'Ã°ÂÂÂ¬', action: () => { if(analysis) { setMode('expert'); setWorkspace('production'); setTab('storyboard') } } },
-                { label: t.project.workspaces.postprod, desc: t.project.workspaces.postprodDesc, icon: 'Ã°ÂÂÂ§', action: () => { if(analysis) { setMode('expert'); setWorkspace('postprod'); setTab('subtitles') } } },
-                { label: t.project.workspaces.export, desc: t.project.workspaces.exportDesc, icon: 'Ã°ÂÂÂ¤', action: () => { if(analysis) { setMode('expert'); setWorkspace('export'); setTab('render') } } },
-                { label: locale === 'fr' ? 'Lancer l\'analyse' : 'Run analysis', desc: 'Ctrl+Enter', icon: 'Ã¢ÂÂ¶Ã¯Â¸Â', action: handleAnalyze },
-                { label: locale === 'fr' ? 'Sauvegarder' : 'Save', desc: 'Ctrl+S', icon: 'Ã°ÂÂÂ¾', action: handleSave },
-                { label: t.project.tabs.storyboard, desc: locale === 'fr' ? 'GÃÂ©nÃÂ©rer les visuels' : 'Generate visuals', icon: 'Ã°ÂÂÂ¼Ã¯Â¸Â', action: () => { if(analysis) { setMode('expert'); setTab('storyboard') } } },
-                { label: t.project.tabs.score, desc: locale === 'fr' ? 'Composer la musique' : 'Compose music', icon: 'Ã°ÂÂÂµ', action: () => { if(analysis) { setMode('expert'); setTab('score') } } },
-                { label: locale === 'fr' ? 'Mode simple' : 'Simple mode', desc: '', icon: 'Ã¢ÂÂ¡', action: () => setMode('simple') },
+                { label: t.project.workspaces.writing, desc: t.project.workspaces.writingDesc, icon: 'âï¸', action: () => { setMode('expert'); setWorkspace('writing'); setTab('script') } },
+                { label: t.project.workspaces.analysis, desc: t.project.workspaces.analysisDesc, icon: 'ð', action: () => { if(analysis) { setMode('expert'); setWorkspace('analysis'); setTab('overview') } } },
+                { label: t.project.workspaces.production, desc: t.project.workspaces.productionDesc, icon: 'ð¬', action: () => { if(analysis) { setMode('expert'); setWorkspace('production'); setTab('storyboard') } } },
+                { label: t.project.workspaces.postprod, desc: t.project.workspaces.postprodDesc, icon: 'ð§', action: () => { if(analysis) { setMode('expert'); setWorkspace('postprod'); setTab('subtitles') } } },
+                { label: t.project.workspaces.export, desc: t.project.workspaces.exportDesc, icon: 'ð¤', action: () => { if(analysis) { setMode('expert'); setWorkspace('export'); setTab('render') } } },
+                { label: locale === 'fr' ? 'Lancer l\'analyse' : 'Run analysis', desc: 'Ctrl+Enter', icon: 'â¶ï¸', action: handleAnalyze },
+                { label: locale === 'fr' ? 'Sauvegarder' : 'Save', desc: 'Ctrl+S', icon: 'ð¾', action: handleSave },
+                { label: t.project.tabs.storyboard, desc: locale === 'fr' ? 'GÃ©nÃ©rer les visuels' : 'Generate visuals', icon: 'ð¼ï¸', action: () => { if(analysis) { setMode('expert'); setTab('storyboard') } } },
+                { label: t.project.tabs.score, desc: locale === 'fr' ? 'Composer la musique' : 'Compose music', icon: 'ðµ', action: () => { if(analysis) { setMode('expert'); setTab('score') } } },
+                { label: locale === 'fr' ? 'Mode simple' : 'Simple mode', desc: '', icon: 'â¡', action: () => setMode('simple') },
               ].filter(cmd => !cmdQuery || cmd.label.toLowerCase().includes(cmdQuery.toLowerCase()) || (cmd.desc||'').toLowerCase().includes(cmdQuery.toLowerCase()))
               .map((cmd, i) => (
                 <button key={i} onClick={() => { cmd.action(); setCmdPalette(false); setCmdQuery('') }}
@@ -364,10 +363,10 @@ export default function ProjectPage() {
               ))}
             </div>
             <div className="px-4 py-2 border-t border-dark-700 flex items-center gap-3">
-              <kbd className="text-[9px] text-slate-600 bg-dark-800 px-1.5 py-0.5 rounded border border-dark-700">Ã¢ÂÂÃ¢ÂÂ</kbd>
+              <kbd className="text-[9px] text-slate-600 bg-dark-800 px-1.5 py-0.5 rounded border border-dark-700">ââ</kbd>
               <span className="text-[10px] text-slate-600">{locale === 'fr' ? 'Naviguer' : 'Navigate'}</span>
-              <kbd className="text-[9px] text-slate-600 bg-dark-800 px-1.5 py-0.5 rounded border border-dark-700">Ã¢ÂÂµ</kbd>
-              <span className="text-[10px] text-slate-600">{locale === 'fr' ? 'SÃÂ©lectionner' : 'Select'}</span>
+              <kbd className="text-[9px] text-slate-600 bg-dark-800 px-1.5 py-0.5 rounded border border-dark-700">âµ</kbd>
+              <span className="text-[10px] text-slate-600">{locale === 'fr' ? 'SÃ©lectionner' : 'Select'}</span>
             </div>
           </div>
         </div>
@@ -378,7 +377,7 @@ export default function ProjectPage() {
           <button onClick={() => router.push('/dashboard')} className="p-2 rounded-lg hover:bg-white/5"><ArrowLeft size={20} className="text-slate-400" /></button>
           <div>
             <h1 className="text-lg font-bold text-slate-50">{project?.name || t.common.dashboard}</h1>
-            {analysis && <p className="text-xs text-slate-500">{analysis.scenes?.length || 0} scenes Ã¢ÂÂ¢ {analysis.plans?.length || 0} shots Ã¢ÂÂ¢ ${(analysis.costTotal || 0).toFixed(2)}</p>}
+            {analysis && <p className="text-xs text-slate-500">{analysis.scenes?.length || 0} scenes â¢ {analysis.plans?.length || 0} shots â¢ ${(analysis.costTotal || 0).toFixed(2)}</p>}
           </div>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto ml-12 sm:ml-0">
@@ -386,7 +385,7 @@ export default function ProjectPage() {
           {analysis && (
             <div className="relative">
               <button onClick={() => setShowTour(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-lg text-xs font-medium text-orange-400 hover:text-orange-300 hover:bg-orange-500/15 transition-colors">
-                <Sparkles size={12} /> {locale === 'fr' ? 'Visite guidÃÂ©e' : 'Guided tour'}
+                <Sparkles size={12} /> {locale === 'fr' ? 'Visite guidÃ©e' : 'Guided tour'}
               </button>
               <button onClick={() => setShowExportMenu(!showExportMenu)} className="flex items-center gap-1.5 px-3 py-1.5 bg-dark-900 border border-dark-700 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors">
                 <Download size={13} /> Export
@@ -396,12 +395,12 @@ export default function ProjectPage() {
                   <div className="fixed inset-0 z-40" onClick={() => setShowExportMenu(false)} />
                   <div className="absolute right-0 top-9 w-48 bg-dark-800 border border-dark-700 rounded-xl shadow-2xl shadow-black/40 z-50 py-1.5">
                     {[
-                      { format: 'pdf', label: 'Bible PDF', icon: 'Ã°ÂÂÂ', desc: 'Production book' },
-                      { format: 'bible_html', label: 'Bible HTML', icon: 'Ã°ÂÂÂ', desc: 'Vue navigateur' },
-                      { format: 'json', label: 'JSON', icon: 'Ã°ÂÂÂ¦', desc: 'Data' },
-                      { format: 'csv', label: 'CSV', icon: 'Ã°ÂÂÂ', desc: 'Spreadsheet' },
-                      { format: 'fountain', label: 'Fountain', icon: 'Ã°ÂÂÂ¬', desc: 'Screenplay' },
-                      { format: 'prompts', label: locale === 'fr' ? 'Prompts TXT' : 'Prompts TXT', icon: 'Ã°ÂÂÂ', desc: locale === 'fr' ? 'Copier-coller' : 'Copy-paste' },
+                      { format: 'pdf', label: 'Bible PDF', icon: 'ð', desc: 'Production book' },
+                      { format: 'bible_html', label: 'Bible HTML', icon: 'ð', desc: 'Vue navigateur' },
+                      { format: 'json', label: 'JSON', icon: 'ð¦', desc: 'Data' },
+                      { format: 'csv', label: 'CSV', icon: 'ð', desc: 'Spreadsheet' },
+                      { format: 'fountain', label: 'Fountain', icon: 'ð¬', desc: 'Screenplay' },
+                      { format: 'prompts', label: locale === 'fr' ? 'Prompts TXT' : 'Prompts TXT', icon: 'ð', desc: locale === 'fr' ? 'Copier-coller' : 'Copy-paste' },
                     ].map(exp => (
                       <button key={exp.format} onClick={() => { window.open(`/api/projects/${projectId}/export?format=${exp.format}`); setShowExportMenu(false) }}
                         className="flex items-center gap-3 w-full px-3 py-2 hover:bg-dark-700 transition-colors text-left">
@@ -436,16 +435,16 @@ export default function ProjectPage() {
           <div className="bg-dark-900 rounded-xl border border-dark-700 p-4">
             <div className="flex items-center gap-1">
               {[
-                { label: locale === 'fr' ? 'ÃÂcriture' : 'Writing', done: !!scriptText.trim(), icon: 'Ã¢ÂÂÃ¯Â¸Â' },
-                { label: locale === 'fr' ? 'Analyse' : 'Analysis', done: !!analysis, icon: 'Ã°ÂÂÂ' },
-                { label: locale === 'fr' ? 'Production' : 'Production', done: false, icon: 'Ã°ÂÂÂ¬' },
-                { label: locale === 'fr' ? 'Post-prod' : 'Post-prod', done: false, icon: 'Ã°ÂÂÂ§' },
-                { label: 'Export', done: false, icon: 'Ã°ÂÂÂ¤' },
+                { label: locale === 'fr' ? 'Ãcriture' : 'Writing', done: !!scriptText.trim(), icon: 'âï¸' },
+                { label: locale === 'fr' ? 'Analyse' : 'Analysis', done: !!analysis, icon: 'ð' },
+                { label: locale === 'fr' ? 'Production' : 'Production', done: false, icon: 'ð¬' },
+                { label: locale === 'fr' ? 'Post-prod' : 'Post-prod', done: false, icon: 'ð§' },
+                { label: 'Export', done: false, icon: 'ð¤' },
               ].map((step, i, arr) => (
                 <div key={i} className="flex-1 flex items-center">
                   <div className="flex flex-col items-center flex-1">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all ${step.done ? 'bg-green-500/20 border-2 border-green-500' : i === 0 || (i === 1 && scriptText.trim()) ? 'bg-orange-500/20 border-2 border-orange-500 animate-pulse' : 'bg-dark-800 border-2 border-dark-700'}`}>
-                      {step.done ? 'Ã¢ÂÂ' : step.icon}
+                      {step.done ? 'â' : step.icon}
                     </div>
                     <span className={`text-[9px] mt-1 ${step.done ? 'text-green-400' : 'text-slate-500'}`}>{step.label}</span>
                   </div>
@@ -453,13 +452,13 @@ export default function ProjectPage() {
                 </div>
               ))}
             </div>
-            {!scriptText.trim() && <p className="text-xs text-slate-500 text-center mt-3">{locale === 'fr' ? 'Ã°ÂÂÂ Commencez par ÃÂ©crire ou coller votre scÃÂ©nario' : 'Ã°ÂÂÂ Start by writing or pasting your script'}</p>}
-            {scriptText.trim() && !analysis && <p className="text-xs text-orange-400 text-center mt-3">{locale === 'fr' ? 'Ã¢Â¬ÂÃ¯Â¸Â Lancez l\'analyse pour continuer' : 'Ã¢Â¬ÂÃ¯Â¸Â Run analysis to continue'}</p>}
+            {!scriptText.trim() && <p className="text-xs text-slate-500 text-center mt-3">{locale === 'fr' ? 'ð Commencez par Ã©crire ou coller votre scÃ©nario' : 'ð Start by writing or pasting your script'}</p>}
+            {scriptText.trim() && !analysis && <p className="text-xs text-orange-400 text-center mt-3">{locale === 'fr' ? 'â¬ï¸ Lancez l\'analyse pour continuer' : 'â¬ï¸ Run analysis to continue'}</p>}
             {analysis && (
               <div className="mt-4 space-y-3">
                 <div className="beam w-full" />
                 <div className="flex items-center gap-4 justify-center">
-                  <span className="flex items-center gap-1.5 text-xs text-green-400"><Film size={12} /> {analysis.scenes?.length || 0} {locale === 'fr' ? 'scÃÂ¨nes' : 'scenes'}</span>
+                  <span className="flex items-center gap-1.5 text-xs text-green-400"><Film size={12} /> {analysis.scenes?.length || 0} {locale === 'fr' ? 'scÃ¨nes' : 'scenes'}</span>
                   <span className="flex items-center gap-1.5 text-xs text-blue-400"><Eye size={12} /> {analysis.plans?.length || 0} {locale === 'fr' ? 'plans' : 'shots'}</span>
                   <span className="flex items-center gap-1.5 text-xs text-purple-400"><Users size={12} /> {analysis.characterBible?.length || 0} {locale === 'fr' ? 'personnages' : 'characters'}</span>
                 </div>
@@ -494,8 +493,8 @@ export default function ProjectPage() {
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <select value={stylePreset} onChange={(e: any) => setStylePreset(e.target.value)} className="px-2 py-1 bg-dark-800 border border-dark-600 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-orange-500/50">
-                  <option value="cinematique">Ã°ÂÂÂ¬ CinÃÂ©matique</option><option value="documentaire">Ã°ÂÂÂ¹ Documentaire</option>
-                  <option value="noir">Ã°ÂÂÂ Film noir</option><option value="onirique">Ã°ÂÂÂ Onirique</option>
+                  <option value="cinematique">ð¬ CinÃ©matique</option><option value="documentaire">ð¹ Documentaire</option>
+                  <option value="noir">ð Film noir</option><option value="onirique">ð Onirique</option>
                 </select>
                 <button onClick={loadDemo} className="px-2 py-1 bg-dark-800 hover:bg-dark-700 border border-dark-600 rounded-lg text-xs text-slate-400">{t.common.demo}</button>
                 <button onClick={handleSave} disabled={saving} className="px-2 py-1 bg-dark-800 hover:bg-dark-700 border border-dark-600 rounded-lg text-xs text-slate-400 flex items-center gap-1">
@@ -526,7 +525,7 @@ export default function ProjectPage() {
                 return (
                 <div className="bg-dark-900 rounded-2xl border border-dark-700 overflow-hidden">
                   <div className="px-4 py-3 border-b border-dark-700 flex items-center justify-between">
-                    <div className="flex items-center gap-2"><Cpu size={16} className="text-violet-400" /><span className="text-sm font-medium text-slate-200">{locale === 'fr' ? '17 moteurs Ã¢ÂÂ Rapport d\'intelligence' : '17 engines Ã¢ÂÂ Intelligence Report'}</span></div>
+                    <div className="flex items-center gap-2"><Cpu size={16} className="text-violet-400" /><span className="text-sm font-medium text-slate-200">{locale === 'fr' ? '17 moteurs â Rapport d\'intelligence' : '17 engines â Intelligence Report'}</span></div>
                     <span className="text-[10px] text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full font-semibold">{(analysis.engineInsights as any[]).filter((e: any) => e.status === 'done').length}/13 {locale === 'fr' ? 'actifs' : 'active'}</span>
                   </div>
                   <div className="divide-y divide-dark-700/30">
@@ -573,7 +572,7 @@ export default function ProjectPage() {
                     }} className="px-3 py-1.5 btn-primary text-white text-[10px] font-semibold rounded-lg flex items-center gap-1.5 transition-colors shadow-lg shadow-orange-600/20">
                       <Copy size={12} /> {locale === 'fr' ? 'Copier tous les prompts' : 'Copy all prompts'}
                     </button>
-                    <button onClick={() => setMode('expert')} className="text-xs text-orange-400 hover:text-orange-300 flex items-center gap-1"><SlidersHorizontal size={12} /> {t.project.modeExpert} Ã¢ÂÂ</button>
+                    <button onClick={() => setMode('expert')} className="text-xs text-orange-400 hover:text-orange-300 flex items-center gap-1"><SlidersHorizontal size={12} /> {t.project.modeExpert} â</button>
                   </div>
                 </div>
                 {/* Generation options banner */}
@@ -584,9 +583,9 @@ export default function ProjectPage() {
                     <span className="text-slate-700">|</span>
                     <span className="flex items-center gap-1 text-orange-400"><Copy size={9} /> {locale === 'fr' ? 'Copier & ouvrir' : 'Copy & open'}</span>
                     <span className="text-slate-700">|</span>
-                    <span className="flex items-center gap-1 text-violet-400"><Sparkles size={9} /> {locale === 'fr' ? 'CrÃÂ©dits MISEN' : 'MISEN credits'}</span>
+                    <span className="flex items-center gap-1 text-violet-400"><Sparkles size={9} /> {locale === 'fr' ? 'CrÃ©dits MISEN' : 'MISEN credits'}</span>
                     <span className="text-slate-700">|</span>
-                    <span className="flex items-center gap-1 text-green-400"><Zap size={9} /> {locale === 'fr' ? 'ClÃÂ© API' : 'API key'}</span>
+                    <span className="flex items-center gap-1 text-green-400"><Zap size={9} /> {locale === 'fr' ? 'ClÃ© API' : 'API key'}</span>
                   </div>
                 </div>
                 <div className="divide-y divide-dark-700/50">
@@ -690,12 +689,12 @@ export default function ProjectPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <Film size={14} className="text-orange-400" />
-                      <span className="text-overline text-slate-500 uppercase tracking-widest">{locale === 'fr' ? 'AperÃÂ§u du projet' : 'Project Overview'}</span>
+                      <span className="text-overline text-slate-500 uppercase tracking-widest">{locale === 'fr' ? 'AperÃ§u du projet' : 'Project Overview'}</span>
                     </div>
                     <h2 className="font-display text-2xl text-white mb-1">{project?.name || 'Untitled'}</h2>
-                    <p className="text-xs text-slate-400 max-w-lg leading-relaxed">{analysis.synopsis || analysis.logline || (locale === 'fr' ? 'Aucun synopsis dÃÂ©tectÃÂ©' : 'No synopsis detected')}</p>
+                    <p className="text-xs text-slate-400 max-w-lg leading-relaxed">{analysis.synopsis || analysis.logline || (locale === 'fr' ? 'Aucun synopsis dÃ©tectÃ©' : 'No synopsis detected')}</p>
                     <div className="flex items-center gap-4 mt-3">
-                      <span className="text-[10px] text-slate-500 flex items-center gap-1"><Film size={10} className="text-orange-400" /> {analysis.scenes?.length || 0} {locale === 'fr' ? 'scÃÂ¨nes' : 'scenes'}</span>
+                      <span className="text-[10px] text-slate-500 flex items-center gap-1"><Film size={10} className="text-orange-400" /> {analysis.scenes?.length || 0} {locale === 'fr' ? 'scÃ¨nes' : 'scenes'}</span>
                       <span className="text-[10px] text-slate-500 flex items-center gap-1"><Eye size={10} className="text-blue-400" /> {analysis.plans?.length || 0} {locale === 'fr' ? 'plans' : 'shots'}</span>
                       <span className="text-[10px] text-slate-500 flex items-center gap-1"><Users size={10} className="text-purple-400" /> {analysis.characterBible?.length || 0} {locale === 'fr' ? 'personnages' : 'characters'}</span>
                       <span className="text-[10px] text-slate-500 flex items-center gap-1"><Clock size={10} className="text-green-400" /> ~{Math.round((analysis.plans?.length || 0) * 4)}s</span>
@@ -727,7 +726,7 @@ export default function ProjectPage() {
           {tab === 'voiceover' && analysis && <VO projectId={projectId} projectName={project?.name} />}
           {tab === 'score' && analysis && <ScorePanel analysis={analysis} projectId={projectId} projectName={project?.name} />}
           
-          {/* MINI-TIMELINE Ã¢ÂÂ persistent film overview */}
+          {/* MINI-TIMELINE â persistent film overview */}
           {analysis && analysis.plans && analysis.plans.length > 0 && (
             <div className="mt-6 bg-dark-900 rounded-xl border border-dark-700 p-3">
               <div className="flex items-center gap-2 mb-2">
@@ -738,9 +737,9 @@ export default function ProjectPage() {
               <div className="flex gap-0.5 h-6 rounded-lg overflow-hidden bg-dark-800">
                 {analysis.plans.map((plan: any, i: number) => {
                   const emotionColors: Record<string, string> = {
-                    tension: '#ef4444', tristesse: '#6366f1', colÃÂ¨re: '#b91c1c', joie: '#f59e0b',
-                    peur: '#8b5cf6', nostalgie: '#a78bfa', amour: '#ec4899', mystÃÂ¨re: '#06b6d4',
-                    dÃÂ©termination: '#f97316', neutre: '#64748b',
+                    tension: '#ef4444', tristesse: '#6366f1', colÃ¨re: '#b91c1c', joie: '#f59e0b',
+                    peur: '#8b5cf6', nostalgie: '#a78bfa', amour: '#ec4899', mystÃ¨re: '#06b6d4',
+                    dÃ©termination: '#f97316', neutre: '#64748b',
                     sadness: '#6366f1', anger: '#b91c1c', joy: '#f59e0b', fear: '#8b5cf6',
                     love: '#ec4899', mystery: '#06b6d4', determination: '#f97316', neutral: '#64748b',
                   }
@@ -751,7 +750,7 @@ export default function ProjectPage() {
                       onClick={() => { setTab('analyse'); setWorkspace('analysis') }}
                       className="relative group h-full transition-all hover:opacity-80"
                       style={{ flex: 1, backgroundColor: color + '40', borderRight: i < analysis.plans.length - 1 ? '1px solid rgba(0,0,0,0.3)' : 'none' }}
-                      title={`S${plan.sceneIndex ?? '?'}P${plan.planIndex ?? i+1} Ã¢ÂÂ ${plan.emotion || 'neutre'}`}
+                      title={`S${plan.sceneIndex ?? '?'}P${plan.planIndex ?? i+1} â ${plan.emotion || 'neutre'}`}
                     >
                       <div className="absolute bottom-0 left-0 right-0 h-1.5" style={{ backgroundColor: color }} />
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -767,7 +766,7 @@ export default function ProjectPage() {
                   const counts: Record<string, { color: string; count: number }> = {}
                   for (const plan of (analysis.plans || [])) {
                     const e = (plan.emotion || 'neutre').toLowerCase()
-                    const emotionColors: Record<string, string> = { tension: '#ef4444', tristesse: '#6366f1', joie: '#f59e0b', peur: '#8b5cf6', nostalgie: '#a78bfa', amour: '#ec4899', mystÃÂ¨re: '#06b6d4', dÃÂ©termination: '#f97316', neutre: '#64748b', sadness: '#6366f1', joy: '#f59e0b', fear: '#8b5cf6', love: '#ec4899', mystery: '#06b6d4', determination: '#f97316', neutral: '#64748b' }
+                    const emotionColors: Record<string, string> = { tension: '#ef4444', tristesse: '#6366f1', joie: '#f59e0b', peur: '#8b5cf6', nostalgie: '#a78bfa', amour: '#ec4899', mystÃ¨re: '#06b6d4', dÃ©termination: '#f97316', neutre: '#64748b', sadness: '#6366f1', joy: '#f59e0b', fear: '#8b5cf6', love: '#ec4899', mystery: '#06b6d4', determination: '#f97316', neutral: '#64748b' }
                     if (!counts[e]) counts[e] = { color: emotionColors[e] || '#64748b', count: 0 }
                     counts[e].count++
                   }
@@ -794,15 +793,15 @@ export default function ProjectPage() {
   )
 }
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ Unified Deliver Page Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// âââ Unified Deliver Page âââ
 function DeliverPage({ analysis, analysisId, projectId, projectName, locale }: { analysis: any; analysisId: string | null; projectId: string; projectName?: string; locale: string }) {
   const [deliverTab, setDeliverTab] = useState<'generate' | 'assemble' | 'presets' | 'history'>('generate')
   const fr = locale === 'fr'
   const tabs = [
-    { id: 'generate' as const, label: fr ? 'GÃÂ©nÃÂ©rer' : 'Generate', icon: 'Ã¢ÂÂ¡' },
-    { id: 'assemble' as const, label: fr ? 'Assembler' : 'Assemble', icon: 'Ã°ÂÂÂ¬' },
-    { id: 'presets' as const, label: fr ? 'Formats' : 'Formats', icon: 'Ã°ÂÂÂ' },
-    { id: 'history' as const, label: fr ? 'Historique' : 'History', icon: 'Ã°ÂÂÂ' },
+    { id: 'generate' as const, label: fr ? 'GÃ©nÃ©rer' : 'Generate', icon: 'â¡' },
+    { id: 'assemble' as const, label: fr ? 'Assembler' : 'Assemble', icon: 'ð¬' },
+    { id: 'presets' as const, label: fr ? 'Formats' : 'Formats', icon: 'ð' },
+    { id: 'history' as const, label: fr ? 'Historique' : 'History', icon: 'ð' },
   ]
   return (
     <div className="space-y-4">
@@ -815,7 +814,7 @@ function DeliverPage({ analysis, analysisId, projectId, projectName, locale }: {
             </div>
             <div>
               <h2 className="text-sm font-bold text-slate-200 font-display">{fr ? 'Livraison' : 'Deliver'}</h2>
-              <p className="text-[10px] text-slate-500">{fr ? 'GÃÂ©nÃÂ©rer, assembler, exporter votre film' : 'Generate, assemble, export your film'}</p>
+              <p className="text-[10px] text-slate-500">{fr ? 'GÃ©nÃ©rer, assembler, exporter votre film' : 'Generate, assemble, export your film'}</p>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -844,14 +843,14 @@ function DeliverPage({ analysis, analysisId, projectId, projectName, locale }: {
           <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-3">{fr ? 'Formats d\'export' : 'Export Formats'}</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: 'YouTube 1080p', res: '1920ÃÂ1080', ratio: '16:9', icon: 'Ã¢ÂÂ¶', color: 'border-red-500/20 hover:border-red-500/40' },
-              { label: 'Instagram Reels', res: '1080ÃÂ1920', ratio: '9:16', icon: 'Ã°ÂÂÂ±', color: 'border-pink-500/20 hover:border-pink-500/40' },
-              { label: fr ? 'CinÃÂ©ma 4K' : 'Cinema 4K', res: '3840ÃÂ2160', ratio: '2.39:1', icon: 'Ã°ÂÂÂ¬', color: 'border-orange-500/20 hover:border-orange-500/40' },
-              { label: fr ? 'PrÃÂ©sentation' : 'Presentation', res: '1920ÃÂ1080', ratio: '16:9', icon: 'Ã°ÂÂÂ', color: 'border-blue-500/20 hover:border-blue-500/40' },
-              { label: 'TikTok', res: '1080ÃÂ1920', ratio: '9:16', icon: 'Ã°ÂÂÂµ', color: 'border-cyan-500/20 hover:border-cyan-500/40' },
-              { label: 'X / Twitter', res: '1280ÃÂ720', ratio: '16:9', icon: 'Ã°ÂÂÂ¦', color: 'border-sky-500/20 hover:border-sky-500/40' },
-              { label: 'LinkedIn', res: '1920ÃÂ1080', ratio: '16:9', icon: 'Ã°ÂÂÂ¼', color: 'border-blue-600/20 hover:border-blue-600/40' },
-              { label: fr ? 'CarrÃÂ©' : 'Square', res: '1080ÃÂ1080', ratio: '1:1', icon: 'Ã¢Â¬Â', color: 'border-purple-500/20 hover:border-purple-500/40' },
+              { label: 'YouTube 1080p', res: '1920Ã1080', ratio: '16:9', icon: 'â¶', color: 'border-red-500/20 hover:border-red-500/40' },
+              { label: 'Instagram Reels', res: '1080Ã1920', ratio: '9:16', icon: 'ð±', color: 'border-pink-500/20 hover:border-pink-500/40' },
+              { label: fr ? 'CinÃ©ma 4K' : 'Cinema 4K', res: '3840Ã2160', ratio: '2.39:1', icon: 'ð¬', color: 'border-orange-500/20 hover:border-orange-500/40' },
+              { label: fr ? 'PrÃ©sentation' : 'Presentation', res: '1920Ã1080', ratio: '16:9', icon: 'ð', color: 'border-blue-500/20 hover:border-blue-500/40' },
+              { label: 'TikTok', res: '1080Ã1920', ratio: '9:16', icon: 'ðµ', color: 'border-cyan-500/20 hover:border-cyan-500/40' },
+              { label: 'X / Twitter', res: '1280Ã720', ratio: '16:9', icon: 'ð¦', color: 'border-sky-500/20 hover:border-sky-500/40' },
+              { label: 'LinkedIn', res: '1920Ã1080', ratio: '16:9', icon: 'ð¼', color: 'border-blue-600/20 hover:border-blue-600/40' },
+              { label: fr ? 'CarrÃ©' : 'Square', res: '1080Ã1080', ratio: '1:1', icon: 'â¬', color: 'border-purple-500/20 hover:border-purple-500/40' },
             ].map((preset, i) => (
               <button key={i} className={`bg-dark-800/50 hover:bg-dark-800 border rounded-xl p-4 text-left transition-all group ${preset.color}`}>
                 <span className="text-2xl block mb-2">{preset.icon}</span>
@@ -872,7 +871,7 @@ function DeliverPage({ analysis, analysisId, projectId, projectName, locale }: {
           </div>
           <div className="space-y-2">
             {[
-              { date: new Date().toLocaleDateString(fr ? 'fr-FR' : 'en-US'), type: 'JSON', size: '2.4 KB', icon: 'Ã°ÂÂÂ', status: 'Ã¢ÂÂ' },
+              { date: new Date().toLocaleDateString(fr ? 'fr-FR' : 'en-US'), type: 'JSON', size: '2.4 KB', icon: 'ð', status: 'â' },
             ].map((ex, i) => (
               <div key={i} className="flex items-center gap-3 px-3 py-2.5 bg-dark-800/50 rounded-lg border border-dark-700/50 hover:border-dark-600 transition-colors">
                 <span className="text-sm">{ex.icon}</span>
@@ -885,14 +884,14 @@ function DeliverPage({ analysis, analysisId, projectId, projectName, locale }: {
               </div>
             ))}
           </div>
-          <p className="text-[9px] text-slate-600 text-center mt-3">{fr ? 'L\'historique se remplit au fur et ÃÂ  mesure de vos exports' : 'History fills as you export'}</p>
+          <p className="text-[9px] text-slate-600 text-center mt-3">{fr ? 'L\'historique se remplit au fur et Ã  mesure de vos exports' : 'History fills as you export'}</p>
         </div>
       )}
     </div>
   )
 }
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ Model studio URLs Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// âââ Model studio URLs âââ
 const MODEL_URLS: Record<string, { name: string; url: string; provider: string }> = {
   kling: { name: 'Kling', url: 'https://klingai.com', provider: 'kling' },
   'kling 3.0': { name: 'Kling', url: 'https://klingai.com', provider: 'kling' },
@@ -911,7 +910,7 @@ const MODEL_URLS: Record<string, { name: string; url: string; provider: string }
 }
 const getModelStudio = (mid: string) => MODEL_URLS[mid.toLowerCase()] || MODEL_URLS['kling']
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ Simple Plan Card Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// âââ Simple Plan Card âââ
 function SPC({ plan, index, analysisId, userKeys, projectId, creditBalance, onCreditsUsed }: { plan: any; index: number; analysisId?: string | null; userKeys: Set<string>; projectId?: string; creditBalance?: number; onCreditsUsed?: (n: number) => void }) {
   const { t, locale } = useI18n()
   const [copied, setCopied] = useState(false)
@@ -973,7 +972,7 @@ function SPC({ plan, index, analysisId, userKeys, projectId, creditBalance, onCr
           if (!sr.ok) return
           const sd = await sr.json()
           if (sd.status === 'completed') { clearInterval(pollRef.current!); setProgress(100); setVideoUrl(sd.resultUrl || sd.thumbnailUrl); setStatus('completed') }
-          else if (sd.status === 'failed') { clearInterval(pollRef.current!); setStatus('failed'); setError(sd.errorMessage || 'ÃÂchec') }
+          else if (sd.status === 'failed') { clearInterval(pollRef.current!); setStatus('failed'); setError(sd.errorMessage || 'Ãchec') }
           if (sd.progress) setProgress(sd.progress)
         } catch {}
         if (tick > 150) { clearInterval(pollRef.current!); setStatus('failed'); setError('Timeout') }
@@ -998,9 +997,9 @@ function SPC({ plan, index, analysisId, userKeys, projectId, creditBalance, onCr
       const data = await r.json()
       if (!r.ok) {
         if (r.status === 402) {
-          setStatus('failed'); setError(locale === 'fr' ? `CrÃÂ©dits insuffisants (${data.balance}/${data.required})` : `Insufficient credits (${data.balance}/${data.required})`)
+          setStatus('failed'); setError(locale === 'fr' ? `CrÃ©dits insuffisants (${data.balance}/${data.required})` : `Insufficient credits (${data.balance}/${data.required})`)
         } else if (r.status === 503) {
-          setStatus('failed'); setError(locale === 'fr' ? `${studio.name} non disponible via crÃÂ©dits MISEN` : `${studio.name} not available via MISEN credits`)
+          setStatus('failed'); setError(locale === 'fr' ? `${studio.name} non disponible via crÃ©dits MISEN` : `${studio.name} not available via MISEN credits`)
         } else {
           setStatus('failed'); setError(data.error || 'Erreur')
         }
@@ -1016,7 +1015,7 @@ function SPC({ plan, index, analysisId, userKeys, projectId, creditBalance, onCr
           if (!sr.ok) return
           const sd = await sr.json()
           if (sd.status === 'completed') { clearInterval(pollRef.current!); setProgress(100); setVideoUrl(sd.resultUrl || sd.thumbnailUrl); setStatus('completed') }
-          else if (sd.status === 'failed') { clearInterval(pollRef.current!); setStatus('failed'); setError(sd.errorMessage || 'ÃÂchec') }
+          else if (sd.status === 'failed') { clearInterval(pollRef.current!); setStatus('failed'); setError(sd.errorMessage || 'Ãchec') }
           if (sd.progress) setProgress(sd.progress)
         } catch {}
         if (tick > 150) { clearInterval(pollRef.current!); setStatus('failed'); setError('Timeout') }
@@ -1051,7 +1050,7 @@ function SPC({ plan, index, analysisId, userKeys, projectId, creditBalance, onCr
           if (!sr.ok) return
           const sd = await sr.json()
           if (sd.status === 'completed') { clearInterval(pollRef.current!); setProgress(100); setVideoUrl(sd.resultUrl || sd.thumbnailUrl); setStatus('completed') }
-          else if (sd.status === 'failed') { clearInterval(pollRef.current!); setStatus('failed'); setError(sd.errorMessage || 'ÃÂchec') }
+          else if (sd.status === 'failed') { clearInterval(pollRef.current!); setStatus('failed'); setError(sd.errorMessage || 'Ãchec') }
         } catch {}
         if (tick > 180) { clearInterval(pollRef.current!); setStatus('failed'); setError('Timeout') }
       }, 2000)
@@ -1100,10 +1099,10 @@ function SPC({ plan, index, analysisId, userKeys, projectId, creditBalance, onCr
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] text-slate-600">${(plan?.estimatedCost||0).toFixed(3)}</span>
-              {/* Option 2: User has own API key Ã¢ÂÂ Generate directly */}
+              {/* Option 2: User has own API key â Generate directly */}
               {canGenerate && status === 'idle' && (
                 <button onClick={generate} className="px-2.5 py-1 btn-primary text-white text-[10px] font-medium rounded flex items-center gap-1 transition-colors">
-                  <Zap size={10} /> {locale === 'fr' ? 'GÃÂ©nÃÂ©rer' : 'Generate'}
+                  <Zap size={10} /> {locale === 'fr' ? 'GÃ©nÃ©rer' : 'Generate'}
                 </button>
               )}
               {canGenerate && status === 'failed' && (
@@ -1116,20 +1115,20 @@ function SPC({ plan, index, analysisId, userKeys, projectId, creditBalance, onCr
                   <Check size={10} /> {t.common.success}
                 </span>
               )}
-              {/* Option 3: MISEN credits (Pro/Studio) Ã¢ÂÂ Generate without user key */}
+              {/* Option 3: MISEN credits (Pro/Studio) â Generate without user key */}
               {!canGenerate && status === 'idle' && (
                 <button onClick={() => {
                   if (hasCredits) { generateWithCredits() }
                   else { window.open('/settings?tab=usage', '_self') }
                 }} className="px-2.5 py-1 bg-gradient-to-r from-violet-600/20 to-violet-500/20 hover:from-violet-600/30 hover:to-violet-500/30 text-violet-300 text-[10px] font-medium rounded flex items-center gap-1 border border-violet-500/20 transition-colors">
                   <Sparkles size={10} /> {hasCredits
-                    ? (locale === 'fr' ? `GÃÂ©nÃÂ©rer (${creditBalance} cr.)` : `Generate (${creditBalance} cr.)`)
-                    : (locale === 'fr' ? 'Acheter des crÃÂ©dits' : 'Buy credits')}
+                    ? (locale === 'fr' ? `GÃ©nÃ©rer (${creditBalance} cr.)` : `Generate (${creditBalance} cr.)`)
+                    : (locale === 'fr' ? 'Acheter des crÃ©dits' : 'Buy credits')}
                 </button>
               )}
               {!canGenerate && (status === 'processing' || status === 'polling') && (
                 <span className="flex items-center gap-1.5 text-violet-400 text-[10px]">
-                  <Loader2 size={10} className="animate-spin" /> {locale === 'fr' ? 'GÃÂ©nÃÂ©ration...' : 'Generating...'}
+                  <Loader2 size={10} className="animate-spin" /> {locale === 'fr' ? 'GÃ©nÃ©ration...' : 'Generating...'}
                 </span>
               )}
               {!canGenerate && status === 'completed' && (
@@ -1179,7 +1178,7 @@ function SPC({ plan, index, analysisId, userKeys, projectId, creditBalance, onCr
               A/B
             </button>
           </div>
-          <p className="text-[11px] text-slate-400 leading-relaxed font-mono line-clamp-2">{prompt || 'Ã¢ÂÂ'}</p>
+          <p className="text-[11px] text-slate-400 leading-relaxed font-mono line-clamp-2">{prompt || 'â'}</p>
           {/* Open-source fallback comparison */}
           {osFallback && !canGenerate && (
             <div className="mt-1.5 flex items-center gap-2 text-[9px]">
@@ -1208,7 +1207,7 @@ function SPC({ plan, index, analysisId, userKeys, projectId, creditBalance, onCr
   )
 }
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ Script Tab Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// âââ Script Tab âââ
 function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, saving, analyzing, error, handleSave, handleAnalyze, loadDemo, loadTemplate, aiMode, setAiMode }: any) {
   const { t, locale } = useI18n()
   const [dragOver, setDragOver] = useState(false)
@@ -1248,7 +1247,7 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
   }, [scriptText])
 
   return (
-    <DropZone accept={['media', 'file', 'reference']} onDrop={(item) => { if (item.data?.text) setScriptText((prev: string) => prev + '\n' + item.data.text) }} label={locale === 'fr' ? 'Ajouter au scÃÂ©nario' : 'Add to script'}><div className="space-y-4" onDragOver={(e) => { e.preventDefault(); setDragOver(true) }} onDragLeave={() => setDragOver(false)} onDrop={handleDrop}>
+    <DropZone accept={['media', 'file', 'reference']} onDrop={(item) => { if (item.data?.text) setScriptText((prev: string) => prev + '\n' + item.data.text) }} label={locale === 'fr' ? 'Ajouter au scÃ©nario' : 'Add to script'}><div className="space-y-4" onDragOver={(e) => { e.preventDefault(); setDragOver(true) }} onDragLeave={() => setDragOver(false)} onDrop={handleDrop}>
       {/* AI Screenplay Assistant */}
       <ScreenplayAssistant
         onUseScript={(script: string) => setScriptText(script)}
@@ -1265,8 +1264,8 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
             <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-orange-500/15 border-2 border-dashed border-orange-500/40 flex items-center justify-center">
               <Upload size={32} className="text-orange-400" />
             </div>
-            <p className="text-lg font-display text-white">{locale === 'fr' ? 'DÃÂ©posez votre fichier' : 'Drop your file'}</p>
-            <p className="text-xs text-slate-500 mt-1">.txt ÃÂ· .fountain ÃÂ· .fdx ÃÂ· .md</p>
+            <p className="text-lg font-display text-white">{locale === 'fr' ? 'DÃ©posez votre fichier' : 'Drop your file'}</p>
+            <p className="text-xs text-slate-500 mt-1">.txt Â· .fountain Â· .fdx Â· .md</p>
           </div>
         </div>
       )}
@@ -1276,8 +1275,8 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
           <div className="flex items-center justify-between px-4 py-3 border-b border-dark-700">
             <div className="flex items-center gap-2">
               <select value={stylePreset} onChange={(e: any) => setStylePreset(e.target.value)} className="px-2 py-1 bg-dark-800 border border-dark-600 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-orange-500/50">
-                <option value="cinematique">Ã°ÂÂÂ¬ CinÃÂ©matique</option><option value="documentaire">Ã°ÂÂÂ¹ Documentaire</option>
-                <option value="noir">Ã°ÂÂÂ Film noir</option><option value="onirique">Ã°ÂÂÂ Onirique</option>
+                <option value="cinematique">ð¬ CinÃ©matique</option><option value="documentaire">ð¹ Documentaire</option>
+                <option value="noir">ð Film noir</option><option value="onirique">ð Onirique</option>
               </select>
               <button onClick={loadDemo} className="px-2 py-1 bg-dark-800 hover:bg-dark-700 border border-dark-600 rounded-lg text-xs text-slate-400">{t.common.demo}</button>
             </div>
@@ -1293,13 +1292,13 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
         <div className="bg-dark-900 rounded-xl border border-dark-700 p-4 space-y-4 max-h-[600px] overflow-y-auto">
           <div className="flex items-center gap-2 mb-2">
             <Eye size={14} className="text-orange-500" />
-            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">{locale === 'fr' ? 'AperÃÂ§u' : 'Preview'}</span>
+            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">{locale === 'fr' ? 'AperÃ§u' : 'Preview'}</span>
           </div>
           {/* Stats */}
           <div className="grid grid-cols-3 gap-2">
             <div className="bg-dark-800 rounded-lg p-2.5 text-center">
               <div className="text-lg font-bold text-orange-400">{scriptPreview.scenes.length}</div>
-              <div className="text-[9px] text-slate-500 uppercase">ScÃÂ¨nes</div>
+              <div className="text-[9px] text-slate-500 uppercase">ScÃ¨nes</div>
             </div>
             <div className="bg-dark-800 rounded-lg p-2.5 text-center">
               <div className="text-lg font-bold text-orange-400">{scriptPreview.chars.length}</div>
@@ -1307,7 +1306,7 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
             </div>
             <div className="bg-dark-800 rounded-lg p-2.5 text-center">
               <div className="text-lg font-bold text-orange-400">~{scriptPreview.duration}s</div>
-              <div className="text-[9px] text-slate-500 uppercase">{locale === 'fr' ? 'DurÃÂ©e est.' : 'Est. duration'}</div>
+              <div className="text-[9px] text-slate-500 uppercase">{locale === 'fr' ? 'DurÃ©e est.' : 'Est. duration'}</div>
             </div>
           </div>
           {/* Scene list */}
@@ -1334,7 +1333,7 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
           {/* Characters list */}
           {scriptPreview.chars.length > 0 && (
             <div className="space-y-1.5">
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider">{locale === 'fr' ? 'Personnages dÃÂ©tectÃÂ©s' : 'Detected characters'}</span>
+              <span className="text-[10px] text-slate-500 uppercase tracking-wider">{locale === 'fr' ? 'Personnages dÃ©tectÃ©s' : 'Detected characters'}</span>
               <div className="flex gap-1.5 flex-wrap">
                 {scriptPreview.chars.map((c: any, i: number) => (
                   <span key={i} className="text-xs px-2 py-1 bg-orange-500/10 border border-orange-500/20 rounded-lg text-orange-300">{c}</span>
@@ -1345,7 +1344,7 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
           {!scriptText.trim() && (
             <div className="text-center py-8">
               <Film size={28} className="text-slate-700 mx-auto mb-2" />
-              <p className="text-xs text-slate-600">{locale === 'fr' ? 'Commencez ÃÂ  ÃÂ©crire pour voir la structure' : 'Start writing to see structure'}</p>
+              <p className="text-xs text-slate-600">{locale === 'fr' ? 'Commencez Ã  Ã©crire pour voir la structure' : 'Start writing to see structure'}</p>
             </div>
           )}
         </div>
@@ -1367,7 +1366,7 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
         </button>
         {aiMode && (
           <span className="text-[10px] text-purple-400/60">
-            Claude / GPT Ã¢ÂÂ¢ {locale === 'fr' ? 'enrichit les prompts et la direction artistique' : 'enriches prompts & artistic direction'}
+            Claude / GPT â¢ {locale === 'fr' ? 'enrichit les prompts et la direction artistique' : 'enriches prompts & artistic direction'}
           </span>
         )}
       </div>
@@ -1387,21 +1386,21 @@ function ScriptTab({ scriptText, setScriptText, stylePreset, setStylePreset, sav
   )
 }
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ Copilot Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// âââ Copilot âââ
 function CP({ projectId, projectName }: { projectId: string; projectName?: string }) {
   const { t, locale } = useI18n()
-  const isDemo = (projectName || '').toLowerCase().includes('dÃÂ©mo') || (projectName || '').toLowerCase().includes('demo')
+  const isDemo = (projectName || '').toLowerCase().includes('dÃ©mo') || (projectName || '').toLowerCase().includes('demo')
   const DEMO_SUGGESTIONS = [
-    { icon: 'Ã°ÂÂÂ¬', title: locale === 'fr' ? 'ÃÂa me fait penser ÃÂ ...' : 'This reminds me of...', detail: 'Cinema Paradiso (Tornatore, 1988) Ã¢ÂÂ la scÃÂ¨ne du cinÃÂ©ma. Technique recommandÃÂ©e : lumiÃÂ¨re projetÃÂ©e sur les visages, contrejour de l\'ÃÂ©cran.', category: 'reference' },
-    { icon: 'Ã°ÂÂÂµ', title: 'Suggestion musicale', detail: 'Piano solo minimaliste type Yann Tiersen. Les cordes lentes de Max Richter (On the Nature of Daylight) colleraient aussi au thÃÂ¨me du deuil.', category: 'music' },
-    { icon: 'Ã°ÂÂÂ', title: locale === 'fr' ? 'As-tu pensÃÂ© ÃÂ ...' : 'Have you considered...', detail: 'Un plan-sÃÂ©quence sans coupe pour la scÃÂ¨ne de l\'hÃÂ´pital. La tension continue sans montage renforcerait l\'ÃÂ©motion.', category: 'technique' },
-    { icon: 'Ã°ÂÂªÂ', title: 'L\'art du vide', detail: 'La place vide au cinÃÂ©ma est un personnage. YasujirÃÂ Ozu filmait les espaces vides aprÃÂ¨s le dÃÂ©part des personnages Ã¢ÂÂ les "pillow shots".', category: 'theory' },
-    { icon: 'Ã°ÂÂÂ¡', title: 'Astuce flashback', detail: 'Change le ratio d\'image (2.35:1 Ã¢ÂÂ 4:3) ou dÃÂ©sature lÃÂ©gÃÂ¨rement pour distinguer les temporalitÃÂ©s. Nolan utilise IMAX vs 35mm dans Oppenheimer.', category: 'technique' },
+    { icon: 'ð¬', title: locale === 'fr' ? 'Ãa me fait penser Ã ...' : 'This reminds me of...', detail: 'Cinema Paradiso (Tornatore, 1988) â la scÃ¨ne du cinÃ©ma. Technique recommandÃ©e : lumiÃ¨re projetÃ©e sur les visages, contrejour de l\'Ã©cran.', category: 'reference' },
+    { icon: 'ðµ', title: 'Suggestion musicale', detail: 'Piano solo minimaliste type Yann Tiersen. Les cordes lentes de Max Richter (On the Nature of Daylight) colleraient aussi au thÃ¨me du deuil.', category: 'music' },
+    { icon: 'ð', title: locale === 'fr' ? 'As-tu pensÃ© Ã ...' : 'Have you considered...', detail: 'Un plan-sÃ©quence sans coupe pour la scÃ¨ne de l\'hÃ´pital. La tension continue sans montage renforcerait l\'Ã©motion.', category: 'technique' },
+    { icon: 'ðª', title: 'L\'art du vide', detail: 'La place vide au cinÃ©ma est un personnage. YasujirÅ Ozu filmait les espaces vides aprÃ¨s le dÃ©part des personnages â les "pillow shots".', category: 'theory' },
+    { icon: 'ð¡', title: 'Astuce flashback', detail: 'Change le ratio d\'image (2.35:1 â 4:3) ou dÃ©sature lÃ©gÃ¨rement pour distinguer les temporalitÃ©s. Nolan utilise IMAX vs 35mm dans Oppenheimer.', category: 'technique' },
   ]
   const [sug, setSug] = useState<any[]>(isDemo ? DEMO_SUGGESTIONS : []); const [ld, setLd] = useState(false)
   const load = async () => { if (isDemo) { setSug(DEMO_SUGGESTIONS); return } setLd(true); try { const r = await fetch(`/api/projects/${projectId}/copilot`); if(r.ok){const d=await r.json();setSug(d.suggestions||[])} } catch{} finally{setLd(false)} }
   const catColors: Record<string, string> = { reference: 'border-l-blue-400', music: 'border-l-purple-400', technique: 'border-l-cyan-400', theory: 'border-l-amber-400' }
-  const catLabels: Record<string, string> = { reference: locale === 'fr' ? 'RÃÂ©fÃÂ©rence' : 'Reference', music: locale === 'fr' ? 'Musique' : 'Music', technique: 'Technique', theory: locale === 'fr' ? 'ThÃÂ©orie' : 'Theory' }
+  const catLabels: Record<string, string> = { reference: locale === 'fr' ? 'RÃ©fÃ©rence' : 'Reference', music: locale === 'fr' ? 'Musique' : 'Music', technique: 'Technique', theory: locale === 'fr' ? 'ThÃ©orie' : 'Theory' }
   return (<div>
     {/* Header */}
     <div className="bg-dark-900 rounded-xl border border-dark-700 p-4 mb-4">
@@ -1412,7 +1411,7 @@ function CP({ projectId, projectName }: { projectId: string; projectName?: strin
           </div>
           <div>
             <h3 className="text-sm font-semibold text-slate-100">{locale === 'fr' ? 'Copilote IA' : 'AI Copilot'}</h3>
-            <p className="text-[10px] text-slate-500">{locale === 'fr' ? 'Conseils de rÃÂ©alisation contextuel' : 'Contextual directing advice'}</p>
+            <p className="text-[10px] text-slate-500">{locale === 'fr' ? 'Conseils de rÃ©alisation contextuel' : 'Contextual directing advice'}</p>
           </div>
         </div>
         <button onClick={load} disabled={ld} className="btn-primary px-3 py-2 text-xs font-medium rounded-lg flex items-center gap-1.5">
@@ -1426,7 +1425,7 @@ function CP({ projectId, projectName }: { projectId: string; projectName?: strin
       return (
         <div key={i} className={`bg-dark-900 rounded-xl border border-dark-700 border-l-2 ${catColors[cat] || 'border-l-orange-400'} p-4 hover:bg-dark-850 transition-all group`}>
           <div className="flex items-start gap-3">
-            <span className="text-xl flex-shrink-0 mt-0.5">{s.icon||'Ã°ÂÂÂ¡'}</span>
+            <span className="text-xl flex-shrink-0 mt-0.5">{s.icon||'ð¡'}</span>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1.5">
                 <p className="text-sm text-slate-200 font-medium">{s.title}</p>
@@ -1443,26 +1442,26 @@ function CP({ projectId, projectName }: { projectId: string; projectName?: strin
             <Sparkles size={24} className="text-purple-400/50" />
           </div>
           <p className="text-sm text-slate-300 font-display mb-1">{locale === 'fr' ? 'Votre copilote attend' : 'Your copilot is waiting'}</p>
-          <p className="text-xs text-slate-500">{locale === 'fr' ? 'Cliquez Analyser pour des suggestions de rÃÂ©alisation' : 'Click Analyze for directing suggestions'}</p>
+          <p className="text-xs text-slate-500">{locale === 'fr' ? 'Cliquez Analyser pour des suggestions de rÃ©alisation' : 'Click Analyze for directing suggestions'}</p>
         </div>}
   </div>)
 }
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ Media Bank Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// âââ Media Bank âââ
 function MB({ analysis, projectId, projectName }: { analysis: any; projectId: string; projectName?: string }) {
   const { t, locale } = useI18n()
-  const isDemoMB = (projectName || '').toLowerCase().includes('dÃÂ©mo') || (projectName || '').toLowerCase().includes('demo')
+  const isDemoMB = (projectName || '').toLowerCase().includes('dÃ©mo') || (projectName || '').toLowerCase().includes('demo')
   const DEMO_MEDIA = [
-    { id: 'd1', thumbnail: imgSc1P1.src, title: 'Fleuve au crÃÂ©puscule', source: 'RÃÂ©fÃÂ©rence' },
-    { id: 'd2', thumbnail: imgSc2P1.src, title: 'Pont suspendu Ã¢ÂÂ brume', source: 'RÃÂ©fÃÂ©rence' },
-    { id: 'd3', thumbnail: imgSc3P1.src, title: 'Couloir hÃÂ´pital Ã¢ÂÂ lumiÃÂ¨re', source: 'RÃÂ©fÃÂ©rence' },
-    { id: 'd4', thumbnail: imgSc4P1.src, title: 'Silhouettes retrouvailles', source: 'RÃÂ©fÃÂ©rence' },
-    { id: 'd5', thumbnail: imgSc1P2.src, title: 'Portrait Ã¢ÂÂ clair-obscur', source: 'Moodboard' },
-    { id: 'd6', thumbnail: imgSc2P3.src, title: 'Jumeaux Ã¢ÂÂ contrejour', source: 'Moodboard' },
+    { id: 'd1', thumbnail: imgSc1P1.src, title: 'Fleuve au crÃ©puscule', source: 'RÃ©fÃ©rence' },
+    { id: 'd2', thumbnail: imgSc2P1.src, title: 'Pont suspendu â brume', source: 'RÃ©fÃ©rence' },
+    { id: 'd3', thumbnail: imgSc3P1.src, title: 'Couloir hÃ´pital â lumiÃ¨re', source: 'RÃ©fÃ©rence' },
+    { id: 'd4', thumbnail: imgSc4P1.src, title: 'Silhouettes retrouvailles', source: 'RÃ©fÃ©rence' },
+    { id: 'd5', thumbnail: imgSc1P2.src, title: 'Portrait â clair-obscur', source: 'Moodboard' },
+    { id: 'd6', thumbnail: imgSc2P3.src, title: 'Jumeaux â contrejour', source: 'Moodboard' },
   ]
   const [q, setQ] = useState(''); const [res, setRes] = useState<any[]>(isDemoMB ? DEMO_MEDIA : []); const [ld, setLd] = useState(false); const [err, setErr] = useState('')
   const srch = async (sq?: string) => { const s=sq||q; if(!s.trim())return; setLd(true);setErr(''); try{const r=await fetch(`/api/media?q=${encodeURIComponent(s)}&type=all`);const d=await r.json();if(d.error&&!d.results?.length)setErr(d.error);setRes(d.results||[])}catch{setErr(t.common.error)}finally{setLd(false)} }
-  const sugs = (analysis?.scenes||[]).slice(0,4).map((s:any)=>(s.heading||'').replace(/^(INT\.|EXT\.)\s*/i,'').replace(/Ã¢ÂÂ.*/g,'').trim()).filter(Boolean)
+  const sugs = (analysis?.scenes||[]).slice(0,4).map((s:any)=>(s.heading||'').replace(/^(INT\.|EXT\.)\s*/i,'').replace(/â.*/g,'').trim()).filter(Boolean)
   return (<div>
     <div className="flex items-center gap-2 mb-4">
       <div className="flex-1 relative"><Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
@@ -1472,16 +1471,16 @@ function MB({ analysis, projectId, projectName }: { analysis: any; projectId: st
     </div>
     {sugs.length>0&&res.length===0&&<div className="flex items-center gap-2 mb-4 flex-wrap"><span className="text-xs text-slate-500">Suggestions :</span>{sugs.map((s:string,i:number)=><button key={i} onClick={()=>{setQ(s);srch(s)}} className="px-2 py-1 bg-dark-800 hover:bg-dark-700 border border-dark-700 rounded text-xs text-slate-300">{s}</button>)}</div>}
     {err&&<div className="p-3 mb-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-xs text-yellow-400">{err}</div>}
-    {res.length>0 ? <div className="grid grid-cols-2 md:grid-cols-3 gap-3">{res.map((r:any)=><Draggable key={r.id} item={{ type: 'media', data: { url: r.thumbnail || r.url, title: r.title }, label: r.title || 'Media' }}><div className="relative group rounded-lg overflow-hidden border border-dark-700"><img src={r.thumbnail||r.url} alt={r.title} className="w-full aspect-video object-cover bg-dark-800" loading="lazy" /><div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2"><p className="text-[10px] text-white truncate">{r.title} Ã¢ÂÂ¢ {r.source}</p></div></div></Draggable>)}</div>
-      : !ld && <div className="p-12 bg-dark-900 rounded-xl border border-dark-700 text-center"><Image size={36} className="text-slate-700 mx-auto mb-3" /><p className="text-sm text-slate-400">Recherchez des rÃÂ©fÃÂ©rences visuelles</p></div>}
+    {res.length>0 ? <div className="grid grid-cols-2 md:grid-cols-3 gap-3">{res.map((r:any)=><Draggable key={r.id} item={{ type: 'media', data: { url: r.thumbnail || r.url, title: r.title }, label: r.title || 'Media' }}><div className="relative group rounded-lg overflow-hidden border border-dark-700"><img src={r.thumbnail||r.url} alt={r.title} className="w-full aspect-video object-cover bg-dark-800" loading="lazy" /><div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2"><p className="text-[10px] text-white truncate">{r.title} â¢ {r.source}</p></div></div></Draggable>)}</div>
+      : !ld && <div className="p-12 bg-dark-900 rounded-xl border border-dark-700 text-center"><Image size={36} className="text-slate-700 mx-auto mb-3" /><p className="text-sm text-slate-400">Recherchez des rÃ©fÃ©rences visuelles</p></div>}
   </div>)
 }
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ Multi-Track Timeline Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// âââ Multi-Track Timeline âââ
 function TL({ analysis, projectName }: { analysis: any; projectName?: string }) {
   const { locale } = useI18n()
   const fr = locale === 'fr'
-  const isDemoTL = (projectName || '').toLowerCase().includes('dÃÂ©mo') || (projectName || '').toLowerCase().includes('demo')
+  const isDemoTL = (projectName || '').toLowerCase().includes('dÃ©mo') || (projectName || '').toLowerCase().includes('demo')
   const [playing, setPlaying] = useState(false); const [ph, setPh] = useState(0)
   const [trackVisibility, setTrackVisibility] = useState({ scene: true, video: true, audio: true, subtitle: true, emotion: true })
   const toggleTrack = (key: string) => setTrackVisibility(prev => ({ ...prev, [key]: !prev[key as keyof typeof prev] }))
@@ -1513,15 +1512,15 @@ function TL({ analysis, projectName }: { analysis: any; projectName?: string }) 
     <div className="flex items-center justify-between px-1">
       <div className="flex items-center gap-1">
         {[
-          { key: 'scene', label: fr ? 'ScÃÂ¨nes' : 'Scenes', color: 'text-orange-400' },
-          { key: 'video', label: fr ? 'VidÃÂ©o' : 'Video', color: 'text-blue-400' },
+          { key: 'scene', label: fr ? 'ScÃ¨nes' : 'Scenes', color: 'text-orange-400' },
+          { key: 'video', label: fr ? 'VidÃ©o' : 'Video', color: 'text-blue-400' },
           { key: 'audio', label: 'Audio', color: 'text-purple-400' },
           { key: 'subtitle', label: fr ? 'Sous-titres' : 'Subtitles', color: 'text-green-400' },
-          { key: 'emotion', label: fr ? 'ÃÂmotion' : 'Emotion', color: 'text-pink-400' },
+          { key: 'emotion', label: fr ? 'Ãmotion' : 'Emotion', color: 'text-pink-400' },
         ].map(({ key, label, color }) => (
           <button key={key} onClick={() => toggleTrack(key)}
             className={`px-2 py-1 rounded text-[9px] font-medium transition-all ${trackVisibility[key as keyof typeof trackVisibility] ? `${color} bg-dark-800` : 'text-slate-600 bg-dark-900'}`}>
-            {trackVisibility[key as keyof typeof trackVisibility] ? 'Ã¢ÂÂ' : 'Ã¢ÂÂ'} {label}
+            {trackVisibility[key as keyof typeof trackVisibility] ? 'â' : 'â'} {label}
           </button>
         ))}
       </div>
@@ -1529,14 +1528,14 @@ function TL({ analysis, projectName }: { analysis: any; projectName?: string }) 
     </div>
 
     {/* Multi-track area */}
-    <DropZone accept={['shot', 'media']} onDrop={(item) => { /* future: reorder/insert */ }} label={fr ? 'Ajouter ÃÂ  la timeline' : 'Add to timeline'}>
+    <DropZone accept={['shot', 'media']} onDrop={(item) => { /* future: reorder/insert */ }} label={fr ? 'Ajouter Ã  la timeline' : 'Add to timeline'}>
     <div className="bg-dark-900 rounded-xl border border-dark-700 overflow-hidden">
       <div className="overflow-x-auto p-3">
         <div className="relative" style={{ minWidth: Math.max(plans.length * 100, 600) }}>
           {/* Track 1: Scenes */}
           {trackVisibility.scene && (
             <div className="flex items-center mb-1">
-              <span className="w-16 flex-shrink-0 text-[8px] text-orange-400/60 uppercase tracking-wider font-bold pr-2 text-right">{fr ? 'ScÃÂ¨ne' : 'Scene'}</span>
+              <span className="w-16 flex-shrink-0 text-[8px] text-orange-400/60 uppercase tracking-wider font-bold pr-2 text-right">{fr ? 'ScÃ¨ne' : 'Scene'}</span>
               <div className="flex-1 flex h-6 rounded overflow-hidden">
                 {scenes.map((s:any,i:number)=>{
                   const sp=plans.filter((p:any)=>(p?.sceneIndex||0)===i)
@@ -1552,7 +1551,7 @@ function TL({ analysis, projectName }: { analysis: any; projectName?: string }) 
           {/* Track 2: Video (thumbnails) */}
           {trackVisibility.video && (
             <div className="flex items-center mb-1">
-              <span className="w-16 flex-shrink-0 text-[8px] text-blue-400/60 uppercase tracking-wider font-bold pr-2 text-right">{fr ? 'VidÃÂ©o' : 'Video'}</span>
+              <span className="w-16 flex-shrink-0 text-[8px] text-blue-400/60 uppercase tracking-wider font-bold pr-2 text-right">{fr ? 'VidÃ©o' : 'Video'}</span>
               <div className="flex-1 flex gap-px min-h-[56px]">
                 {plans.map((p:any,i:number)=>{
                   const d=p?.estimatedDuration||3
@@ -1604,7 +1603,7 @@ function TL({ analysis, projectName }: { analysis: any; projectName?: string }) 
                   const hasDialogue = p?.dialogue || p?.characterName
                   return <div key={i} className="flex items-center justify-center border-r border-dark-700/20" style={{width:`${(d/total)*100}%`}}>
                     {hasDialogue && <div className="h-3 mx-0.5 rounded-sm bg-green-500/30 border border-green-500/20 flex-1 flex items-center justify-center">
-                      <span className="text-[6px] text-green-400/70 truncate px-0.5">{p.characterName || 'Ã°ÂÂÂ¬'}</span>
+                      <span className="text-[6px] text-green-400/70 truncate px-0.5">{p.characterName || 'ð¬'}</span>
                     </div>}
                   </div>
                 })}
@@ -1615,7 +1614,7 @@ function TL({ analysis, projectName }: { analysis: any; projectName?: string }) 
           {/* Track 5: Emotion curve */}
           {trackVisibility.emotion && (
             <div className="flex items-center">
-              <span className="w-16 flex-shrink-0 text-[8px] text-pink-400/60 uppercase tracking-wider font-bold pr-2 text-right">{fr ? 'ÃÂmotion' : 'Emotion'}</span>
+              <span className="w-16 flex-shrink-0 text-[8px] text-pink-400/60 uppercase tracking-wider font-bold pr-2 text-right">{fr ? 'Ãmotion' : 'Emotion'}</span>
               <div className="flex-1 flex h-4 rounded overflow-hidden">
                 {plans.map((p:any,i:number)=>{
                   const d=p?.estimatedDuration||3
@@ -1638,16 +1637,16 @@ function TL({ analysis, projectName }: { analysis: any; projectName?: string }) 
   </div>)
 }
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ Subtitles Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// âââ Subtitles âââ
 function SV({ projectId, projectName }: { projectId: string; projectName?: string }) {
-  const isDemoSV = (projectName || '').toLowerCase().includes('dÃÂ©mo') || (projectName || '').toLowerCase().includes('demo')
+  const isDemoSV = (projectName || '').toLowerCase().includes('dÃ©mo') || (projectName || '').toLowerCase().includes('demo')
   const DEMO_SUBS = { entries: [
     { index: 1, startTime: 3, character: 'ADRIEN', text: 'On y va aujourd\'hui. Pas vrai\u00A0?' },
-    { index: 2, startTime: 12, character: 'LÃÂO', text: 'On se promet un truc. MÃÂªme quand on sera grands\u2026' },
+    { index: 2, startTime: 12, character: 'LÃO', text: 'On se promet un truc. MÃªme quand on sera grands\u2026' },
     { index: 3, startTime: 16, character: 'ADRIEN ENFANT', text: 'On fera tout ensemble.' },
-    { index: 4, startTime: 25, character: 'INFIRMIÃÂRE', text: 'Vous pouvez arrÃÂªter de venir\u2026 ÃÂ§a fait deux ans.' },
+    { index: 4, startTime: 25, character: 'INFIRMIÃRE', text: 'Vous pouvez arrÃªter de venir\u2026 Ã§a fait deux ans.' },
     { index: 5, startTime: 30, character: 'ADRIEN', text: 'On avait dit\u2026 ensemble.' },
-    { index: 6, startTime: 40, character: 'CONTRÃÂLEUR', text: 'Vous ÃÂªtes seul\u00A0?' },
+    { index: 6, startTime: 40, character: 'CONTRÃLEUR', text: 'Vous Ãªtes seul\u00A0?' },
     { index: 7, startTime: 43, character: 'ADRIEN', text: 'Non. Jamais.' },
   ] }
   const [subs, setSubs] = useState<any>(isDemoSV ? DEMO_SUBS : null); const [ld, setLd] = useState(false)
@@ -1656,27 +1655,27 @@ function SV({ projectId, projectName }: { projectId: string; projectName?: strin
     <div className="flex items-center justify-between mb-4">
       <div><h3 className="text-sm font-medium text-slate-100">Sous-titres</h3><p className="text-xs text-slate-500">Extraction des dialogues</p></div>
       <div className="flex items-center gap-2">
-        {!subs ? <button onClick={load} disabled={ld} className="px-3 py-2 btn-primary disabled:opacity-50 text-white text-xs font-medium rounded-lg flex items-center gap-1.5">{ld ? <Loader2 size={14} className="animate-spin" /> : <Subtitles size={14} />} GÃÂ©nÃÂ©rer</button>
+        {!subs ? <button onClick={load} disabled={ld} className="px-3 py-2 btn-primary disabled:opacity-50 text-white text-xs font-medium rounded-lg flex items-center gap-1.5">{ld ? <Loader2 size={14} className="animate-spin" /> : <Subtitles size={14} />} GÃ©nÃ©rer</button>
           : <><button onClick={()=>window.open(`/api/projects/${projectId}/subtitles?format=srt`)} className="px-3 py-1.5 bg-dark-700 hover:bg-dark-600 text-slate-200 text-xs rounded-lg flex items-center gap-1"><Download size={12} /> SRT</button><button onClick={()=>window.open(`/api/projects/${projectId}/subtitles?format=vtt`)} className="px-3 py-1.5 bg-dark-700 hover:bg-dark-600 text-slate-200 text-xs rounded-lg flex items-center gap-1"><Download size={12} /> VTT</button></>}
       </div>
     </div>
-    {subs ? <div className="space-y-2">{subs.entries?.map((e:any)=><div key={e.index} className="flex items-start gap-3 p-3 bg-dark-900 rounded-lg border border-dark-700"><span className="text-[10px] text-slate-600 font-mono w-14 flex-shrink-0">{fmt(e.startTime)}</span>{e.character&&<span className="text-xs text-orange-400 font-medium w-20 flex-shrink-0">{e.character}</span>}<p className="text-sm text-slate-200 flex-1">{e.text}</p></div>)}{(!subs.entries?.length)&&<p className="text-sm text-slate-400 text-center p-6">Aucun dialogue dÃÂ©tectÃÂ©</p>}</div>
-      : <div className="p-12 bg-dark-900 rounded-xl border border-dark-700 text-center"><Subtitles size={32} className="text-slate-700 mx-auto mb-3" /><p className="text-sm text-slate-400">Cliquez GÃÂ©nÃÂ©rer pour extraire les sous-titres</p></div>}
+    {subs ? <div className="space-y-2">{subs.entries?.map((e:any)=><div key={e.index} className="flex items-start gap-3 p-3 bg-dark-900 rounded-lg border border-dark-700"><span className="text-[10px] text-slate-600 font-mono w-14 flex-shrink-0">{fmt(e.startTime)}</span>{e.character&&<span className="text-xs text-orange-400 font-medium w-20 flex-shrink-0">{e.character}</span>}<p className="text-sm text-slate-200 flex-1">{e.text}</p></div>)}{(!subs.entries?.length)&&<p className="text-sm text-slate-400 text-center p-6">Aucun dialogue dÃ©tectÃ©</p>}</div>
+      : <div className="p-12 bg-dark-900 rounded-xl border border-dark-700 text-center"><Subtitles size={32} className="text-slate-700 mx-auto mb-3" /><p className="text-sm text-slate-400">Cliquez GÃ©nÃ©rer pour extraire les sous-titres</p></div>}
   </div>)
 }
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ Voiceover Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// âââ Voiceover âââ
 function VO({ projectId, projectName }: { projectId: string; projectName?: string }) {
   const { locale } = useI18n()
-  const isDemoVO = (projectName || '').toLowerCase().includes('dÃÂ©mo') || (projectName || '').toLowerCase().includes('demo')
+  const isDemoVO = (projectName || '').toLowerCase().includes('dÃ©mo') || (projectName || '').toLowerCase().includes('demo')
   const DEMO_SEGS = [
-    { character: 'ADRIEN', text: 'On y va aujourd\'hui. Pas vrai\u00A0?', emotion: 'mÃÂ©lancolie' },
-    { character: 'LÃÂO', text: 'On se promet un truc. MÃÂªme quand on sera grands\u2026', emotion: 'tendresse' },
+    { character: 'ADRIEN', text: 'On y va aujourd\'hui. Pas vrai\u00A0?', emotion: 'mÃ©lancolie' },
+    { character: 'LÃO', text: 'On se promet un truc. MÃªme quand on sera grands\u2026', emotion: 'tendresse' },
     { character: 'ADRIEN ENFANT', text: 'On fera tout ensemble.', emotion: 'innocence' },
-    { character: 'INFIRMIÃÂRE', text: 'Vous pouvez arrÃÂªter de venir\u2026 ÃÂ§a fait deux ans.', emotion: 'compassion' },
+    { character: 'INFIRMIÃRE', text: 'Vous pouvez arrÃªter de venir\u2026 Ã§a fait deux ans.', emotion: 'compassion' },
     { character: 'ADRIEN', text: 'On avait dit\u2026 ensemble.', emotion: 'douleur' },
-    { character: 'CONTRÃÂLEUR', text: 'Vous ÃÂªtes seul\u00A0?', emotion: 'neutre' },
-    { character: 'ADRIEN', text: 'Non. Jamais.', emotion: 'rÃÂ©solution' },
+    { character: 'CONTRÃLEUR', text: 'Vous Ãªtes seul\u00A0?', emotion: 'neutre' },
+    { character: 'ADRIEN', text: 'Non. Jamais.', emotion: 'rÃ©solution' },
   ]
   const [segs, setSegs] = useState<any[]>(isDemoVO ? DEMO_SEGS : []); const [ld, setLd] = useState(false); const [sp, setSp] = useState(false); const [prov, setProv] = useState('browser')
   const load = async () => { setLd(true); try{const r=await fetch(`/api/projects/${projectId}/voiceover`);if(r.ok){const d=await r.json();setSegs(d.segments||[])}}catch{}finally{setLd(false)} }
@@ -1689,16 +1688,16 @@ function VO({ projectId, projectName }: { projectId: string; projectName?: strin
       <div><h3 className="text-sm font-medium text-slate-100">Voix off</h3><p className="text-xs text-slate-500">Narration et dialogues</p></div>
       <div className="flex items-center gap-2">
         <select value={prov} onChange={(e:any)=>setProv(e.target.value)} className="px-2 py-1.5 bg-dark-800 border border-dark-700 rounded text-xs text-slate-300"><option value="browser">Navigateur (gratuit)</option><option value="openai">OpenAI TTS</option><option value="elevenlabs">ElevenLabs</option></select>
-        {!segs.length ? <button onClick={load} disabled={ld} className="px-3 py-2 btn-primary disabled:opacity-50 text-white text-xs font-medium rounded-lg flex items-center gap-1.5">{ld ? <Loader2 size={14} className="animate-spin" /> : <Mic size={14} />} PrÃÂ©parer</button>
-          : <button onClick={()=>speak(segs.map((s:any)=>s.character?`${s.character}: ${s.text}`:s.text).join('. '))} className="px-3 py-2 btn-primary text-white text-xs font-medium rounded-lg flex items-center gap-1.5">{sp ? <><Pause size={14} /> Stop</> : <><Volume2 size={14} /> ÃÂcouter</>}</button>}
+        {!segs.length ? <button onClick={load} disabled={ld} className="px-3 py-2 btn-primary disabled:opacity-50 text-white text-xs font-medium rounded-lg flex items-center gap-1.5">{ld ? <Loader2 size={14} className="animate-spin" /> : <Mic size={14} />} PrÃ©parer</button>
+          : <button onClick={()=>speak(segs.map((s:any)=>s.character?`${s.character}: ${s.text}`:s.text).join('. '))} className="px-3 py-2 btn-primary text-white text-xs font-medium rounded-lg flex items-center gap-1.5">{sp ? <><Pause size={14} /> Stop</> : <><Volume2 size={14} /> Ãcouter</>}</button>}
       </div>
     </div>
     {segs.length>0 ? <div className="space-y-2">{segs.map((s:any)=><div key={s.index} className="flex items-start gap-3 p-3 bg-dark-900 rounded-lg border border-dark-700"><button onClick={()=>speak(s.text)} className="p-1.5 rounded bg-dark-800 hover:bg-dark-700 flex-shrink-0"><Volume2 size={12} className="text-slate-400" /></button><span className="text-[10px] text-slate-600 font-mono w-12 flex-shrink-0 pt-1">{fmt(s.startTime)}</span>{s.character&&<span className="text-xs text-orange-400 w-16 flex-shrink-0">{s.character}</span>}<p className="text-sm text-slate-200 flex-1">{s.text}</p></div>)}</div>
-      : <div className="p-12 bg-dark-900 rounded-xl border border-dark-700 text-center"><Mic size={32} className="text-slate-700 mx-auto mb-3" /><p className="text-sm text-slate-400">{locale === "fr" ? "Cliquez PrÃÂ©parer pour les segments voix off" : "Click Prepare for voiceover segments"}</p></div>}
+      : <div className="p-12 bg-dark-900 rounded-xl border border-dark-700 text-center"><Mic size={32} className="text-slate-700 mx-auto mb-3" /><p className="text-sm text-slate-400">{locale === "fr" ? "Cliquez PrÃ©parer pour les segments voix off" : "Click Prepare for voiceover segments"}</p></div>}
   </div>)
 }
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ Analysis Results Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// âââ Analysis Results âââ
 function AR({ analysis, analysisId, userKeys, projectId, creditBalance, onCreditsUsed }: { analysis: any; analysisId?: string | null; userKeys: Set<string>; projectId: string; creditBalance?: number; onCreditsUsed?: (n: number) => void }) {
   const { t, locale } = useI18n()
   try {
@@ -1733,7 +1732,7 @@ function AR({ analysis, analysisId, userKeys, projectId, creditBalance, onCredit
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <St icon={Film} label={t.demo.shotsDetected.split(' ')[0]} value={scenes.length} /><St icon={Eye} label={t.demo.shotsDetected} value={plans.length} />
-        <St icon={DollarSign} label={locale === 'fr' ? 'CoÃÂ»t' : 'Cost'} value={`$${cost.toFixed(2)}`} /><St icon={Shield} label={locale === 'fr' ? 'ContinuitÃÂ©' : 'Continuity'} value={`${cont.score}%`} />
+        <St icon={DollarSign} label={locale === 'fr' ? 'CoÃ»t' : 'Cost'} value={`$${cost.toFixed(2)}`} /><St icon={Shield} label={locale === 'fr' ? 'ContinuitÃ©' : 'Continuity'} value={`${cont.score}%`} />
       </div>
 
       {/* Model Distribution */}
@@ -1741,7 +1740,7 @@ function AR({ analysis, analysisId, userKeys, projectId, creditBalance, onCredit
         <div className="bg-dark-900 border border-dark-700 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-3">
             <Zap size={16} className="text-orange-400" />
-            <span className="text-sm text-slate-200 font-medium">{locale === "fr" ? "RÃÂ©partition modÃÂ¨les" : "Model Distribution"}</span>
+            <span className="text-sm text-slate-200 font-medium">{locale === "fr" ? "RÃ©partition modÃ¨les" : "Model Distribution"}</span>
           </div>
           <div className="flex h-3 rounded-full overflow-hidden mb-3">
             {modelEntries.map(([mid, count]) => (
@@ -1811,12 +1810,12 @@ function AR({ analysis, analysisId, userKeys, projectId, creditBalance, onCredit
       {chars.length>0 && <Sec icon={Users} title={locale === 'fr' ? 'Personnages' : 'Characters'} color="text-blue-400"><div className="space-y-3">{chars.map((c:any,i:number)=><CharacterReferenceCard key={i} character={{ name: c?.name || (locale === 'fr' ? 'Inconnu' : 'Unknown'), apparence: c?.apparence, description: c?.description, traits: c?.traits, arc: c?.arc }} projectId={projectId} />)}</div></Sec>}
 
       {/* Compliance */}
-      <Sec icon={Shield} title={`Compliance Ã¢ÂÂ ${comp.level} (${comp.score}/100)`} color={comp.level==='OK'?'text-green-400':'text-yellow-400'}>
+      <Sec icon={Shield} title={`Compliance â ${comp.level} (${comp.score}/100)`} color={comp.level==='OK'?'text-green-400':'text-yellow-400'}>
         {comp.flags?.length>0 ? comp.flags.map((f:any,i:number)=><div key={i} className="flex items-center gap-2 py-0.5"><span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${f?.severity==='critical'?'bg-red-600/20 text-red-300':f?.severity==='high'?'bg-red-500/20 text-red-400':'bg-yellow-500/20 text-yellow-400'}`}>{(f?.severity||'medium').toUpperCase()}</span><span className="text-xs text-slate-400">{f?.type||f?.message}</span></div>) : <p className="text-xs text-green-400">{locale === "fr" ? "Aucun flag" : "No flags"}</p>}
       </Sec>
 
       {/* Continuity */}
-      {cont.alerts?.length>0 && <Sec icon={AlertTriangle} title={`ContinuitÃÂ© Ã¢ÂÂ ${cont.score}/100`} color="text-yellow-400">{cont.alerts.map((a:any,i:number)=><div key={i} className="flex items-center gap-2 py-0.5"><span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${a?.severity==='critical'?'bg-red-600/20 text-red-300':a?.severity==='high'?'bg-red-500/20 text-red-400':'bg-yellow-500/20 text-yellow-400'}`}>{(a?.severity||'medium').toUpperCase()}</span><span className="text-xs text-slate-400">{a?.type}</span></div>)}</Sec>}
+      {cont.alerts?.length>0 && <Sec icon={AlertTriangle} title={`ContinuitÃ© â ${cont.score}/100`} color="text-yellow-400">{cont.alerts.map((a:any,i:number)=><div key={i} className="flex items-center gap-2 py-0.5"><span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${a?.severity==='critical'?'bg-red-600/20 text-red-300':a?.severity==='high'?'bg-red-500/20 text-red-400':'bg-yellow-500/20 text-yellow-400'}`}>{(a?.severity||'medium').toUpperCase()}</span><span className="text-xs text-slate-400">{a?.type}</span></div>)}</Sec>}
 
       {/* Plans */}
       {/* Filmstrip + Filters + Plans */}
@@ -1887,7 +1886,7 @@ function AR({ analysis, analysisId, userKeys, projectId, creditBalance, onCredit
             {(filterEmotion || filterModel || filterScene !== null) && (
               <button onClick={() => { setFilterEmotion(null); setFilterModel(null); setFilterScene(null) }}
                 className="px-2 py-0.5 rounded-full text-[10px] text-red-400 border border-red-500/30 hover:bg-red-500/10">
-                Ã¢ÂÂ {locale === 'fr' ? 'Effacer' : 'Clear'}
+                â {locale === 'fr' ? 'Effacer' : 'Clear'}
               </button>
             )}
           </div>
@@ -1895,7 +1894,7 @@ function AR({ analysis, analysisId, userKeys, projectId, creditBalance, onCredit
           {/* Batch action bar */}
           {selectedPlans.size > 0 && (
             <div className="mx-3 mt-2 flex items-center gap-2 px-3 py-2 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-              <span className="text-xs text-orange-300 font-medium">{selectedPlans.size} {locale === 'fr' ? 'sÃÂ©lectionnÃÂ©(s)' : 'selected'}</span>
+              <span className="text-xs text-orange-300 font-medium">{selectedPlans.size} {locale === 'fr' ? 'sÃ©lectionnÃ©(s)' : 'selected'}</span>
               <div className="flex-1" />
               <button onClick={() => {
                 const allPrompts = Array.from(selectedPlans).map(i => {
@@ -1914,7 +1913,7 @@ function AR({ analysis, analysisId, userKeys, projectId, creditBalance, onCredit
               }} className="px-2.5 py-1 btn-primary text-[10px] rounded-lg flex items-center gap-1">
                 <Zap size={10} /> {locale === 'fr' ? 'Ouvrir studios' : 'Open studios'}
               </button>
-              <button onClick={selectNone} className="px-2 py-1 text-[10px] text-slate-400 hover:text-slate-200">Ã¢ÂÂ</button>
+              <button onClick={selectNone} className="px-2 py-1 text-[10px] text-slate-400 hover:text-slate-200">â</button>
             </div>
           )}
 
@@ -1924,7 +1923,7 @@ function AR({ analysis, analysisId, userKeys, projectId, creditBalance, onCredit
             <div className="flex items-center gap-2 mb-1">
               <button onClick={selectedPlans.size === filteredPlans.length ? selectNone : selectAll}
                 className="text-[10px] text-slate-500 hover:text-slate-300">
-                {selectedPlans.size === filteredPlans.length ? (locale === 'fr' ? 'Ã¢ÂÂ Tout dÃÂ©sÃÂ©lectionner' : 'Ã¢ÂÂ Deselect all') : (locale === 'fr' ? 'Ã¢ÂÂ Tout sÃÂ©lectionner' : 'Ã¢ÂÂ Select all')}
+                {selectedPlans.size === filteredPlans.length ? (locale === 'fr' ? 'â Tout dÃ©sÃ©lectionner' : 'â Deselect all') : (locale === 'fr' ? 'â Tout sÃ©lectionner' : 'â Select all')}
               </button>
             </div>
             {filteredPlans.map((p: any, fi: number) => {
@@ -1948,7 +1947,7 @@ function AR({ analysis, analysisId, userKeys, projectId, creditBalance, onCredit
   } catch { return <p className="text-red-400 text-sm text-center p-6">{locale === 'fr' ? "Erreur d'affichage" : 'Display error'}</p> }
 }
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ Shared Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// âââ Shared âââ
 function St({ icon: I, label, value }: { icon: any; label: string; value: string | number }) {
   return <div className="bg-dark-900 border border-dark-700 rounded-xl p-3 text-center"><I size={18} className="text-orange-500/60 mx-auto mb-1" /><p className="text-lg font-bold text-slate-100">{value}</p><p className="text-xs text-slate-500">{label}</p></div>
 }
@@ -1979,7 +1978,7 @@ function PC({ plan, index, analysisId, userKeys, characters, creditBalance, onCr
   const osFallbackPC = plan?.openSourceFallback
   const genOpenSourcePC = async () => { if(!osFallbackPC)return;setStatus('processing'); try{const r=await fetch('/api/generate-opensource',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({modelId:osFallbackPC.modelId,prompt:editedPrompt||prompt,negativePrompt:plan?.negativePrompt,projectId:analysisId,shotId:`plan-${index}`})});const d=await r.json();if(!r.ok){setStatus('failed');return};setStatus('completed')}catch{setStatus('failed')} }
   return (<div className="card overflow-hidden hover:border-dark-600 transition-all">
-    {/* Compact row Ã¢ÂÂ always visible */}
+    {/* Compact row â always visible */}
     <button onClick={() => setExpanded(!expanded)} className="w-full flex items-center gap-3 p-2.5 text-left hover:bg-white/[0.02] transition-colors">
       {/* Emotion stripe */}
       <div className="w-1 h-8 rounded-full flex-shrink-0" style={{ backgroundColor: eColor }} />
@@ -2015,22 +2014,22 @@ function PC({ plan, index, analysisId, userKeys, characters, creditBalance, onCr
             <StoryboardSVG shotType={plan?.shotType} cameraMove={plan?.cameraMove} width={200} height={112} modelColor={mc} />
           </div>
           <div className="flex-1 grid grid-cols-2 gap-2">
-            <div className="bg-dark-800/50 rounded-lg px-3 py-2"><span className="text-[9px] text-slate-600 uppercase block">{locale === 'fr' ? 'Cadrage' : 'Shot'}</span><span className="text-xs text-slate-300">{plan?.shotType || 'Ã¢ÂÂ'}</span></div>
-            <div className="bg-dark-800/50 rounded-lg px-3 py-2"><span className="text-[9px] text-slate-600 uppercase block">{locale === 'fr' ? 'CamÃÂ©ra' : 'Camera'}</span><span className="text-xs text-slate-300">{plan?.cameraMove || 'fixe'}</span></div>
-            <div className="bg-dark-800/50 rounded-lg px-3 py-2"><span className="text-[9px] text-slate-600 uppercase block">{locale === 'fr' ? 'ÃÂmotion' : 'Emotion'}</span><span className="text-xs" style={{ color: eColor }}>{emotion}</span></div>
-            <div className="bg-dark-800/50 rounded-lg px-3 py-2"><span className="text-[9px] text-slate-600 uppercase block">{locale === 'fr' ? 'ModÃÂ¨le' : 'Model'}</span><span className="text-xs text-slate-300">{plan?.modelId || 'kling'}</span></div>
+            <div className="bg-dark-800/50 rounded-lg px-3 py-2"><span className="text-[9px] text-slate-600 uppercase block">{locale === 'fr' ? 'Cadrage' : 'Shot'}</span><span className="text-xs text-slate-300">{plan?.shotType || 'â'}</span></div>
+            <div className="bg-dark-800/50 rounded-lg px-3 py-2"><span className="text-[9px] text-slate-600 uppercase block">{locale === 'fr' ? 'CamÃ©ra' : 'Camera'}</span><span className="text-xs text-slate-300">{plan?.cameraMove || 'fixe'}</span></div>
+            <div className="bg-dark-800/50 rounded-lg px-3 py-2"><span className="text-[9px] text-slate-600 uppercase block">{locale === 'fr' ? 'Ãmotion' : 'Emotion'}</span><span className="text-xs" style={{ color: eColor }}>{emotion}</span></div>
+            <div className="bg-dark-800/50 rounded-lg px-3 py-2"><span className="text-[9px] text-slate-600 uppercase block">{locale === 'fr' ? 'ModÃ¨le' : 'Model'}</span><span className="text-xs text-slate-300">{plan?.modelId || 'kling'}</span></div>
           </div>
         </div>
 
-        {/* Prompt Ã¢ÂÂ inline editable */}
+        {/* Prompt â inline editable */}
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-[10px] text-slate-500 uppercase tracking-wider">Prompt</span>
             <button onClick={() => { if (!editingPrompt) setEditedPrompt(prompt); setEditingPrompt(!editingPrompt) }}
               className="text-[10px] text-orange-400 hover:text-orange-300">
-              {editingPrompt ? (locale === 'fr' ? 'Ã¢ÂÂ Fermer' : 'Ã¢ÂÂ Close') : (locale === 'fr' ? 'Ã¢ÂÂ Modifier' : 'Ã¢ÂÂ Edit')}
+              {editingPrompt ? (locale === 'fr' ? 'â Fermer' : 'â Close') : (locale === 'fr' ? 'â Modifier' : 'â Edit')}
             </button>
-            {editingPrompt && editedPrompt !== prompt && <span className="text-[9px] text-yellow-400 bg-yellow-400/10 px-1.5 rounded">{locale === 'fr' ? 'modifiÃÂ©' : 'modified'}</span>}
+            {editingPrompt && editedPrompt !== prompt && <span className="text-[9px] text-yellow-400 bg-yellow-400/10 px-1.5 rounded">{locale === 'fr' ? 'modifiÃ©' : 'modified'}</span>}
           </div>
           {editingPrompt ? (
             <div className="space-y-2">
@@ -2038,18 +2037,18 @@ function PC({ plan, index, analysisId, userKeys, characters, creditBalance, onCr
               {(() => {
                 const charNames = (characters || []).map((c: any) => typeof c === 'string' ? c : c?.name || '?')
                 const allRefs = [
-                  ...charNames.map((name: string) => ({ label: name, type: 'char', icon: 'Ã°ÂÂÂ¤', color: 'text-blue-400 bg-blue-400/10 border-blue-400/20' })),
-                  { label: 'cinematic lighting', type: 'style', icon: 'Ã¢ÂÂ¨', color: 'text-purple-400 bg-purple-400/10 border-purple-400/20' },
-                  { label: 'golden hour', type: 'style', icon: 'Ã¢ÂÂ¨', color: 'text-amber-400 bg-amber-400/10 border-amber-400/20' },
-                  { label: 'shallow depth of field', type: 'style', icon: 'Ã¢ÂÂ¨', color: 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20' },
-                  { label: 'anamorphic lens flare', type: 'style', icon: 'Ã¢ÂÂ¨', color: 'text-orange-400 bg-orange-400/10 border-orange-400/20' },
-                  { label: 'slow motion', type: 'motion', icon: 'Ã°ÂÂÂ¬', color: 'text-green-400 bg-green-400/10 border-green-400/20' },
-                  { label: 'rack focus', type: 'motion', icon: 'Ã°ÂÂÂ¬', color: 'text-green-400 bg-green-400/10 border-green-400/20' },
-                  { label: 'dolly zoom', type: 'motion', icon: 'Ã°ÂÂÂ¬', color: 'text-green-400 bg-green-400/10 border-green-400/20' },
-                  { label: 'handheld', type: 'motion', icon: 'Ã°ÂÂÂ¬', color: 'text-green-400 bg-green-400/10 border-green-400/20' },
-                  { label: 'film grain', type: 'style', icon: 'Ã°ÂÂÂ¨', color: 'text-amber-400 bg-amber-400/10 border-amber-400/20' },
-                  { label: 'teal and orange', type: 'style', icon: 'Ã°ÂÂÂ¨', color: 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20' },
-                  { label: 'chiaroscuro', type: 'style', icon: 'Ã°ÂÂÂ¨', color: 'text-amber-400 bg-amber-400/10 border-amber-400/20' },
+                  ...charNames.map((name: string) => ({ label: name, type: 'char', icon: 'ð¤', color: 'text-blue-400 bg-blue-400/10 border-blue-400/20' })),
+                  { label: 'cinematic lighting', type: 'style', icon: 'â¨', color: 'text-purple-400 bg-purple-400/10 border-purple-400/20' },
+                  { label: 'golden hour', type: 'style', icon: 'â¨', color: 'text-amber-400 bg-amber-400/10 border-amber-400/20' },
+                  { label: 'shallow depth of field', type: 'style', icon: 'â¨', color: 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20' },
+                  { label: 'anamorphic lens flare', type: 'style', icon: 'â¨', color: 'text-orange-400 bg-orange-400/10 border-orange-400/20' },
+                  { label: 'slow motion', type: 'motion', icon: 'ð¬', color: 'text-green-400 bg-green-400/10 border-green-400/20' },
+                  { label: 'rack focus', type: 'motion', icon: 'ð¬', color: 'text-green-400 bg-green-400/10 border-green-400/20' },
+                  { label: 'dolly zoom', type: 'motion', icon: 'ð¬', color: 'text-green-400 bg-green-400/10 border-green-400/20' },
+                  { label: 'handheld', type: 'motion', icon: 'ð¬', color: 'text-green-400 bg-green-400/10 border-green-400/20' },
+                  { label: 'film grain', type: 'style', icon: 'ð¨', color: 'text-amber-400 bg-amber-400/10 border-amber-400/20' },
+                  { label: 'teal and orange', type: 'style', icon: 'ð¨', color: 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20' },
+                  { label: 'chiaroscuro', type: 'style', icon: 'ð¨', color: 'text-amber-400 bg-amber-400/10 border-amber-400/20' },
                 ]
                 // Check if prompt ends with @ to show autocomplete
                 const atMatch = editedPrompt.match(/@(\S*)$/)
@@ -2098,7 +2097,7 @@ function PC({ plan, index, analysisId, userKeys, characters, creditBalance, onCr
                 rows={4} />
             </div>
           ) : (
-            <p className="text-[11px] text-slate-400 leading-relaxed font-mono bg-dark-800/50 rounded-lg p-2.5">{prompt || 'Ã¢ÂÂ'}</p>
+            <p className="text-[11px] text-slate-400 leading-relaxed font-mono bg-dark-800/50 rounded-lg p-2.5">{prompt || 'â'}</p>
           )}
         </div>
 
@@ -2123,15 +2122,15 @@ function PC({ plan, index, analysisId, userKeys, characters, creditBalance, onCr
 
         {/* Actions bar */}
         <div className="flex items-center gap-2 pt-1 flex-wrap">
-          {/* Option 2: Has API key Ã¢ÂÂ Generate in-app */}
-          {canGenerate && status==='idle' && <button onClick={gen} className="px-3 py-1.5 btn-primary text-white text-[10px] rounded-lg flex items-center gap-1.5"><Zap size={10} /> {locale === 'fr' ? 'GÃÂ©nÃÂ©rer' : 'Generate'}</button>}
-          {canGenerate && status==='processing' && <span className="flex items-center gap-1.5 text-yellow-400 text-[10px]"><Loader2 size={12} className="animate-spin" />{locale === 'fr' ? 'GÃÂ©nÃÂ©ration...' : 'Generating...'}</span>}
-          {canGenerate && status==='completed' && <span className="flex items-center gap-1.5 text-green-400 text-[10px]"><Check size={12} />{locale === 'fr' ? 'TerminÃÂ©' : 'Done'}</span>}
+          {/* Option 2: Has API key â Generate in-app */}
+          {canGenerate && status==='idle' && <button onClick={gen} className="px-3 py-1.5 btn-primary text-white text-[10px] rounded-lg flex items-center gap-1.5"><Zap size={10} /> {locale === 'fr' ? 'GÃ©nÃ©rer' : 'Generate'}</button>}
+          {canGenerate && status==='processing' && <span className="flex items-center gap-1.5 text-yellow-400 text-[10px]"><Loader2 size={12} className="animate-spin" />{locale === 'fr' ? 'GÃ©nÃ©ration...' : 'Generating...'}</span>}
+          {canGenerate && status==='completed' && <span className="flex items-center gap-1.5 text-green-400 text-[10px]"><Check size={12} />{locale === 'fr' ? 'TerminÃ©' : 'Done'}</span>}
           {canGenerate && status==='failed' && <button onClick={gen} className="px-3 py-1.5 bg-red-500/10 text-red-400 text-[10px] rounded-lg flex items-center gap-1.5 border border-red-500/20"><AlertTriangle size={10} /> Retry</button>}
           {/* Option 3: MISEN credits (Pro/Studio) */}
-          {!canGenerate && status==='idle' && <button onClick={() => hasCredits ? genWithCredits() : window.open('/settings?tab=usage', '_self')} className="px-3 py-1.5 bg-gradient-to-r from-violet-600/20 to-violet-500/20 hover:from-violet-600/30 hover:to-violet-500/30 text-violet-300 text-[10px] font-medium rounded-lg flex items-center gap-1.5 border border-violet-500/20 transition-colors"><Sparkles size={10} /> {hasCredits ? (locale === 'fr' ? `GÃÂ©nÃÂ©rer (${creditBalance} cr.)` : `Generate (${creditBalance} cr.)`) : (locale === 'fr' ? 'Acheter des crÃÂ©dits' : 'Buy credits')}</button>}
-          {!canGenerate && status==='processing' && <span className="flex items-center gap-1.5 text-violet-400 text-[10px]"><Loader2 size={12} className="animate-spin" />{locale === 'fr' ? 'GÃÂ©nÃÂ©ration...' : 'Generating...'}</span>}
-          {!canGenerate && status==='completed' && <span className="flex items-center gap-1.5 text-green-400 text-[10px]"><Check size={12} />{locale === 'fr' ? 'TerminÃÂ©' : 'Done'}</span>}
+          {!canGenerate && status==='idle' && <button onClick={() => hasCredits ? genWithCredits() : window.open('/settings?tab=usage', '_self')} className="px-3 py-1.5 bg-gradient-to-r from-violet-600/20 to-violet-500/20 hover:from-violet-600/30 hover:to-violet-500/30 text-violet-300 text-[10px] font-medium rounded-lg flex items-center gap-1.5 border border-violet-500/20 transition-colors"><Sparkles size={10} /> {hasCredits ? (locale === 'fr' ? `GÃ©nÃ©rer (${creditBalance} cr.)` : `Generate (${creditBalance} cr.)`) : (locale === 'fr' ? 'Acheter des crÃ©dits' : 'Buy credits')}</button>}
+          {!canGenerate && status==='processing' && <span className="flex items-center gap-1.5 text-violet-400 text-[10px]"><Loader2 size={12} className="animate-spin" />{locale === 'fr' ? 'GÃ©nÃ©ration...' : 'Generating...'}</span>}
+          {!canGenerate && status==='completed' && <span className="flex items-center gap-1.5 text-green-400 text-[10px]"><Check size={12} />{locale === 'fr' ? 'TerminÃ©' : 'Done'}</span>}
           {!canGenerate && status==='failed' && <button onClick={() => hasCredits ? genWithCredits() : window.open('/settings?tab=usage', '_self')} className="px-3 py-1.5 bg-red-500/10 text-red-400 text-[10px] rounded-lg flex items-center gap-1.5 border border-red-500/20"><AlertTriangle size={10} /> Retry</button>}
           {/* Option 1: Copy + Open platform */}
           {!canGenerate && status==='idle' && <button onClick={()=>{navigator.clipboard.writeText(editedPrompt||prompt);setCopied(true);setTimeout(()=>setCopied(false),2000);window.open(studio.url,'_blank')}}
@@ -2141,7 +2140,7 @@ function PC({ plan, index, analysisId, userKeys, characters, creditBalance, onCr
           {/* Option 4: Open-source free */}
           {osFallbackPC && !canGenerate && status==='idle' && <button onClick={genOpenSourcePC}
             className="px-3 py-1.5 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 text-[10px] font-medium rounded-lg flex items-center gap-1.5 border border-emerald-500/15 transition-colors">
-            <Play size={10} /> {locale === 'fr' ? `Gratuit ÃÂ· ${osFallbackPC.modelName}` : `Free ÃÂ· ${osFallbackPC.modelName}`}
+            <Play size={10} /> {locale === 'fr' ? `Gratuit Â· ${osFallbackPC.modelName}` : `Free Â· ${osFallbackPC.modelName}`}
           </button>}
           {/* Simple copy for key holders */}
           {canGenerate && <button onClick={()=>{navigator.clipboard.writeText(editedPrompt||prompt);setCopied(true);setTimeout(()=>setCopied(false),2000)}}
@@ -2155,7 +2154,7 @@ function PC({ plan, index, analysisId, userKeys, characters, creditBalance, onCr
   </div>)
 }
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ Render Panel Ã¢ÂÂ Assembly Player V8 Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// âââ Render Panel â Assembly Player V8 âââ
 function RenderPanel({ analysis, analysisId, projectName }: { analysis: any; analysisId: string | null; projectName?: string }) {
   const { t } = useI18n()
   const [generations, setGenerations] = useState<any[]>([])
@@ -2189,7 +2188,7 @@ function RenderPanel({ analysis, analysisId, projectName }: { analysis: any; ana
   const totalPlans = plans.length
 
   // Detect demo project for preview images
-  const isDemo = (projectName || '').toLowerCase().includes('dÃÂ©mo') || (projectName || '').toLowerCase().includes('demo')
+  const isDemo = (projectName || '').toLowerCase().includes('dÃ©mo') || (projectName || '').toLowerCase().includes('demo')
 
   // Build clip list from completed generations
   const clips = plans.map((p: any, i: number) => {
@@ -2247,8 +2246,8 @@ function RenderPanel({ analysis, analysisId, projectName }: { analysis: any; ana
         <div className="flex items-center gap-3">
           <span className="text-xs text-slate-400">
             {isDemo && completedCount === 0
-              ? `${Math.min(totalPlans, DEMO_IMAGES.length)}/${totalPlans} plans (aperÃÂ§u)`
-              : `${completedCount}/${totalPlans} plans gÃÂ©nÃÂ©rÃÂ©s`}
+              ? `${Math.min(totalPlans, DEMO_IMAGES.length)}/${totalPlans} plans (aperÃ§u)`
+              : `${completedCount}/${totalPlans} plans gÃ©nÃ©rÃ©s`}
           </span>
           <div className="w-24 h-1.5 bg-dark-700 rounded-full overflow-hidden">
             <div className="h-full bg-gradient-to-r from-orange-600 to-green-500 rounded-full transition-all" style={{
@@ -2325,7 +2324,7 @@ function RenderPanel({ analysis, analysisId, projectName }: { analysis: any; ana
           )}
           {/* Plan overlay */}
           <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded">
-            <span className="text-[10px] text-white font-medium">{current?.label} ÃÂ· {current?.shotType}</span>
+            <span className="text-[10px] text-white font-medium">{current?.label} Â· {current?.shotType}</span>
           </div>
           <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 bg-black/60 backdrop-blur-sm rounded">
             <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: getModelColor((current?.modelId || '').toLowerCase()) }} />
